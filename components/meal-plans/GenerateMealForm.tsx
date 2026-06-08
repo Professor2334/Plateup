@@ -7,7 +7,7 @@ import { generateMealPlan } from '@/app/actions/meal-plans/actions';
 import type { MealPlanResponse } from '@/lib/deepseek';
 
 interface GenerateMealFormProps {
-  onPlanGenerated: (plan: MealPlanResponse, formData: FormData) => void;
+  onPlanGenerated: (plan: MealPlanResponse, formData: FormData, id: string) => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
@@ -28,8 +28,8 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange }: GenerateM
       setError(result.error || 'Failed to generate plan.');
       setLoading(false);
       onLoadingChange(false);
-    } else if (result.success && result.data) {
-      onPlanGenerated(result.data, formData);
+    } else if (result.success && result.data && result.id) {
+      onPlanGenerated(result.data, formData, result.id);
       setLoading(false);
       onLoadingChange(false);
     }

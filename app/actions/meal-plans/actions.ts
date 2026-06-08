@@ -26,32 +26,46 @@ export async function generateMealPlan(formData: FormData) {
 
   try {
     const mealPlan = await deepSeekGenerate(budget, ingredients, householdSize, primaryGoal);
-    return { success: true, data: mealPlan };
+    
+    // Save to database as unsaved history
+    const newPlan = await db.mealPlan.create({
+      data: {
+        userId: session.user.id,
+        budget,
+        ingredients,
+        generatedPlan: mealPlan.mealPlan,
+        shoppingList: mealPlan.shoppingList,
+        isSaved: false,
+      },
+    });
+
+    revalidatePath('/dashboard');
+    return { success: true, data: mealPlan, id: newPlan.id };
   } catch (error) {
     console.error('Meal Plan Generation Error:', error);
     return { success: false, error: 'Failed to generate meal plan. Please try again.' };
   }
 }
 
-export async function saveMealPlan(budget: number, ingredients: string, generatedPlan: any, shoppingList: any) {
+export async function saveMealPlan(id: string) {
   const session = await auth();
   if (!session?.user?.id) {
     return { success: false, error: 'Unauthorized' };
   }
 
   try {
-    const newPlan = await db.mealPlan.create({
-      data: {
-        userId: session.user.id,
-        budget,
-        ingredients,
-        generatedPlan,
-        shoppingList,
-      },
+    const plan = await db.mealPlan.findUnique({ where: { id } });
+    if (!plan || plan.userId !== session.user.id) {
+      return { success: false, error: 'Not found or unauthorized' };
+    }
+
+    await db.mealPlan.update({
+      where: { id },
+      data: { isSaved: true },
     });
 
     revalidatePath('/dashboard');
-    return { success: true, id: newPlan.id };
+    return { success: true, id };
   } catch (error) {
     console.error('Save Meal Plan Error:', error);
     return { success: false, error: 'Failed to save meal plan.' };

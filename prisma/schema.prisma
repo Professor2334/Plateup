@@ -38,6 +38,7 @@ model MealPlan {
   ingredients   String
   generatedPlan Json
   shoppingList  Json
+  isSaved       Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

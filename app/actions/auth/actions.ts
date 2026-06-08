@@ -5,6 +5,7 @@ import db from '@/lib/db';
 import { SignupSchema } from '@/lib/validators';
 import { sendVerificationEmail } from '@/lib/resend';
 import { randomBytes } from 'crypto';
+import { signOut } from '@/lib/auth';
 
 export async function registerUser(formData: FormData) {
   const data = Object.fromEntries(formData.entries());
@@ -84,4 +85,8 @@ export async function verifyEmailToken(token: string) {
     console.error('Verification error:', error);
     return { success: false, error: 'Something went wrong' };
   }
+}
+
+export async function logoutUser() {
+  await signOut({ redirectTo: '/auth/login' });
 }
