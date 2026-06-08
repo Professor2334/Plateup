@@ -1,0 +1,43 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                  String     @id @default(cuid())
+  name                String
+  email               String     @unique
+  password            String
+  emailVerified       Boolean    @default(false)
+  onboardingCompleted Boolean    @default(false)
+  householdSize       String?
+  primaryGoal         String?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  mealPlans           MealPlan[]
+  verificationTokens  VerificationToken[]
+}
+
+model VerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+}
+
+model MealPlan {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budget        Float
+  ingredients   String
+  generatedPlan Json
+  shoppingList  Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
