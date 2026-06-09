@@ -197,7 +197,7 @@
   --color-on-error: hsl(0, 0%, 100%);
   --color-error-container: hsl(8, 100%, 83%);
   --color-on-error-container: hsl(0, 100%, 29%);
-  --color-background: hsl(345, 40%, 98%);
+  --color-background: hsl(0, 0%, 100%);
   --color-on-background: hsl(240, 2%, 11%);
   --color-surface: hsl(345, 40%, 98%);
   --color-on-surface: hsl(240, 2%, 11%);

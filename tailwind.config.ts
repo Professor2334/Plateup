@@ -42,6 +42,83 @@ const config: Config = {
         "inverse-on-surface": "var(--color-inverse-on-surface)",
         "inverse-primary": "var(--color-inverse-primary)",
       },
+      fontSize: {
+        "display-large": ["var(--typography-display-large-font-size)", {
+          lineHeight: "var(--typography-display-large-line-height)",
+          letterSpacing: "var(--typography-display-large-letter-spacing)",
+          fontWeight: "var(--typography-display-large-font-weight)",
+        }],
+        "display-medium": ["var(--typography-display-medium-font-size)", {
+          lineHeight: "var(--typography-display-medium-line-height)",
+          letterSpacing: "var(--typography-display-medium-letter-spacing)",
+          fontWeight: "var(--typography-display-medium-font-weight)",
+        }],
+        "display-small": ["var(--typography-display-small-font-size)", {
+          lineHeight: "var(--typography-display-small-line-height)",
+          letterSpacing: "var(--typography-display-small-letter-spacing)",
+          fontWeight: "var(--typography-display-small-font-weight)",
+        }],
+        "headline-large": ["var(--typography-headline-large-font-size)", {
+          lineHeight: "var(--typography-headline-large-line-height)",
+          letterSpacing: "var(--typography-headline-large-letter-spacing)",
+          fontWeight: "var(--typography-headline-large-font-weight)",
+        }],
+        "headline-medium": ["var(--typography-headline-medium-font-size)", {
+          lineHeight: "var(--typography-headline-medium-line-height)",
+          letterSpacing: "var(--typography-headline-medium-letter-spacing)",
+          fontWeight: "var(--typography-headline-medium-font-weight)",
+        }],
+        "headline-small": ["var(--typography-headline-small-font-size)", {
+          lineHeight: "var(--typography-headline-small-line-height)",
+          letterSpacing: "var(--typography-headline-small-letter-spacing)",
+          fontWeight: "var(--typography-headline-small-font-weight)",
+        }],
+        "title-large": ["var(--typography-title-large-font-size)", {
+          lineHeight: "var(--typography-title-large-line-height)",
+          letterSpacing: "var(--typography-title-large-letter-spacing)",
+          fontWeight: "var(--typography-title-large-font-weight)",
+        }],
+        "title-medium": ["var(--typography-title-medium-font-size)", {
+          lineHeight: "var(--typography-title-medium-line-height)",
+          letterSpacing: "var(--typography-title-medium-letter-spacing)",
+          fontWeight: "var(--typography-title-medium-font-weight)",
+        }],
+        "title-small": ["var(--typography-title-small-font-size)", {
+          lineHeight: "var(--typography-title-small-line-height)",
+          letterSpacing: "var(--typography-title-small-letter-spacing)",
+          fontWeight: "var(--typography-title-small-font-weight)",
+        }],
+        "body-large": ["var(--typography-body-large-font-size)", {
+          lineHeight: "var(--typography-body-large-line-height)",
+          letterSpacing: "var(--typography-body-large-letter-spacing)",
+          fontWeight: "var(--typography-body-large-font-weight)",
+        }],
+        "body-medium": ["var(--typography-body-medium-font-size)", {
+          lineHeight: "var(--typography-body-medium-line-height)",
+          letterSpacing: "var(--typography-body-medium-letter-spacing)",
+          fontWeight: "var(--typography-body-medium-font-weight)",
+        }],
+        "body-small": ["var(--typography-body-small-font-size)", {
+          lineHeight: "var(--typography-body-small-line-height)",
+          letterSpacing: "var(--typography-body-small-letter-spacing)",
+          fontWeight: "var(--typography-body-small-font-weight)",
+        }],
+        "label-large": ["var(--typography-label-large-font-size)", {
+          lineHeight: "var(--typography-label-large-line-height)",
+          letterSpacing: "var(--typography-label-large-letter-spacing)",
+          fontWeight: "var(--typography-label-large-font-weight)",
+        }],
+        "label-medium": ["var(--typography-label-medium-font-size)", {
+          lineHeight: "var(--typography-label-medium-line-height)",
+          letterSpacing: "var(--typography-label-medium-letter-spacing)",
+          fontWeight: "var(--typography-label-medium-font-weight)",
+        }],
+        "label-small": ["var(--typography-label-small-font-size)", {
+          lineHeight: "var(--typography-label-small-line-height)",
+          letterSpacing: "var(--typography-label-small-letter-spacing)",
+          fontWeight: "var(--typography-label-small-font-weight)",
+        }],
+      },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
       },
