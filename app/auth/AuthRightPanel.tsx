@@ -7,12 +7,13 @@ import Image from 'next/image';
 export default function AuthRightPanel() {
   const pathname = usePathname();
   const isLogin = pathname === '/auth/login';
+  const isVerify = pathname === '/auth/verify-email';
 
   return (
     <div className="hidden lg:flex flex-1 flex-col justify-center items-center bg-white p-12 lg:w-[55%] relative overflow-hidden">
       <div className="relative z-10 max-w-xl w-full flex flex-col items-center">
         
-        <div className="w-full max-w-[24rem] aspect-square relative mb-[50px] flex items-center justify-center">
+        <div className={`w-full max-w-[24rem] aspect-square relative flex items-center justify-center transition-all duration-700 ${isVerify ? 'scale-90 opacity-90 mb-3' : 'mb-[50px]'}`}>
           {/* Organic Background Shapes */}
           <div className="absolute inset-2 bg-[var(--color-primary)] opacity-[0.06] rounded-[40%_60%_70%_30%/40%_50%_60%_50%] transition-transform duration-1000 ease-in-out hover:scale-105" />
           <div className="absolute inset-6 bg-[var(--color-primary)] opacity-[0.04] rounded-[60%_40%_30%_70%/50%_40%_60%_50%] rotate-45 transition-transform duration-1000 ease-in-out hover:-rotate-12" />
@@ -22,7 +23,7 @@ export default function AuthRightPanel() {
           <div className="absolute inset-0 z-10">
             {pathname && (
               <Image 
-                src={isLogin ? "/auth-login-illustration-v5.png" : "/auth-illustration-v3.png"} 
+                src={isVerify ? "/auth-success-illustration.png" : isLogin ? "/auth-login-illustration-v5.png" : "/auth-illustration-v3.png"} 
                 alt="PlateUp Meal Planning" 
                 fill
                 className="object-contain mix-blend-multiply scale-[0.92]"
@@ -35,17 +36,46 @@ export default function AuthRightPanel() {
         <div className="w-full flex justify-center">
           <div className="max-w-md w-full">
             <h2 
-              className="text-[#115e3b] mb-8 text-left leading-tight"
+              className="text-[#115e3b] mb-4 text-left leading-tight"
               style={{
                 fontSize: 'var(--typography-headline-large-font-size)',
                 fontWeight: 'var(--typography-headline-large-font-weight)',
                 letterSpacing: 'var(--typography-headline-large-letter-spacing)'
               }}
             >
-              {isLogin ? "Welcome back to smarter meal Planning." : "Plan better Nigerian meals faster."}
+              {isVerify 
+                ? "You're one step away from smarter meal planning." 
+                : isLogin 
+                  ? "Welcome back to smarter meal Planning." 
+                  : "Plan better Nigerian meals faster."}
             </h2>
+
+            {isVerify && (
+              <p className="text-base text-[var(--color-on-surface-variant)] leading-relaxed mb-8">
+                Your account is ready. Next, we'll learn a little about your household so PlateUp can generate meal plans tailored to your needs and budget.
+              </p>
+            )}
             
-            {isLogin ? (
+            {isVerify ? (
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <CheckCircle2 className="w-5 h-5 mt-0.5 text-[var(--color-primary)] flex-shrink-0" />
+                  <p className="text-base text-[var(--color-on-surface-variant)] leading-relaxed">Personalized meal recommendations</p>
+                </div>
+                <div className="flex items-start gap-4">
+                  <CheckCircle2 className="w-5 h-5 mt-0.5 text-[var(--color-primary)] flex-shrink-0" />
+                  <p className="text-base text-[var(--color-on-surface-variant)] leading-relaxed">Budget-aware Nigerian meal plans</p>
+                </div>
+                <div className="flex items-start gap-4">
+                  <CheckCircle2 className="w-5 h-5 mt-0.5 text-[var(--color-primary)] flex-shrink-0" />
+                  <p className="text-base text-[var(--color-on-surface-variant)] leading-relaxed">Smart shopping lists</p>
+                </div>
+                <div className="flex items-start gap-4">
+                  <CheckCircle2 className="w-5 h-5 mt-0.5 text-[var(--color-primary)] flex-shrink-0" />
+                  <p className="text-base text-[var(--color-on-surface-variant)] leading-relaxed">Save and reuse meal plans anytime</p>
+                </div>
+              </div>
+            ) : isLogin ? (
               <div className="space-y-4">
                 <div className="flex items-start gap-4">
                   <CheckCircle2 className="w-5 h-5 mt-0.5 text-[var(--color-primary)] flex-shrink-0" />

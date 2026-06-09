@@ -42,7 +42,7 @@ export async function registerUser(formData: FormData) {
       data: {
         userId: user.id,
         token,
-        expires: new Date(Date.now() + 1000 * 60 * 60 * 24), // 24 hours
+        expires: new Date(Date.now() + 1000 * 60 * 5), // 5 minutes
       },
     });
 
@@ -80,7 +80,7 @@ export async function verifyEmailToken(token: string) {
       where: { id: verificationToken.id },
     });
 
-    return { success: true };
+    return { success: true, email: verificationToken.user.email };
   } catch (error) {
     console.error('Verification error:', error);
     return { success: false, error: 'Something went wrong' };
@@ -89,4 +89,41 @@ export async function verifyEmailToken(token: string) {
 
 export async function logoutUser() {
   await signOut({ redirectTo: '/auth/login' });
+}
+
+export async function resendVerificationEmailAction(email: string) {
+  try {
+    const user = await db.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      return { success: false, error: 'User not found' };
+    }
+
+    if (user.emailVerified) {
+      return { success: false, error: 'Email already verified' };
+    }
+
+    // Delete existing token if any
+    await db.verificationToken.deleteMany({
+      where: { userId: user.id }
+    });
+
+    const token = randomBytes(32).toString('hex');
+    await db.verificationToken.create({
+      data: {
+        userId: user.id,
+        token,
+        expires: new Date(Date.now() + 1000 * 60 * 5), // 5 minutes
+      },
+    });
+
+    await sendVerificationEmail(email, token);
+
+    return { success: true };
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    return { success: false, error: 'Something went wrong' };
+  }
 }

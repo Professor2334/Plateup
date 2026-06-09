@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { GoogleButton } from '@/components/auth/GoogleButton';
 import { AuthDivider } from '@/components/auth/AuthDivider';
@@ -24,7 +25,9 @@ export default function LoginPage() {
 
       <AuthDivider />
 
-      <LoginForm />
+      <Suspense fallback={<div>Loading form...</div>}>
+        <LoginForm />
+      </Suspense>
 
       <div className="text-center text-[15px] mt-8">
         <span className="text-[var(--color-on-surface-variant)]">Don't have an account? </span>

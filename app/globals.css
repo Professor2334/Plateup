@@ -130,3 +130,12 @@ body {
 
 /* ─── Utility ───────────────────────────────────────── */
 .text-balance { text-wrap: balance; }
+
+/* ─── Browser Autofill ──────────────────────────────── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px var(--color-inverse-on-surface) inset !important;
+  -webkit-text-fill-color: var(--color-on-background) !important;
+}

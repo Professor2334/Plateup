@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { registerUser } from '@/app/actions/auth/actions';
+import { registerUser, resendVerificationEmailAction } from '@/app/actions/auth/actions';
 
 export function RegisterForm() {
   const [step, setStep] = useState(1);
@@ -13,19 +15,72 @@ export function RegisterForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
+  const [nameError, setNameError] = useState('');
+  const [nameTouched, setNameTouched] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordRequirement, setPasswordRequirement] = useState('');
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState({ text: '', type: '' });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleContinue = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    let hasError = false;
+    if (!name.trim()) {
+      setNameError('Full name is required.');
+      hasError = true;
+    } else if (name.trim().length < 2) {
+      setNameError('Name must be at least 2 characters.');
+      hasError = true;
+    }
+    if (!email.trim()) {
+      setEmailError('Email address is required.');
+      hasError = true;
+    }
+    if (hasError) return;
+
     setError('');
     setStep(2);
   };
 
+  const validatePassword = (pass: string) => {
+    if (!/[A-Z]/.test(pass)) return 'Must contain one uppercase letter';
+    if (!/[a-z]/.test(pass)) return 'Must contain one lowercase letter';
+    if (!/[0-9]/.test(pass)) return 'Must contain one number';
+    if (!/[^A-Za-z0-9]/.test(pass)) return 'Must contain one special character';
+    if (pass.length < 8) return 'Must be at least 8 characters';
+    return '';
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    let hasError = false;
+    if (!password) {
+      setPasswordError('Password is required.');
+      hasError = true;
+    } else {
+      const passErr = validatePassword(password);
+      if (passErr) {
+        setPasswordError(passErr);
+        hasError = true;
+      }
+    }
+    if (!confirmPassword) {
+      setConfirmPasswordError('Password confirmation is required.');
+      hasError = true;
+    }
+    if (hasError) return;
     
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -62,44 +117,103 @@ export function RegisterForm() {
         <p className="text-sm text-[var(--color-on-surface-variant)]">
           {"We've sent a verification link to your email address. Please verify your email before signing in."}
         </p>
-        <Button onClick={() => router.push('/auth/login')} variant="outline" className="w-full">
-          Back to Login
-        </Button>
+        
+        {resendMessage.text && (
+          <p className={`text-sm ${resendMessage.type === 'error' ? 'text-[var(--color-error)]' : 'text-[var(--color-primary)]'}`}>
+            {resendMessage.text}
+          </p>
+        )}
+
+        <div className="flex flex-col gap-3 pt-4">
+          <Button 
+            onClick={async () => {
+              setIsResending(true);
+              setResendMessage({ text: '', type: '' });
+              const res = await resendVerificationEmailAction(email);
+              if (res.success) {
+                setResendMessage({ text: 'Verification link sent again!', type: 'success' });
+              } else {
+                setResendMessage({ text: res.error || 'Failed to resend link.', type: 'error' });
+              }
+              setIsResending(false);
+            }} 
+            variant="outline" 
+            className="w-full"
+            disabled={isResending}
+          >
+            {isResending ? 'Resending...' : 'Resend Verification Link'}
+          </Button>
+        </div>
       </div>
     );
   }
 
   if (step === 1) {
     return (
-      <form onSubmit={handleContinue} className="space-y-4">
+      <form onSubmit={handleContinue} className="space-y-4" noValidate>
         <div className="space-y-1">
           <label htmlFor="name" className="text-sm font-medium">Full Name</label>
           <Input 
             id="name" 
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setName(val);
+              if (val.length > 0 && val.trim().length < 2) {
+                setNameError('Name must be at least 2 characters.');
+              } else if (nameError) {
+                setNameError('');
+              }
+            }}
+            onBlur={(e) => {
+              setNameTouched(true);
+              if (e.relatedTarget && e.relatedTarget.tagName === 'INPUT') {
+                if (!name.trim()) {
+                  setNameError('This field cannot be empty');
+                }
+              }
+            }}
             type="text" 
             placeholder="Enter your full name" 
             required 
             autoFocus
-            className="placeholder:opacity-70"
+            className={`placeholder:opacity-70 ${nameError ? '!border-[var(--color-error)] focus-visible:!border-[var(--color-error)]' : ''} ${(nameTouched && !nameError && name.trim().length >= 2) ? '!bg-[var(--color-inverse-on-surface)]' : ''}`}
           />
+          {nameError && <p className="mt-[var(--space-2)] p-2 px-3 rounded-md bg-[color-mix(in_srgb,var(--color-error-container)_35%,transparent)] text-xs font-normal text-[var(--color-on-error-container)]">{nameError}</p>}
         </div>
         <div className="space-y-1">
           <label htmlFor="email" className="text-sm font-medium">Email</label>
           <Input 
             id="email" 
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setEmail(val);
+              if (val.length > 0 && !val.includes('@')) {
+                setEmailError('Enter a valid email address');
+              } else if (emailError) {
+                setEmailError('');
+              }
+            }}
+            onBlur={(e) => {
+              setEmailTouched(true);
+              if (e.relatedTarget && e.relatedTarget.tagName === 'INPUT') {
+                if (!email.trim()) {
+                  setEmailError('This field cannot be empty');
+                }
+              }
+            }}
             type="email" 
             placeholder="Enter your email address" 
             required 
-            className="placeholder:opacity-70"
+            className={`placeholder:opacity-70 ${emailError ? '!border-[var(--color-error)] focus-visible:!border-[var(--color-error)]' : ''} ${(emailTouched && !emailError && email.trim().length > 0) ? '!bg-[var(--color-inverse-on-surface)]' : ''}`}
           />
+          {emailError && <p className="mt-[var(--space-2)] p-2 px-3 rounded-md bg-[color-mix(in_srgb,var(--color-error-container)_35%,transparent)] text-xs font-normal text-[var(--color-on-error-container)]">{emailError}</p>}
         </div>
         <div className="pt-2">
-          <Button type="submit" className="w-full">
-            Continue
+          <Button type="submit" className="w-full cursor-pointer group flex items-center justify-center gap-2">
+            <span>Continue</span>
+            <ArrowRight size={20} className="transition-transform group-hover:translate-x-1 mt-0.5" />
           </Button>
         </div>
       </form>
@@ -107,35 +221,106 @@ export function RegisterForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       <div className="space-y-1">
-        <label htmlFor="password" className="text-sm font-medium">Choose Password</label>
-        <Input 
-          id="password" 
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          type="password" 
-          required 
-          minLength={8} 
-          className="placeholder:opacity-70"
-        />
+        <label htmlFor="password" className="text-sm font-medium">Password</label>
+        <div className="relative">
+          <Input 
+            id="password" 
+            value={password}
+            onChange={(e) => {
+              const val = e.target.value;
+              setPassword(val);
+              if (passwordError) setPasswordError('');
+              if (val.length > 0) {
+                setPasswordRequirement(validatePassword(val));
+              } else {
+                setPasswordRequirement('');
+              }
+            }}
+            onBlur={(e) => {
+              setPasswordTouched(true);
+              if (e.relatedTarget && e.relatedTarget.tagName === 'INPUT') {
+                if (!password) {
+                  setPasswordError('This field cannot be empty');
+                }
+              }
+            }}
+            type={showPassword ? 'text' : 'password'} 
+            placeholder="Choose Password"
+            required 
+            minLength={8} 
+            className={`pr-14 placeholder:opacity-70 ${passwordError ? '!border-[var(--color-error)] focus-visible:!border-[var(--color-error)]' : ''} ${(passwordTouched && !passwordError && password.length > 0) ? '!bg-[var(--color-inverse-on-surface)]' : ''}`}
+          />
+          <button 
+            type="button" 
+            onClick={() => setShowPassword(!showPassword)} 
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity"
+          >
+            {showPassword ? 'Hide' : 'Show'}
+          </button>
+        </div>
+        {passwordError && <p className="mt-[var(--space-2)] p-2 px-3 rounded-md bg-[color-mix(in_srgb,var(--color-error-container)_35%,transparent)] text-xs font-normal text-[var(--color-on-error-container)]">{passwordError}</p>}
+        {passwordRequirement && !passwordError && (
+          <p className="mt-1 text-xs text-[var(--color-on-surface-variant)] flex items-center gap-1.5">
+            <span className="w-1 h-1 rounded-full bg-[var(--color-outline-variant)]"></span>
+            {passwordRequirement}
+          </p>
+        )}
       </div>
       <div className="space-y-1">
         <label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</label>
-        <Input 
-          id="confirmPassword" 
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          type="password" 
+        <div className="relative">
+          <Input 
+            id="confirmPassword" 
+            value={confirmPassword}
+            onChange={(e) => {
+              setConfirmPassword(e.target.value);
+              if (confirmPasswordError) setConfirmPasswordError('');
+            }}
+            onBlur={(e) => {
+              setConfirmPasswordTouched(true);
+              if (e.relatedTarget && e.relatedTarget.tagName === 'INPUT') {
+                if (!confirmPassword) {
+                  setConfirmPasswordError('This field cannot be empty');
+                }
+              }
+            }}
+            type={showConfirmPassword ? 'text' : 'password'} 
+            placeholder="Confirm Password"
+            required 
+            minLength={8} 
+            className={`pr-14 placeholder:opacity-70 ${confirmPasswordError ? '!border-[var(--color-error)] focus-visible:!border-[var(--color-error)]' : ''} ${(confirmPasswordTouched && !confirmPasswordError && confirmPassword.length > 0) ? '!bg-[var(--color-inverse-on-surface)]' : ''}`}
+          />
+          <button 
+            type="button" 
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity"
+          >
+            {showConfirmPassword ? 'Hide' : 'Show'}
+          </button>
+        </div>
+        {confirmPasswordError && <p className="mt-1 text-xs font-medium text-[var(--color-error)]">{confirmPasswordError}</p>}
+      </div>
+      <div className="flex items-center space-x-2 pt-2 pb-1">
+        <input 
+          type="checkbox" 
+          id="terms" 
           required 
-          minLength={8} 
-          className="placeholder:opacity-70"
+          className="h-4 w-4 cursor-pointer rounded border-[var(--color-outline-variant)] accent-[var(--color-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
         />
+        <label htmlFor="terms" className="text-sm text-[var(--color-on-surface-variant)] cursor-pointer">
+          I agree to the <Link href="/terms" className="text-[var(--color-primary)] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-[var(--color-primary)] hover:underline">Privacy Policy</Link>.
+        </label>
       </div>
       {error && <p className="text-[var(--color-error)] text-sm">{error}</p>}
       <div className="space-y-4 pt-2">
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Creating account...' : 'Create Account'}
+          {loading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            'Create Account'
+          )}
         </Button>
         <div className="text-center">
           <button 
