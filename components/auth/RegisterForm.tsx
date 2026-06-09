@@ -48,7 +48,7 @@ export function RegisterForm() {
       } else {
         setSuccess(true);
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred');
     } finally {
       setLoading(false);
@@ -60,7 +60,7 @@ export function RegisterForm() {
       <div className="text-center space-y-4">
         <h3 className="text-lg font-medium text-[var(--color-primary)]">Check your email</h3>
         <p className="text-sm text-[var(--color-on-surface-variant)]">
-          We've sent a verification link to your email address. Please verify your email before signing in.
+          {"We've sent a verification link to your email address. Please verify your email before signing in."}
         </p>
         <Button onClick={() => router.push('/auth/login')} variant="outline" className="w-full">
           Back to Login
@@ -79,8 +79,10 @@ export function RegisterForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             type="text" 
-            placeholder="John Doe" 
+            placeholder="Enter your full name" 
             required 
+            autoFocus
+            className="placeholder:opacity-70"
           />
         </div>
         <div className="space-y-1">
@@ -90,8 +92,9 @@ export function RegisterForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email" 
-            placeholder="name@example.com" 
+            placeholder="Enter your email address" 
             required 
+            className="placeholder:opacity-70"
           />
         </div>
         <div className="pt-2">
@@ -114,6 +117,7 @@ export function RegisterForm() {
           type="password" 
           required 
           minLength={8} 
+          className="placeholder:opacity-70"
         />
       </div>
       <div className="space-y-1">
@@ -125,6 +129,7 @@ export function RegisterForm() {
           type="password" 
           required 
           minLength={8} 
+          className="placeholder:opacity-70"
         />
       </div>
       {error && <p className="text-[var(--color-error)] text-sm">{error}</p>}
