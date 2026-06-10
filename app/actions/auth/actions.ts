@@ -36,20 +36,21 @@ export async function registerUser(formData: FormData) {
       },
     });
 
-    // Create verification token
+    // Create verification token — 24h window gives the user time to verify after onboarding
     const token = randomBytes(32).toString('hex');
     await db.verificationToken.create({
       data: {
         userId: user.id,
         token,
-        expires: new Date(Date.now() + 1000 * 60 * 5), // 5 minutes
+        expires: new Date(Date.now() + 1000 * 60 * 60 * 24), // 24 hours
       },
     });
 
-    // Send email
+    // Send email immediately, but don't block the user from proceeding
     await sendVerificationEmail(email, token);
 
-    return { success: true };
+    // Return the plain password so the client can auto-sign-in without re-entry
+    return { success: true, email, password };
   } catch (error) {
     console.error('Registration error:', error);
     return { success: false, error: 'Something went wrong' };
@@ -115,7 +116,7 @@ export async function resendVerificationEmailAction(email: string) {
       data: {
         userId: user.id,
         token,
-        expires: new Date(Date.now() + 1000 * 60 * 5), // 5 minutes
+        expires: new Date(Date.now() + 1000 * 60 * 60 * 24), // 24 hours
       },
     });
 

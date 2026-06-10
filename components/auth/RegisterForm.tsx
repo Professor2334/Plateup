@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { registerUser, resendVerificationEmailAction } from '@/app/actions/auth/actions';
+import { registerUser } from '@/app/actions/auth/actions';
 
 export function RegisterForm() {
   const [step, setStep] = useState(1);
@@ -28,9 +28,6 @@ export function RegisterForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [resendMessage, setResendMessage] = useState({ text: '', type: '' });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -100,8 +97,23 @@ export function RegisterForm() {
 
       if (!res?.success) {
         setError(res?.error || 'Registration failed');
+        return;
+      }
+
+      // Auto sign-in immediately — user goes straight to onboarding
+      const { signIn } = await import('next-auth/react');
+      const signInRes = await signIn('credentials', {
+        email: res.email,
+        password: res.password,
+        redirect: false,
+      });
+
+      if (signInRes?.error) {
+        // Edge case: account created but sign-in failed — send to login
+        router.push(`/auth/login?email=${encodeURIComponent(email)}`);
       } else {
-        setSuccess(true);
+        router.push('/dashboard/onboarding');
+        router.refresh();
       }
     } catch {
       setError('An unexpected error occurred');
@@ -109,44 +121,6 @@ export function RegisterForm() {
       setLoading(false);
     }
   };
-
-  if (success) {
-    return (
-      <div className="text-center space-y-4">
-        <h3 className="text-lg font-medium text-[var(--color-primary)]">Check your email</h3>
-        <p className="text-sm text-[var(--color-on-surface-variant)]">
-          {"We've sent a verification link to your email address. Please verify your email before signing in."}
-        </p>
-        
-        {resendMessage.text && (
-          <p className={`text-sm ${resendMessage.type === 'error' ? 'text-[var(--color-error)]' : 'text-[var(--color-primary)]'}`}>
-            {resendMessage.text}
-          </p>
-        )}
-
-        <div className="flex flex-col gap-3 pt-4">
-          <Button 
-            onClick={async () => {
-              setIsResending(true);
-              setResendMessage({ text: '', type: '' });
-              const res = await resendVerificationEmailAction(email);
-              if (res.success) {
-                setResendMessage({ text: 'Verification link sent again!', type: 'success' });
-              } else {
-                setResendMessage({ text: res.error || 'Failed to resend link.', type: 'error' });
-              }
-              setIsResending(false);
-            }} 
-            variant="outline" 
-            className="w-full"
-            disabled={isResending}
-          >
-            {isResending ? 'Resending...' : 'Resend Verification Link'}
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   if (step === 1) {
     return (

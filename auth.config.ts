@@ -17,6 +17,9 @@ export const authConfig = {
         if (session.user.onboardingCompleted !== undefined) {
           token.onboardingCompleted = session.user.onboardingCompleted;
         }
+        if (session.user.emailVerified !== undefined) {
+          token.emailVerified = session.user.emailVerified;
+        }
       }
       return token;
     },

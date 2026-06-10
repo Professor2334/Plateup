@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { saveMealPlan, deleteMealPlan } from '@/app/actions/meal-plans/actions';
 import { useRouter } from 'next/navigation';
 import { History, Bookmark, Settings, LogOut, Calendar, LayoutDashboard } from 'lucide-react';
+import { VerificationBanner } from '@/components/dashboard/VerificationBanner';
 import { logoutUser } from '@/app/actions/auth/actions';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -682,6 +683,12 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto p-10 lg:p-14">
+        {/* Verification banner — only shown to unverified users */}
+        {!userData.emailVerified && (
+          <div className="mb-8">
+            <VerificationBanner email={userData.email} />
+          </div>
+        )}
         {activeTab === 'generate' && renderGenerateTab()}
         {activeTab === 'view-plan' && (
           <div className="max-w-5xl space-y-6">

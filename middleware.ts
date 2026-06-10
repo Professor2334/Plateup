@@ -22,17 +22,18 @@ export default auth((req: any) => {
     return NextResponse.redirect(new URL("/dashboard", nextUrl))
   }
 
-  // Check onboarding status
+  // Redirect to onboarding for authenticated users who haven't completed it.
+  // Email verification is no longer required before accessing the application.
   if (isLoggedIn && !isPublicRoute && nextUrl.pathname !== '/dashboard/onboarding') {
     const user = req.auth?.user as any;
-    // Let user complete verification/onboarding
-    if (user?.emailVerified && !user?.onboardingCompleted) {
+    if (!user?.onboardingCompleted) {
       return NextResponse.redirect(new URL("/dashboard/onboarding", nextUrl))
     }
   }
 
   return NextResponse.next()
 })
+
 
 export const config = {
   matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],

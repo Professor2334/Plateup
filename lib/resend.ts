@@ -5,17 +5,23 @@ const fromEmail = process.env.EMAIL_FROM || 'onboarding@resend.dev';
 
 export const sendVerificationEmail = async (email: string, token: string) => {
   const confirmLink = `${process.env.AUTH_URL || 'http://localhost:3000'}/auth/verify-email?token=${token}`;
-  const subject = 'Verify your email — PlateUp';
+  const subject = 'Welcome to PlateUp — verify your email';
   const html = `
-    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-      <h2 style="color: #0e6529;">Welcome to PlateUp 🍲</h2>
-      <p>Click the button below to verify your email address and access your account.</p>
+    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #fff; border-radius: 12px;">
+      <h2 style="color: #0e6529; margin-top: 0;">Welcome to PlateUp 🍲</h2>
+      <p style="color: #333; font-size: 15px; line-height: 1.6;">
+        Your account has been created and you can <strong>start using PlateUp right away</strong> — no waiting required.
+      </p>
+      <p style="color: #333; font-size: 15px; line-height: 1.6;">
+        We recommend verifying your email to secure your account and unlock full access.
+      </p>
       <a href="${confirmLink}"
-         style="display:inline-block;padding:12px 24px;background:#0e6529;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;margin:16px 0;">
-        Verify Email
+         style="display:inline-block;padding:12px 28px;background:#0e6529;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;margin:20px 0;font-size:15px;">
+        Verify My Email
       </a>
-      <p style="color:#666;font-size:13px;">Or copy this link: <br/><a href="${confirmLink}">${confirmLink}</a></p>
-      <p style="color:#999;font-size:12px;">This link expires in 5 minutes.</p>
+      <p style="color:#666;font-size:13px;">Or copy this link: <br/><a href="${confirmLink}" style="color:#0e6529;">${confirmLink}</a></p>
+      <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+      <p style="color:#999;font-size:12px; margin: 0;">This verification link expires in 5 minutes. If you did not create a PlateUp account, you can safely ignore this email.</p>
     </div>
   `;
 
