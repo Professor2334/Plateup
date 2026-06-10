@@ -66,6 +66,7 @@ export function LoginForm() {
           defaultValue={prefilledEmail}
           placeholder="name@example.com"  
           required 
+          autoFocus
           onBlur={(e) => setEmailDone(!!e.target.value.trim())}
           className={emailDone ? '!bg-[var(--color-inverse-on-surface)]' : ''}
         />
