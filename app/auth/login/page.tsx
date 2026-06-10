@@ -32,7 +32,7 @@ export default function LoginPage() {
       <div className="text-center text-[15px] mt-8">
         <span className="text-[var(--color-on-surface-variant)]">Don't have an account? </span>
         <Link href="/auth/register" className="font-bold text-[var(--color-primary)] hover:underline">
-          Sign up
+          Create account
         </Link>
       </div>
     </div>

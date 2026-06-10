@@ -20,7 +20,7 @@ export default function AuthRightPanel() {
           <div className="absolute inset-10 bg-[var(--color-primary)] opacity-[0.03] rounded-full blur-2xl" />
 
           {/* Illustration */}
-          <div className="absolute inset-0 z-10">
+          <div className="absolute inset-0 z-10 animate-float">
             {pathname && (
               <Image 
                 src={isVerify ? "/auth-success-illustration.png" : isLogin ? "/auth-login-illustration-v5.png" : "/auth-illustration-v3.png"} 
