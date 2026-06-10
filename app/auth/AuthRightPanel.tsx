@@ -13,7 +13,7 @@ export default function AuthRightPanel() {
     <div className="hidden lg:flex flex-1 flex-col justify-center items-center bg-white p-12 lg:w-[55%] relative overflow-hidden">
       <div className="relative z-10 max-w-xl w-full flex flex-col items-center">
         
-        <div className={`w-full max-w-[24rem] aspect-square relative flex items-center justify-center transition-all duration-700 ${isVerify ? 'scale-90 opacity-90 mb-3' : 'mb-[50px]'}`}>
+        <div className={`w-full max-w-[24rem] aspect-square relative flex items-center justify-center transition-all duration-700 ${isVerify ? 'scale-90 opacity-90 mb-3' : 'mb-[40px]'}`}>
           {/* Organic Background Shapes */}
           <div className="absolute inset-2 bg-[var(--color-primary)] opacity-[0.06] rounded-[40%_60%_70%_30%/40%_50%_60%_50%] transition-transform duration-1000 ease-in-out hover:scale-105" />
           <div className="absolute inset-6 bg-[var(--color-primary)] opacity-[0.04] rounded-[60%_40%_30%_70%/50%_40%_60%_50%] rotate-45 transition-transform duration-1000 ease-in-out hover:-rotate-12" />
