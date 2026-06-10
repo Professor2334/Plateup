@@ -64,11 +64,11 @@ export function LoginForm() {
           name="email" 
           type="email" 
           defaultValue={prefilledEmail}
-          placeholder="name@example.com"  
+          placeholder="Enter your email address"  
           required 
           autoFocus
           onBlur={(e) => setEmailDone(!!e.target.value.trim())}
-          className={emailDone ? '!bg-[var(--color-inverse-on-surface)]' : ''}
+          className={`placeholder:opacity-70 ${emailDone ? '!bg-[var(--color-inverse-on-surface)]' : ''}`}
         />
       </div>
       <div className="space-y-1">
@@ -79,8 +79,9 @@ export function LoginForm() {
             name="password" 
             type={showPassword ? 'text' : 'password'} 
             required 
+            placeholder="Enter Password"
             onBlur={(e) => setPasswordDone(!!e.target.value)}
-            className={`pr-14 ${passwordDone ? '!bg-[var(--color-inverse-on-surface)]' : ''}`}
+            className={`pr-14 placeholder:opacity-70 ${passwordDone ? '!bg-[var(--color-inverse-on-surface)]' : ''}`}
           />
           <button 
             type="button" 
