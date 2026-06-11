@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "PlateUp | AI Meal Planning for Nigerian Households",
   description: "The AI meal planning assistant built specifically for Nigerian households.",
+  icons: {
+    icon: "/plateup-logo.svg",
+  },
 };
 
 export default function RootLayout({

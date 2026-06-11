@@ -7,6 +7,7 @@ import type { MealPlanResponse } from '@/lib/deepseek';
 import { Button } from '@/components/ui/button';
 import { saveMealPlan, deleteMealPlan } from '@/app/actions/meal-plans/actions';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { History, Bookmark, Settings, LogOut, Calendar, LayoutDashboard } from 'lucide-react';
 import { VerificationBanner } from '@/components/dashboard/VerificationBanner';
 import { PlateUpLogo } from '@/components/shared/PlateUpLogo';
@@ -592,6 +593,29 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
         </form>
       </div>
 
+      {/* Support Section */}
+      <div className="rounded-2xl border border-[var(--color-outline-variant)] bg-[var(--color-surface)] overflow-hidden shadow-sm">
+        <div className="px-6 py-4 border-b border-[var(--color-outline-variant)] bg-[var(--color-surface-container-lowest)]">
+          <h3 className="text-lg font-bold text-[var(--color-on-surface)]">Support & Legal</h3>
+        </div>
+        <div className="p-6 space-y-4">
+          <p className="text-sm text-[var(--color-on-surface-variant)] leading-relaxed">
+            Need help with your account or meal plans? Send us a message and we'll get back to you within 1-2 business days.
+          </p>
+          <div className="pt-2 flex flex-wrap gap-3">
+            <Link href="/contact" className="inline-flex items-center justify-center h-10 px-5 rounded-lg bg-[var(--color-primary-container)] text-[var(--color-primary)] text-sm font-bold hover:opacity-90 transition-opacity">
+              Contact Us
+            </Link>
+            <Link href="/terms" className="inline-flex items-center justify-center h-10 px-5 rounded-lg border border-[var(--color-outline-variant)] text-[var(--color-on-surface-variant)] text-sm font-bold hover:bg-[var(--color-surface-container-low)] transition-colors">
+              Terms of Service
+            </Link>
+            <Link href="/privacy" className="inline-flex items-center justify-center h-10 px-5 rounded-lg border border-[var(--color-outline-variant)] text-[var(--color-on-surface-variant)] text-sm font-bold hover:bg-[var(--color-surface-container-low)] transition-colors">
+              Privacy Policy
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Account Section */}
       <div className="rounded-2xl border border-[var(--color-outline-variant)] bg-[var(--color-surface)] overflow-hidden shadow-sm">
         <div className="px-6 py-4 border-b border-[var(--color-outline-variant)] bg-[var(--color-surface-container-lowest)]">
@@ -688,11 +712,16 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
         <div className="p-6 border-t border-[var(--color-outline-variant)]">
           <button
             onClick={() => setIsLogoutModalOpen(true)}
-            className="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-[var(--color-error)] hover:bg-[var(--color-error-container)]/60 transition-colors"
+            className="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-[var(--color-error)] hover:bg-[var(--color-error-container)]/60 transition-colors mb-4"
           >
             <LogOut className="w-5 h-5" />
             <span className="font-semibold text-sm">Logout</span>
           </button>
+          <div className="px-2 space-y-2">
+            <Link href="/contact" className="block text-[13px] font-normal text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors">Contact Us</Link>
+            <Link href="/terms" className="block text-[13px] font-normal text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors">Terms of Service</Link>
+            <Link href="/privacy" className="block text-[13px] font-normal text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors">Privacy Policy</Link>
+          </div>
         </div>
       </aside>
 

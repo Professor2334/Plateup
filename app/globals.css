@@ -4,6 +4,12 @@
 @tailwind utilities;
 
 /* ─── Base ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   color: var(--color-on-background);
   background-color: var(--color-background);

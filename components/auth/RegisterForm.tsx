@@ -276,17 +276,7 @@ export function RegisterForm() {
         </div>
         {confirmPasswordError && <p className="mt-1 text-xs font-medium text-[var(--color-error)]">{confirmPasswordError}</p>}
       </div>
-      <div className="flex items-center space-x-2 pt-2 pb-1">
-        <input 
-          type="checkbox" 
-          id="terms" 
-          required 
-          className="h-4 w-4 cursor-pointer rounded border-[var(--color-outline-variant)] accent-[var(--color-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
-        />
-        <label htmlFor="terms" className="text-sm text-[var(--color-on-surface-variant)] cursor-pointer">
-          I agree to the <Link href="/terms" className="text-[var(--color-primary)] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-[var(--color-primary)] hover:underline">Privacy Policy</Link>.
-        </label>
-      </div>
+
       {error && <p className="text-[var(--color-error)] text-sm">{error}</p>}
       <div className="space-y-4 pt-2">
         <Button type="submit" className="w-full" disabled={loading}>
@@ -296,6 +286,9 @@ export function RegisterForm() {
             'Create Account'
           )}
         </Button>
+        <p className="text-center text-[13px] text-[var(--color-on-surface-variant)] px-2">
+          By creating an account, you agree to our <Link href="/terms" className="font-bold text-[var(--color-primary)] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="font-bold text-[var(--color-primary)] hover:underline">Privacy Policy</Link>.
+        </p>
         <div className="text-center">
           <button 
             type="button" 
