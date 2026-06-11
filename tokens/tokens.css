@@ -218,7 +218,8 @@
 }
 
 /* Colors - Dark Mode */
-[data-theme="dark"], .dark {
+[data-theme="dark"],
+.dark {
   --color-primary: hsl(142, 72%, 29%);
   --color-on-primary: hsl(143, 100%, 11%);
   --color-primary-container: hsl(145, 100%, 16%);

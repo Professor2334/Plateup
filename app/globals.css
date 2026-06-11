@@ -140,6 +140,15 @@ body {
   animation: float 6s ease-in-out infinite;
 }
 
+@keyframes rock {
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+}
+
+.animate-rock {
+  animation: rock 2.5s ease-in-out infinite;
+}
+
 /* ─── Browser Autofill ──────────────────────────────── */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 

@@ -9,6 +9,7 @@ import { saveMealPlan, deleteMealPlan } from '@/app/actions/meal-plans/actions';
 import { useRouter } from 'next/navigation';
 import { History, Bookmark, Settings, LogOut, Calendar, LayoutDashboard } from 'lucide-react';
 import { VerificationBanner } from '@/components/dashboard/VerificationBanner';
+import { PlateUpLogo } from '@/components/shared/PlateUpLogo';
 import { logoutUser } from '@/app/actions/auth/actions';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -50,6 +51,19 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
   const [passSaving, setPassSaving] = useState(false);
   const [passError, setPassError] = useState('');
   const [passSuccess, setPassSuccess] = useState('');
+  
+  // Logout Modal State
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isLogoutModalOpen) {
+        setIsLogoutModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLogoutModalOpen]);
 
   const router = useRouter();
 
@@ -630,7 +644,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             <h4 className="text-sm font-semibold text-[var(--color-on-surface)] mb-2">Sign Out</h4>
             <p className="text-xs text-[var(--color-on-surface-variant)] mb-5">Sign out of your account on this device.</p>
             <button
-              onClick={() => logoutUser()}
+              onClick={() => setIsLogoutModalOpen(true)}
               className="text-sm font-bold bg-[var(--color-error)] text-white px-6 py-2.5 rounded-lg hover:bg-red-700 transition-colors shadow-sm"
             >
               Logout
@@ -657,11 +671,12 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--color-surface-lowest)] font-sans">
-      {/* Sidebar */}
+    <>
+      <div className={`flex h-screen overflow-hidden bg-[var(--color-surface-lowest)] font-sans transition-all duration-300 ${isLogoutModalOpen ? 'blur-[4px] scale-[0.99] opacity-90' : ''}`}>
+        {/* Sidebar */}
       <aside className="w-64 border-r border-[var(--color-outline-variant)] bg-[var(--color-surface)] flex flex-col flex-shrink-0 z-10 shadow-sm">
         <div className="p-8 pb-6">
-          <h1 className="text-3xl font-bold text-[var(--color-primary)] tracking-tight">PlateUp</h1>
+          <PlateUpLogo size="lg" href={null} />
           <p className="text-sm text-[var(--color-on-surface-variant)] mt-2 font-medium">Welcome, {userName}</p>
         </div>
         <nav className="flex-1 px-4 space-y-2 mt-4">
@@ -672,8 +687,8 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
         </nav>
         <div className="p-6 border-t border-[var(--color-outline-variant)]">
           <button
-            onClick={() => logoutUser()}
-            className="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-[var(--color-error)] hover:bg-[var(--color-error-container)] transition-colors"
+            onClick={() => setIsLogoutModalOpen(true)}
+            className="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-[var(--color-error)] hover:bg-[var(--color-error-container)]/60 transition-colors"
           >
             <LogOut className="w-5 h-5" />
             <span className="font-semibold text-sm">Logout</span>
@@ -734,5 +749,38 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
         {activeTab === 'settings' && renderSettingsTab()}
       </main>
     </div>
+
+    {/* Logout Confirmation Modal */}
+    {isLogoutModalOpen && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
+        <div 
+          className="absolute inset-0 bg-[var(--color-background)]/30 backdrop-blur-md transition-opacity duration-300"
+          onClick={() => setIsLogoutModalOpen(false)}
+        />
+        <div className="relative bg-[var(--color-surface)] w-full max-w-[360px] rounded-[24px] shadow-[0_16px_40px_rgb(0,0,0,0.12)] p-6 sm:p-8 animate-in zoom-in-95 fade-in duration-200">
+          <h3 className="text-[20px] font-bold text-[var(--color-on-surface)] mb-2 tracking-tight">Log out of PlateUp?</h3>
+          <p className="text-[14px] text-[var(--color-on-surface-variant)] mb-8 leading-relaxed">
+            You'll need to sign in again to access your meal plans and saved history.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Button 
+              onClick={() => logoutUser()}
+              className="w-full min-h-[48px] rounded-xl font-semibold shadow-sm text-[15px] hover:opacity-90 transition-opacity border-none"
+              style={{ backgroundColor: 'var(--color-error)', color: 'var(--color-on-error)' }}
+            >
+              Logout
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsLogoutModalOpen(false)}
+              className="w-full min-h-[48px] rounded-xl font-semibold border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface)] text-[15px]"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

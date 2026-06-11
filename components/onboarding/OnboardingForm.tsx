@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { completeOnboarding } from '@/app/actions/onboarding/actions';
 import { useRouter } from 'next/navigation';
-import { Check, ArrowRight, ArrowLeft, User, Users, Banknote, Clock, Leaf, HeartPulse, Loader2, Sparkles } from 'lucide-react';
+import { Check, ArrowRight, ArrowLeft, User, Users, Banknote, Clock, Leaf, HeartPulse, Loader2, Sparkles, PartyPopper } from 'lucide-react';
 import Lottie from 'lottie-react';
 import confettiAnimation from '@/public/confetti.json';
+import { PlateUpLogo } from '@/components/shared/PlateUpLogo';
 
 const householdSizes = [
   { value: '1', label: '1 Person', icon: User, description: 'Perfect for solo planning' },
@@ -75,6 +76,11 @@ export function OnboardingForm() {
   return (
     <div className="w-full">
       
+      {/* ── Brand logo — top-left edge of the page ── */}
+      <div className="absolute top-6 left-6 md:top-8 md:left-10 z-50">
+        <PlateUpLogo size="md" href="/" />
+      </div>
+
       {/* Progress Bar Header */}
       {step < 3 && (
         <div className="mb-10 max-w-lg mx-auto">
@@ -82,9 +88,9 @@ export function OnboardingForm() {
             <span className="text-sm font-bold text-[var(--color-on-surface)]">Personalize PlateUp</span>
             <span className="text-sm font-medium text-[var(--color-on-surface-variant)]">Step {step} of 2</span>
           </div>
-          <div className="w-full h-2 bg-[var(--color-surface-container-highest)] rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-[var(--color-surface-container-highest)] rounded-full overflow-hidden">
             <div 
-              className="h-full bg-[var(--color-primary)] transition-all duration-700 ease-out"
+              className="h-full bg-[var(--color-primary)] transition-all duration-500 ease-in-out"
               style={{ width: `${(step / 2) * 100}%` }}
             />
           </div>
@@ -100,10 +106,10 @@ export function OnboardingForm() {
         
         {/* STEP 1 */}
         {step === 1 && (
-          <div className="space-y-8 max-w-lg mx-auto">
+          <div className="space-y-6 max-w-lg mx-auto">
             <div className="text-center sm:text-left">
-              <h2 className="text-[28px] font-bold text-[var(--color-on-surface)] mb-2 leading-tight tracking-tight">What is your household size?</h2>
-              <p className="text-[16px] text-[var(--color-on-surface-variant)] opacity-80 leading-relaxed">This helps the AI scale your recipes and shopping lists correctly.</p>
+              <h2 className="text-[28px] font-bold text-[var(--color-on-surface-variant)] mb-1 tracking-tight">What is your household size?</h2>
+              <p className="text-[16px] text-[var(--color-on-surface-variant)] opacity-70">This helps the AI scale your recipes and shopping lists correctly.</p>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -114,21 +120,21 @@ export function OnboardingForm() {
                   <button
                     key={size.value}
                     onClick={() => setHouseholdSize(size.value)}
-                    className={`group relative p-5 text-left border rounded-2xl transition-all duration-300 flex flex-col gap-4 focus:outline-none cursor-pointer hover:-translate-y-1
+                    className={`group relative p-5 text-left rounded-2xl transition-all duration-300 flex flex-col gap-4 focus:outline-none cursor-pointer hover:-translate-y-1
                       ${isSelected 
-                        ? 'border-[var(--color-secondary)] bg-[var(--color-primary)]/5 shadow-[0_8px_20px_0_rgba(17,94,59,0.12)] scale-[1.02]' 
-                        : 'border-[color-mix(in_srgb,var(--color-outline-variant)_70%,transparent)] bg-[var(--color-surface)] hover:border-[var(--color-secondary)] hover:bg-[var(--color-surface-container-low)] hover:shadow-sm'
+                        ? 'border-2 border-[var(--color-primary)] bg-[var(--color-primary)]/10 shadow-[0_8px_20px_0_rgba(17,94,59,0.15)] scale-[1.01]' 
+                        : 'border-2 border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-surface)] hover:border-[color-mix(in_srgb,var(--color-outline-variant)_80%,transparent)] hover:bg-[var(--color-surface-container-low)] hover:shadow-sm'
                       }
                     `}
                   >
                     {/* Top Right Checkmark Badge */}
-                    <div className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${isSelected ? 'bg-[var(--color-primary)] text-white scale-100 opacity-100' : 'bg-transparent text-transparent scale-50 opacity-0'}`}>
-                      <Check className="w-3.5 h-3.5" strokeWidth={4} />
+                    <div className={`absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${isSelected ? 'bg-[var(--color-primary)] text-white scale-100 opacity-100 shadow-sm' : 'bg-transparent text-transparent scale-50 opacity-0'}`}>
+                      <Check className="w-4 h-4" strokeWidth={3} />
                     </div>
 
                     <div className="flex items-center w-full">
-                      <div className="w-14 h-14 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)] transition-transform duration-300 group-hover:scale-105">
-                        <Icon className="w-7 h-7" />
+                      <div className="w-12 h-12 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)] transition-transform duration-300 group-hover:scale-105">
+                        <Icon className="w-6 h-6" />
                       </div>
                     </div>
                     <div>
@@ -140,7 +146,7 @@ export function OnboardingForm() {
               })}
             </div>
 
-            <div className="pt-4">
+            <div className="pt-2">
               <Button 
                 onClick={handleNextStep1} 
                 disabled={!householdSize}
@@ -154,10 +160,10 @@ export function OnboardingForm() {
 
         {/* STEP 2 */}
         {step === 2 && (
-          <div className="space-y-8 max-w-lg mx-auto">
+          <div className="space-y-6 max-w-lg mx-auto">
             <div className="text-center sm:text-left">
-              <h2 className="text-[28px] font-bold text-[var(--color-on-surface)] mb-2 leading-tight tracking-tight">What is your primary goal?</h2>
-              <p className="text-[16px] text-[var(--color-on-surface-variant)] opacity-80 leading-relaxed">We'll optimize your meal plans to help you achieve this objective.</p>
+              <h2 className="text-[28px] font-bold text-[var(--color-on-surface-variant)] mb-1 tracking-tight">What is your primary goal?</h2>
+              <p className="text-[16px] text-[var(--color-on-surface-variant)] opacity-70">We'll optimize your meal plans to help you achieve this objective.</p>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -168,21 +174,21 @@ export function OnboardingForm() {
                   <button
                     key={goal.value}
                     onClick={() => setPrimaryGoal(goal.value)}
-                    className={`group relative p-5 text-left border rounded-2xl transition-all duration-300 flex flex-col gap-4 focus:outline-none cursor-pointer hover:-translate-y-1
+                    className={`group relative p-5 text-left rounded-2xl transition-all duration-300 flex flex-col gap-4 focus:outline-none cursor-pointer hover:-translate-y-1
                       ${isSelected 
-                        ? 'border-[var(--color-secondary)] bg-[var(--color-primary)]/5 shadow-[0_8px_20px_0_rgba(17,94,59,0.12)] scale-[1.02]' 
-                        : 'border-[color-mix(in_srgb,var(--color-outline-variant)_70%,transparent)] bg-[var(--color-surface)] hover:border-[var(--color-secondary)] hover:bg-[var(--color-surface-container-low)] hover:shadow-sm'
+                        ? 'border-2 border-[var(--color-primary)] bg-[var(--color-primary)]/10 shadow-[0_8px_20px_0_rgba(17,94,59,0.15)] scale-[1.01]' 
+                        : 'border-2 border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-surface)] hover:border-[color-mix(in_srgb,var(--color-outline-variant)_80%,transparent)] hover:bg-[var(--color-surface-container-low)] hover:shadow-sm'
                       }
                     `}
                   >
                     {/* Top Right Checkmark Badge */}
-                    <div className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${isSelected ? 'bg-[var(--color-primary)] text-white scale-100 opacity-100' : 'bg-transparent text-transparent scale-50 opacity-0'}`}>
-                      <Check className="w-3.5 h-3.5" strokeWidth={4} />
+                    <div className={`absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${isSelected ? 'bg-[var(--color-primary)] text-white scale-100 opacity-100 shadow-sm' : 'bg-transparent text-transparent scale-50 opacity-0'}`}>
+                      <Check className="w-4 h-4" strokeWidth={3} />
                     </div>
 
                     <div className="flex items-center w-full">
-                      <div className="w-14 h-14 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)] transition-transform duration-300 group-hover:scale-105">
-                        <Icon className="w-7 h-7" />
+                      <div className="w-12 h-12 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)] transition-transform duration-300 group-hover:scale-105">
+                        <Icon className="w-6 h-6" />
                       </div>
                     </div>
                     <div>
@@ -196,109 +202,110 @@ export function OnboardingForm() {
 
             {error && <p className="text-[var(--color-error)] text-sm text-center font-medium bg-[var(--color-error)]/10 p-3 rounded-lg">{error}</p>}
 
-            <div className="pt-4 flex gap-3">
-              <Button 
-                variant="outline"
-                onClick={() => changeStep(1)} 
-                disabled={loading}
-                className="min-h-[56px] w-[60px] p-0 flex-shrink-0 rounded-xl border-2 hover:bg-[var(--color-surface-container-low)]"
-              >
-                <ArrowLeft className="w-5 h-5 text-[var(--color-on-surface-variant)]" />
-              </Button>
+            <div className="pt-2 flex flex-col gap-4">
               <Button 
                 onClick={handleComplete} 
                 disabled={!primaryGoal || loading}
-                className="flex-1 min-h-[56px] text-[16px] font-semibold rounded-xl"
+                className="w-full min-h-[56px] text-[16px] font-semibold rounded-xl"
               >
                 {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Complete Setup'}
               </Button>
+              
+              <button 
+                onClick={() => changeStep(1)}
+                disabled={loading}
+                className="inline-flex items-center justify-center gap-1.5 text-[14px] font-medium text-[var(--color-on-surface-variant)] opacity-70 hover:opacity-100 hover:text-[var(--color-on-surface)] transition-all mx-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] rounded-md px-2 py-1"
+              >
+                <ArrowLeft className="w-4 h-4" /> Back
+              </button>
             </div>
           </div>
         )}
 
         {/* STEP 3 - SUCCESS */}
         {step === 3 && (
-          <div className="flex flex-col items-center justify-center py-6 max-w-3xl mx-auto">
-            <div className="w-full space-y-10">
+          <div className="flex flex-col items-center justify-center py-2 w-full max-w-[560px] mx-auto">
+            <div className="w-full text-center">
               
               {/* Celebration header */}
-              <div className="flex flex-col items-center space-y-3 text-center pt-2">
-                <div className="relative w-full flex justify-center h-0 pointer-events-none z-0">
+              <div className="flex flex-col items-center pt-2 relative">
+                {/* Confetti Burst (Plays once) */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] pointer-events-none z-50 flex justify-center -mt-32">
                   <Lottie 
                     animationData={confettiAnimation} 
                     loop={false} 
                     autoplay={true} 
-                    className="absolute -top-32 w-64 h-64 opacity-90 scale-125"
                   />
                 </div>
+
+                <div className="relative flex justify-center items-center w-28 h-28 text-[var(--color-primary)] animate-float z-10 mb-3">
+                  <PartyPopper className="w-20 h-20 animate-rock origin-bottom" strokeWidth={1.5} />
+                  <Sparkles className="w-8 h-8 absolute top-0 right-0 animate-pulse text-[var(--color-accent)]" />
+                  <Sparkles className="w-5 h-5 absolute bottom-4 -left-2 animate-pulse text-[var(--color-accent)] opacity-70" style={{ animationDelay: '500ms' }} />
+                </div>
                 
-                <div className="space-y-3 relative z-10">
-                  <h2 className="text-[28px] font-extrabold text-[var(--color-on-surface)] leading-tight tracking-tight">You're Ready to Start Planning</h2>
-                  <p className="text-[16px] text-[var(--color-on-surface-variant)] opacity-80 leading-relaxed max-w-lg mx-auto">
-                    PlateUp is ready to generate personalized meal plans tailored to your household.
+                <div className="space-y-2">
+                  <span className="inline-flex items-center justify-center px-3.5 py-1.5 text-[12px] font-bold uppercase tracking-widest text-[var(--color-primary)] bg-[var(--color-primary)]/10 rounded-full mb-1">
+                    Setup Complete
+                  </span>
+                  <h2 className="text-[32px] md:text-[36px] font-extrabold text-[var(--color-on-surface-variant)] leading-tight tracking-tight">
+                    You're Ready to Start Planning
+                  </h2>
+                  <p className="text-[16px] text-[var(--color-on-surface-variant)] opacity-70 leading-relaxed max-w-sm mx-auto">
+                    We'll now generate personalized Nigerian meal plans tailored to your household.
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left max-w-2xl mx-auto">
-                {/* Left Column: Configuration Summary */}
-                <div className="p-6 rounded-2xl bg-[var(--color-surface-container-highest)] border border-[var(--color-outline-variant)]">
-                  <h3 className="text-[13px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-5">Profile Summary</h3>
-                  <div className="space-y-5">
-                    <div className="space-y-2">
-                      <span className="text-[14px] font-medium text-[var(--color-on-surface-variant)] flex items-center gap-2">
-                        <Users className="w-4 h-4" /> Household Size
-                      </span>
-                      <div className="inline-flex items-center px-3 py-1.5 bg-[var(--color-surface)] border border-[var(--color-outline-variant)] rounded-lg text-[14px] font-semibold text-[var(--color-on-surface)]">
-                        {householdSizes.find(s => s.value === householdSize)?.label}
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <span className="text-[14px] font-medium text-[var(--color-on-surface-variant)] flex items-center gap-2">
-                        <HeartPulse className="w-4 h-4" /> Primary Goal
-                      </span>
-                      <div className="inline-flex items-center px-3 py-1.5 bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-lg text-[14px] font-semibold">
-                        {primaryGoals.find(g => g.value === primaryGoal)?.label}
-                      </div>
-                    </div>
-                  </div>
+              {/* Compact Summary Section */}
+              <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto w-full">
+                <div className="flex-1 w-full p-4 rounded-xl border border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-surface)] shadow-sm flex flex-col items-center justify-center text-center">
+                  <span className="text-[13px] font-medium text-[var(--color-on-surface-variant)] mb-1 flex items-center gap-1.5">
+                    🏠 Household Size
+                  </span>
+                  <span className="text-[16px] font-semibold text-[var(--color-on-surface)]">
+                    {householdSizes.find(s => s.value === householdSize)?.label}
+                  </span>
                 </div>
+                <div className="flex-1 w-full p-4 rounded-xl border border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-surface)] shadow-sm flex flex-col items-center justify-center text-center">
+                  <span className="text-[13px] font-medium text-[var(--color-on-surface-variant)] mb-1 flex items-center gap-1.5">
+                    🎯 Primary Goal
+                  </span>
+                  <span className="text-[16px] font-semibold text-[var(--color-on-surface)]">
+                    {primaryGoals.find(g => g.value === primaryGoal)?.label}
+                  </span>
+                </div>
+              </div>
 
-                {/* Right Column: What You'll Get */}
-                <div className="p-6 rounded-2xl border border-[var(--color-outline-variant)] bg-[var(--color-surface)] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-                  <h3 className="text-[16px] font-bold text-[var(--color-on-surface)] mb-5">What You'll Get</h3>
-                  <div className="space-y-3.5">
-                    {[
-                      '7-Day Nigerian Meal Plans',
-                      'Smart Shopping Lists',
-                      'Budget-Aware Recommendations',
-                      'Ingredient Optimization',
-                      'Save & Reuse Meal Plans',
-                      'WhatsApp Sharing'
-                    ].map((feature, i) => (
-                      <div key={i} className="flex items-center gap-3">
-                        <div className="w-5 h-5 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3.5 h-3.5 text-[var(--color-primary)]" strokeWidth={3} />
-                        </div>
-                        <span className="text-[14.5px] font-medium text-[var(--color-on-surface)]">{feature}</span>
+              {/* Benefits Checklist */}
+              <div className="mt-6 max-w-sm mx-auto flex flex-col items-start pl-4 sm:pl-8">
+                <div className="space-y-3">
+                  {[
+                    'Smart Shopping Lists',
+                    'Budget-Aware Recommendations',
+                    'Ingredient Optimization',
+                    'Save & Reuse Meal Plans',
+                    'WhatsApp Sharing'
+                  ].map((feature, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0">
+                        <Check className="w-3.5 h-3.5 text-[var(--color-primary)]" strokeWidth={3} />
                       </div>
-                    ))}
-                  </div>
+                      <span className="text-[15px] font-medium text-[var(--color-on-surface)]">{feature}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
               
-              <div className="pt-4 w-full max-w-md mx-auto flex flex-col items-center">
+              {/* CTA */}
+              <div className="mt-8 w-full max-w-md mx-auto flex flex-col items-center">
                 <Button 
                   onClick={handleGenerateMealPlan}
                   disabled={loading}
-                  className="w-full min-h-[60px] text-[18px] font-semibold rounded-xl bg-[var(--color-primary)] text-white shadow-[0_4px_14px_0_rgba(17,94,59,0.39)] hover:shadow-[0_6px_20px_rgba(17,94,59,0.23)] hover:-translate-y-0.5 transition-all"
+                  className="w-full min-h-[60px] text-[18px] font-semibold rounded-xl bg-[var(--color-primary)] text-white shadow-[0_8px_20px_0_rgba(17,94,59,0.25)] hover:shadow-[0_8px_25px_rgba(17,94,59,0.35)] hover:-translate-y-0.5 transition-all"
                 >
-                  {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <>Start Planning My Week <ArrowRight className="w-5 h-5 ml-2.5" /></>}
+                  {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <>Generate My First Meal Plan <ArrowRight className="w-5 h-5 ml-2.5" /></>}
                 </Button>
-                <p className="mt-4 text-[13px] text-[var(--color-on-surface-variant)] opacity-70 text-center px-4">
-                  Your meal plan will be generated based on your household size and goals.
-                </p>
               </div>
             </div>
           </div>

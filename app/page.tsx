@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PlateUpLogo } from "@/components/shared/PlateUpLogo";
 
 export default function LandingPage() {
   const steps = [
@@ -22,7 +23,7 @@ export default function LandingPage() {
       {/* ── Navigation ─────────────────────────────────────────── */}
       <nav className="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-md border-b border-outline-variant">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <span className="text-2xl font-bold text-primary">PlateUp</span>
+          <PlateUpLogo size="md" href="/" />
           <div className="flex items-center gap-4">
             <Link
               href="/auth/login"
@@ -150,7 +151,7 @@ export default function LandingPage() {
       {/* ── Footer ─────────────────────────────────────────────── */}
       <footer className="py-8 px-6 border-t border-outline-variant bg-surface">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="text-xl font-bold text-primary">PlateUp</span>
+          <PlateUpLogo size="sm" href="/" />
           <span className="text-sm text-on-surface-variant">
             © {new Date().getFullYear()} PlateUp. Built for Nigerian households.
           </span>
