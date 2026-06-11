@@ -1,0 +1,34 @@
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+// Initialize Redis from Upstash environment variables
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+// Auth Rate Limiter: 5 requests per 10 minutes per IP
+// Use this for Login, Sign Up, Password Resets, Email Verification Resends
+export const authRateLimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(5, "10 m"),
+  analytics: true,
+  prefix: "@upstash/ratelimit/auth",
+});
+
+// App Activity Rate Limiter: 20 requests per hour per IP (or per User ID)
+// Use this for Meal Generation Requests
+export const generationRateLimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(20, "1 h"),
+  analytics: true,
+  prefix: "@upstash/ratelimit/generation",
+});
+
+// General API Rate Limiter: 100 requests per minute per IP
+export const apiRateLimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(100, "1 m"),
+  analytics: true,
+  prefix: "@upstash/ratelimit/api",
+});

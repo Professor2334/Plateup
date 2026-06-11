@@ -100,7 +100,7 @@ export default function LandingPage() {
             {/* RIGHT: CTA & Mobile Toggle */}
             <div className="flex-1 flex justify-end items-center">
               <div className="hidden md:block">
-                <Link href="/auth/register" className="inline-flex items-center justify-center h-9 px-5 rounded-lg bg-[var(--color-primary)] text-white text-[13px] font-bold hover:opacity-90 transition-opacity shadow-sm">
+                <Link href="/auth/register" prefetch={true} className="inline-flex items-center justify-center h-9 px-5 rounded-lg bg-[var(--color-primary)] text-white text-[13px] font-bold hover:opacity-90 transition-opacity shadow-sm">
                   Get Started
                 </Link>
               </div>
@@ -118,7 +118,7 @@ export default function LandingPage() {
                   {link.label}
                 </button>
               ))}
-              <Link href="/auth/register" className="mt-3 flex items-center justify-center h-10 rounded-lg bg-[var(--color-primary)] text-white font-bold text-[14px] shadow-sm">
+              <Link href="/auth/register" prefetch={true} className="mt-3 flex items-center justify-center h-10 rounded-lg bg-[var(--color-primary)] text-white font-bold text-[14px] shadow-sm">
                 Get Started
               </Link>
             </div>
@@ -146,12 +146,12 @@ export default function LandingPage() {
             </p>
             
             <div className="w-full sm:w-auto flex flex-col items-center">
-              <Link href="/auth/register" className="inline-flex items-center justify-center h-14 px-10 rounded-xl bg-[var(--color-primary)] text-white text-[16px] font-bold hover:opacity-90 transition-opacity shadow-[0_8px_20px_rgb(0,0,0,0.12)] w-full sm:w-auto">
+              <Link href="/auth/register" prefetch={true} className="inline-flex items-center justify-center h-14 px-10 rounded-xl bg-[var(--color-primary)] text-white text-[16px] font-bold hover:opacity-90 transition-opacity shadow-[0_8px_20px_rgb(0,0,0,0.12)] w-full sm:w-auto">
                 Generate My First Meal Plan
               </Link>
               
               {/* Social Proof Row */}
-              <div className="mt-8 flex flex-wrap justify-center gap-5 text-[13px] font-semibold text-[var(--color-on-surface-variant)]">
+              <div className="mt-8 flex flex-wrap justify-center gap-5 text-[13px] font-medium text-[var(--color-on-surface-variant)]">
                 <span className="flex items-center gap-2"><Check className="w-4 h-4 text-[var(--color-primary)]" strokeWidth={3} /> Nigerian Meals</span>
                 <span className="flex items-center gap-2"><Check className="w-4 h-4 text-[var(--color-primary)]" strokeWidth={3} /> Budget Planning</span>
                 <span className="flex items-center gap-2"><Check className="w-4 h-4 text-[var(--color-primary)]" strokeWidth={3} /> Smart Shopping Lists</span>
@@ -176,7 +176,7 @@ export default function LandingPage() {
                   "Meal History",
                   "WhatsApp Sharing"
                 ].map((metric, i) => (
-                  <div key={`${arrayIndex}-${i}`} className="flex items-center gap-3 px-8 py-4 rounded-[100px] bg-[var(--color-surface)] text-[var(--color-on-surface)] font-bold text-[15px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-default whitespace-nowrap">
+                  <div key={`${arrayIndex}-${i}`} className="flex items-center gap-3 px-8 py-4 rounded-[100px] bg-[var(--color-surface)] text-[var(--color-on-surface)] font-medium text-[15px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-default whitespace-nowrap">
                     <Check className="w-5 h-5 text-[var(--color-primary)]" strokeWidth={3} />
                     {metric}
                   </div>
@@ -899,7 +899,7 @@ export default function LandingPage() {
               </div>
               
               <div className="flex flex-col items-center gap-6">
-                <Link href="/auth/register" className="inline-flex items-center justify-center gap-2 h-12 px-7 rounded-xl bg-white text-[var(--color-primary)] text-[14px] font-extrabold shadow-sm hover:shadow-[0_8px_25px_-5px_rgba(255,255,255,0.3)] hover:bg-[#fcfcfc] transition-all duration-300">
+                <Link href="/auth/register" prefetch={true} className="inline-flex items-center justify-center gap-2 h-12 px-7 rounded-xl bg-white text-[var(--color-primary)] text-[14px] font-extrabold shadow-sm hover:shadow-[0_8px_25px_-5px_rgba(255,255,255,0.3)] hover:bg-[#fcfcfc] transition-all duration-300">
                   Generate My First Meal Plan
                   <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -946,7 +946,7 @@ export default function LandingPage() {
                   <li><Link href="#how-it-works" className="text-[14px] font-medium text-[var(--color-on-surface)] hover:text-[var(--color-primary)] transition-colors">How it works</Link></li>
                   <li><Link href="#features" className="text-[14px] font-medium text-[var(--color-on-surface)] hover:text-[var(--color-primary)] transition-colors">Pricing</Link></li>
                   <li><Link href="/auth/login" className="text-[14px] font-medium text-[var(--color-on-surface)] hover:text-[var(--color-primary)] transition-colors">Sign In</Link></li>
-                  <li><Link href="/auth/register" className="text-[14px] font-medium text-[var(--color-on-surface)] hover:text-[var(--color-primary)] transition-colors">Get Started</Link></li>
+                  <li><Link href="/auth/register" prefetch={true} className="text-[14px] font-medium text-[var(--color-on-surface)] hover:text-[var(--color-primary)] transition-colors">Get Started</Link></li>
                 </ul>
               </div>
 

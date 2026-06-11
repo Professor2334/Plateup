@@ -6,8 +6,16 @@ import { SignupSchema } from '@/lib/validators';
 import { sendVerificationEmail } from '@/lib/resend';
 import { randomBytes } from 'crypto';
 import { signOut } from '@/lib/auth';
+import { headers } from 'next/headers';
+import { authRateLimit } from '@/lib/rate-limit';
 
 export async function registerUser(formData: FormData) {
+  const ip = headers().get('x-forwarded-for') ?? '127.0.0.1';
+  const { success: limitSuccess } = await authRateLimit.limit(ip);
+  if (!limitSuccess) {
+    return { success: false, error: 'Too many requests. Please try again later.' };
+  }
+
   const data = Object.fromEntries(formData.entries());
   const validatedFields = SignupSchema.safeParse(data);
 
@@ -93,6 +101,12 @@ export async function logoutUser() {
 }
 
 export async function resendVerificationEmailAction(email: string) {
+  const ip = headers().get('x-forwarded-for') ?? '127.0.0.1';
+  const { success: limitSuccess } = await authRateLimit.limit(ip);
+  if (!limitSuccess) {
+    return { success: false, error: 'Too many requests. Please try again later.' };
+  }
+
   try {
     const user = await db.user.findUnique({
       where: { email }
