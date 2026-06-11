@@ -1,15 +1,51 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { PlateUpLogo } from "@/components/shared/PlateUpLogo";
-import { Menu, X, ArrowRight, CheckCircle2, XCircle, ChevronDown, Check, Zap, Sparkles, Receipt, ListTodo, History, MessageCircle, Wallet, Carrot, ShoppingBag, ChevronRight, Coffee, Utensils, Calendar, ShoppingCart } from "lucide-react";
+import { Menu, X, ArrowRight, CheckCircle2, XCircle, ChevronDown, Check, Zap, Sparkles, Receipt, ListTodo, History, MessageCircle, Wallet, Carrot, ShoppingBag, ChevronRight, Coffee, Utensils, Calendar, ShoppingCart, Loader2 } from "lucide-react";
+
+const SHOWCASE_DAYS = [
+  { day: "Monday", meals: { b: "Boiled Yam & Egg Sauce", l: "Efo Riro", d: "Yam Porridge" }, ingredients: "Yam, Eggs, Spinach, Palm Oil", shopping: ["Tomatoes & Peppers", "Onions", "Crayfish"] },
+  { day: "Tuesday", meals: { b: "Akara & Pap", l: "Jollof Rice & Dodo", d: "Egusi Soup & Pounded Yam" }, ingredients: "Beans, Rice, Plantain, Melon Seeds", shopping: ["Beef", "Fresh Tomatoes", "Ugu Leaves"] },
+  { day: "Wednesday", meals: { b: "Bread & Fried Eggs", l: "Fried Rice & Chicken", d: "Suya & Garri" }, ingredients: "Bread, Eggs, Rice, Chicken", shopping: ["Carrots & Peas", "Vegetable Oil", "Suya Spice"] },
+  { day: "Thursday", meals: { b: "Moi Moi", l: "Ofada Rice", d: "Okra Soup & Fufu" }, ingredients: "Beans, Ofada Rice, Okra", shopping: ["Assorted Meat", "Locust Beans", "Scotch Bonnet"] },
+  { day: "Friday", meals: { b: "Pancakes & Syrup", l: "Spaghetti & Meatballs", d: "Catfish Peppersoup" }, ingredients: "Flour, Spaghetti, Minced Beef", shopping: ["Catfish", "Peppersoup Spice", "Scent Leaves"] },
+  { day: "Saturday", meals: { b: "Indomie & Egg", l: "Asaro", d: "Banga Soup & Starch" }, ingredients: "Noodles, Eggs, Yam, Palm Nut Extract", shopping: ["Smoked Fish", "Crayfish", "Sausages"] },
+  { day: "Sunday", meals: { b: "Custard & Beans", l: "Sunday Rice & Stew", d: "Shawarma" }, ingredients: "Beans, Rice, Chicken, Cabbage", shopping: ["Fresh Tomatoes", "Mayonnaise", "Tortilla Wraps"] }
+];
 
 export default function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [demoStep, setDemoStep] = useState(0);
+
+  // Showcase animation state
+  const showcaseRef = useRef(null);
+  const isShowcaseInView = useInView(showcaseRef, { once: false, amount: 0.3 });
+  const [showcaseState, setShowcaseState] = useState<'idle' | 'generating' | 'generated'>('idle');
+
+  const [showcaseDayIndex, setShowcaseDayIndex] = useState(0);
+
+  useEffect(() => {
+    if (isShowcaseInView && showcaseState === 'idle') {
+      setShowcaseState('generating');
+    } else if (!isShowcaseInView && showcaseState !== 'idle') {
+      setShowcaseState('idle');
+      setShowcaseDayIndex((prev) => (prev + 1) % SHOWCASE_DAYS.length);
+    }
+  }, [isShowcaseInView, showcaseState]);
+
+  useEffect(() => {
+    if (showcaseState === 'generating') {
+      const timer = setTimeout(() => {
+        setShowcaseState('generated');
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [showcaseState]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -105,7 +141,7 @@ export default function LandingPage() {
               Plan Your Week's Meals in <span className="text-[var(--color-primary)]">Under 60 Seconds</span>
             </h1>
             
-            <p className="text-[16px] md:text-[18px] text-[var(--color-on-surface-variant)] opacity-85 leading-relaxed max-w-[600px] mb-10 md:mb-12">
+            <p className="text-[16px] md:text-[18px] text-[var(--color-on-surface-variant)] opacity-70 leading-relaxed max-w-[600px] mb-10 md:mb-12">
               Tell PlateUp your budget and available ingredients. Get a complete 7-day Nigerian meal plan and shopping list instantly.
             </p>
             
@@ -397,7 +433,7 @@ export default function LandingPage() {
         {/* ── SECTION 5: BENTO FEATURE GRID ── */}
         <section id="features" className="py-24 px-6 max-w-6xl mx-auto">
           <div className="text-center mb-16 space-y-4">
-            <h2 className="text-[32px] md:text-[40px] font-extrabold text-[var(--color-on-surface)] tracking-tight leading-tight">Everything your household needs</h2>
+            <h2 className="text-[28px] md:text-[32px] font-extrabold text-[var(--color-on-surface)] tracking-tight">Everything your household needs</h2>
             <p className="text-[16px] text-[var(--color-on-surface-variant)] font-normal opacity-80 max-w-2xl mx-auto">Powerful tools designed to save you time, reduce waste, and keep your budget on track.</p>
           </div>
           
@@ -516,7 +552,7 @@ export default function LandingPage() {
           <div className="max-w-5xl mx-auto">
             
             <div className="text-center mb-16 space-y-4">
-              <h2 className="text-[32px] md:text-[40px] font-extrabold text-[var(--color-on-surface)] tracking-tight leading-tight">The difference is <span className="text-[var(--color-primary)]">clear</span></h2>
+              <h2 className="text-[28px] md:text-[32px] font-extrabold text-[var(--color-on-surface)] tracking-tight">The difference is <span className="text-[var(--color-primary)]">clear</span></h2>
             </div>
 
             <div className="flex flex-col md:flex-row items-stretch justify-center gap-8 md:gap-12 relative">
@@ -614,22 +650,45 @@ export default function LandingPage() {
             </div>
             
             {/* App Body Preview */}
-            <div className="p-8 md:p-12 bg-[#fafafa] flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
+            <div ref={showcaseRef} className="p-8 md:p-12 bg-[#fafafa] flex flex-col lg:flex-row gap-8 lg:gap-12 items-start relative overflow-hidden">
+              
+              {/* AI Connection Line (Desktop only) */}
+              <div className="hidden lg:block absolute top-1/2 left-[310px] w-[60px] h-[2px] bg-green-500/10 z-0 overflow-hidden -translate-y-1/2 rounded-full">
+                 {showcaseState === 'generating' && (
+                   <motion.div 
+                      initial={{ x: '-100%' }}
+                      animate={{ x: '400%' }}
+                      transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+                      className="w-[15px] h-full bg-gradient-to-r from-transparent via-green-500/40 to-transparent"
+                   />
+                 )}
+              </div>
               
               {/* Sidebar - Budget & Inputs (Tertiary) */}
               <div className="w-full lg:w-[280px] flex-shrink-0 space-y-6">
                 <div className="bg-white rounded-3xl p-8 shadow-[0_15px_30px_-10px_rgba(0,0,0,0.03)] ring-1 ring-black/[0.02]">
                   <div className="space-y-6">
                     <div className="space-y-3">
-                      <label className="text-[12px] font-semibold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Weekly Budget</label>
-                      <div className="h-12 bg-[#f4f5f7] rounded-xl px-4 flex items-center font-normal text-[16px] text-[var(--color-on-surface)]">₦ 15,000</div>
+                      <label className="text-[12px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Weekly Budget</label>
+                      <div className="h-12 bg-[#f4f5f7] rounded-xl px-4 flex items-center font-semibold text-[16px] text-[var(--color-on-surface)] opacity-85">₦ 15,000</div>
                     </div>
                     <div className="space-y-3">
-                      <label className="text-[12px] font-semibold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Available Ingredients</label>
-                      <div className="bg-[#f4f5f7] rounded-xl p-4 font-normal text-[14px] text-[var(--color-on-surface)] leading-relaxed">Yam, Eggs, Spinach, Palm Oil</div>
+                      <label className="text-[12px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Available Ingredients</label>
+                      <div className="bg-[#f4f5f7] rounded-xl p-4 font-medium text-[14px] text-[var(--color-on-surface)] leading-relaxed opacity-85 transition-all duration-300">
+                        {SHOWCASE_DAYS[showcaseDayIndex].ingredients}
+                      </div>
                     </div>
                     <div className="pt-4">
-                      <div className="h-12 bg-[var(--color-primary)] text-white font-bold text-[14px] rounded-xl flex items-center justify-center shadow-lg shadow-[var(--color-primary)]/20 opacity-90">Generate Meal Plan</div>
+                      <div className="h-12 bg-[var(--color-primary)] text-white font-bold text-[14px] rounded-xl flex items-center justify-center shadow-lg shadow-[var(--color-primary)]/20 opacity-90 transition-all duration-300">
+                        {showcaseState === 'idle' && "Generate Meal Plan"}
+                        {showcaseState === 'generating' && (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin text-white/80" />
+                            Generating...
+                          </>
+                        )}
+                        {showcaseState === 'generated' && "Meal Plan Generated"}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -647,31 +706,64 @@ export default function LandingPage() {
                     
                     <div className="flex flex-wrap items-center justify-between gap-4 mb-8 relative z-10">
                       <h3 className="text-[24px] font-semibold text-[var(--color-on-surface)]">Your Plan</h3>
-                      <span className="px-3.5 py-1.5 bg-green-50 text-green-700 text-[12px] font-bold rounded-full flex items-center gap-2 ring-1 ring-green-600/20 shadow-sm">
+                      <motion.span 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: showcaseState === 'generated' ? 1 : 0, scale: showcaseState === 'generated' ? 1 : 0.95 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        className="px-3.5 py-1.5 bg-green-50 text-green-700 text-[12px] font-bold rounded-full flex items-center gap-2 ring-1 ring-green-600/20 shadow-sm"
+                      >
                         <span className="w-2 h-2 rounded-full bg-green-500"></span>
                         Within Budget
-                      </span>
+                      </motion.span>
                     </div>
                     
                     <div className="space-y-6 relative z-10">
                       <div className="space-y-4">
                         <div className="inline-flex items-center gap-2 text-[15px] font-semibold text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-3 py-1.5 rounded-lg">
-                          <Calendar className="w-4 h-4" /> Monday
+                          <Calendar className="w-4 h-4" /> {SHOWCASE_DAYS[showcaseDayIndex].day}
                         </div>
-                        <div className="grid grid-cols-1 gap-3">
-                          <div className="flex items-center gap-5 bg-[#f8f9fa] p-4 rounded-2xl group hover:bg-green-50/50 transition-colors">
-                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-[13px] font-normal text-[var(--color-on-surface-variant)] group-hover:text-[var(--color-primary)] transition-colors">B</div>
-                            <div className="text-[15px] font-normal text-[var(--color-on-surface)]">Boiled Yam & Egg Sauce</div>
+                        {showcaseState !== 'generated' ? (
+                          <div className="grid grid-cols-1 gap-3">
+                            <div className="flex items-center gap-5 bg-[#f8f9fa] p-4 rounded-2xl animate-pulse">
+                              <div className="w-10 h-10 rounded-full bg-black/5" />
+                              <div className="h-4 bg-black/5 rounded w-2/3" />
+                            </div>
+                            <div className="flex items-center gap-5 bg-[#f8f9fa] p-4 rounded-2xl animate-pulse" style={{ animationDelay: '150ms' }}>
+                              <div className="w-10 h-10 rounded-full bg-black/5" />
+                              <div className="h-4 bg-black/5 rounded w-1/2" />
+                            </div>
+                            <div className="flex items-center gap-5 bg-[#f8f9fa] p-4 rounded-2xl animate-pulse" style={{ animationDelay: '300ms' }}>
+                              <div className="w-10 h-10 rounded-full bg-black/5" />
+                              <div className="h-4 bg-black/5 rounded w-3/4" />
+                            </div>
                           </div>
-                          <div className="flex items-center gap-5 bg-[#f8f9fa] p-4 rounded-2xl group hover:bg-green-50/50 transition-colors">
-                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-[13px] font-normal text-[var(--color-on-surface-variant)] group-hover:text-[var(--color-primary)] transition-colors">L</div>
-                            <div className="text-[15px] font-normal text-[var(--color-on-surface)]">Efo Riro</div>
-                          </div>
-                          <div className="flex items-center gap-5 bg-[#f8f9fa] p-4 rounded-2xl group hover:bg-green-50/50 transition-colors">
-                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-[13px] font-normal text-[var(--color-on-surface-variant)] group-hover:text-[var(--color-primary)] transition-colors">D</div>
-                            <div className="text-[15px] font-normal text-[var(--color-on-surface)]">Yam Porridge</div>
-                          </div>
-                        </div>
+                        ) : (
+                          <motion.div 
+                            className="grid grid-cols-1 gap-3"
+                            initial="hidden"
+                            animate="visible"
+                            variants={{
+                              hidden: { opacity: 0 },
+                              visible: {
+                                opacity: 1,
+                                transition: { staggerChildren: 0.15 }
+                              }
+                            }}
+                          >
+                            <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }} className="flex items-center gap-5 bg-[#f8f9fa] p-4 rounded-2xl group hover:bg-green-50/50 transition-colors">
+                              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-[13px] font-semibold text-[var(--color-on-surface-variant)] group-hover:text-[var(--color-primary)] transition-colors">B</div>
+                              <div className="text-[15px] font-normal text-[var(--color-on-surface)] opacity-85">{SHOWCASE_DAYS[showcaseDayIndex].meals.b}</div>
+                            </motion.div>
+                            <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }} className="flex items-center gap-5 bg-[#f8f9fa] p-4 rounded-2xl group hover:bg-green-50/50 transition-colors">
+                              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-[13px] font-semibold text-[var(--color-on-surface-variant)] group-hover:text-[var(--color-primary)] transition-colors">L</div>
+                              <div className="text-[15px] font-normal text-[var(--color-on-surface)] opacity-85">{SHOWCASE_DAYS[showcaseDayIndex].meals.l}</div>
+                            </motion.div>
+                            <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }} className="flex items-center gap-5 bg-[#f8f9fa] p-4 rounded-2xl group hover:bg-green-50/50 transition-colors">
+                              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-[13px] font-semibold text-[var(--color-on-surface-variant)] group-hover:text-[var(--color-primary)] transition-colors">D</div>
+                              <div className="text-[15px] font-normal text-[var(--color-on-surface)] opacity-85">{SHOWCASE_DAYS[showcaseDayIndex].meals.d}</div>
+                            </motion.div>
+                          </motion.div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -679,30 +771,50 @@ export default function LandingPage() {
                   {/* Shopping List (Secondary) */}
                   <div className="w-full md:w-[300px] bg-white rounded-3xl p-8 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.02] relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-transparent pointer-events-none"></div>
-                    <h3 className="text-[18px] font-semibold text-[var(--color-on-surface)] mb-8 flex items-center gap-2.5 relative z-10">
+                    <h3 className="text-[18px] font-bold text-[var(--color-on-surface)] mb-8 flex items-center gap-2.5 relative z-10">
                       <ShoppingCart className="w-5 h-5 text-[var(--color-on-surface-variant)]" />
                       Shopping List
                     </h3>
                     
                     <ul className="space-y-4 relative z-10">
-                      <li className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3.5 h-3.5 text-green-700" strokeWidth={3} />
-                        </div>
-                        <span className="text-[14px] font-normal text-[var(--color-on-surface)]">Tomatoes & Peppers</span>
-                      </li>
-                      <li className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3.5 h-3.5 text-green-700" strokeWidth={3} />
-                        </div>
-                        <span className="text-[14px] font-normal text-[var(--color-on-surface)]">Onions</span>
-                      </li>
-                      <li className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3.5 h-3.5 text-green-700" strokeWidth={3} />
-                        </div>
-                        <span className="text-[14px] font-normal text-[var(--color-on-surface)]">Crayfish</span>
-                      </li>
+                      {showcaseState !== 'generated' ? (
+                        <>
+                          <li className="flex items-center gap-3 animate-pulse">
+                            <div className="w-6 h-6 rounded-full bg-black/5 flex-shrink-0" />
+                            <div className="h-3 bg-black/5 rounded w-1/2" />
+                          </li>
+                          <li className="flex items-center gap-3 animate-pulse" style={{ animationDelay: '150ms' }}>
+                            <div className="w-6 h-6 rounded-full bg-black/5 flex-shrink-0" />
+                            <div className="h-3 bg-black/5 rounded w-1/3" />
+                          </li>
+                          <li className="flex items-center gap-3 animate-pulse" style={{ animationDelay: '300ms' }}>
+                            <div className="w-6 h-6 rounded-full bg-black/5 flex-shrink-0" />
+                            <div className="h-3 bg-black/5 rounded w-2/5" />
+                          </li>
+                        </>
+                      ) : (
+                        <motion.div
+                          initial="hidden"
+                          animate="visible"
+                          variants={{
+                            hidden: { opacity: 0 },
+                            visible: {
+                              opacity: 1,
+                              transition: { staggerChildren: 0.15 }
+                            }
+                          }}
+                          className="space-y-4"
+                        >
+                          {SHOWCASE_DAYS[showcaseDayIndex].shopping.map((item, i) => (
+                            <motion.li key={i} variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }} className="flex items-center gap-3">
+                              <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                                <Check className="w-3.5 h-3.5 text-green-700" strokeWidth={3} />
+                              </div>
+                              <span className="text-[14px] font-normal text-[var(--color-on-surface)] opacity-85">{item}</span>
+                            </motion.li>
+                          ))}
+                        </motion.div>
+                      )}
                     </ul>
                   </div>
                   
@@ -713,11 +825,14 @@ export default function LandingPage() {
         </section>
 
         {/* ── SECTION 8: FAQ ── */}
-        <section id="faq" className="py-20 px-6 max-w-2xl mx-auto">
-          <div className="text-center mb-12">
+        <section id="faq" className="py-24 px-6 max-w-3xl mx-auto">
+          <div className="text-center mb-16 space-y-3">
+            <div className="text-[12px] font-bold text-[var(--color-primary)] uppercase tracking-widest">Questions & Answers</div>
             <h2 className="text-[28px] md:text-[32px] font-extrabold text-[var(--color-on-surface)] tracking-tight">Frequently Asked Questions</h2>
+            <p className="text-[15px] text-[var(--color-on-surface-variant)] font-normal opacity-80 max-w-lg mx-auto">Everything you need to know before creating your first meal plan.</p>
           </div>
-          <div className="space-y-3">
+          
+          <div className="space-y-4">
             {[
               { q: "Is PlateUp free?", a: "Yes, the MVP version of PlateUp is completely free to use." },
               { q: "Can I regenerate meal plans?", a: "Yes, if you don't like a generated plan, you can regenerate it instantly." },
@@ -725,40 +840,84 @@ export default function LandingPage() {
               { q: "Can I save meal plans?", a: "Yes, you can bookmark your favorite plans to reuse them anytime without regenerating." },
               { q: "Can I share meal plans?", a: "Yes, you can share your meal plan and shopping list directly to WhatsApp." }
             ].map((faq, i) => (
-              <div key={i} className="border border-[var(--color-outline-variant)] rounded-xl bg-[var(--color-surface)] overflow-hidden transition-all duration-300 shadow-sm">
+              <div key={i} className="bg-white rounded-2xl overflow-hidden transition-all duration-300 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_30px_-4px_rgba(0,0,0,0.06)] hover:-translate-y-[1px] ring-1 ring-black/[0.02]">
                 <button 
-                  className="w-full flex items-center justify-between p-5 text-left font-extrabold text-[15px]"
+                  className="w-full flex items-center justify-between p-6 text-left font-semibold text-[15px] text-[var(--color-on-surface)]"
                   onClick={() => setActiveFaq(activeFaq === i ? null : i)}
                 >
                   {faq.q}
-                  <ChevronDown className={`w-4 h-4 text-[var(--color-on-surface-variant)] transition-transform duration-300 ${activeFaq === i ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`w-4 h-4 text-[var(--color-on-surface-variant)] transition-transform duration-300 ease-in-out ${activeFaq === i ? "rotate-180" : ""}`} />
                 </button>
-                <div className={`px-5 overflow-hidden transition-all duration-300 ease-in-out ${activeFaq === i ? "max-h-[200px] pb-5 opacity-100" : "max-h-0 opacity-0"}`}>
-                  <p className="text-[14px] font-medium text-[var(--color-on-surface-variant)] leading-relaxed">{faq.a}</p>
-                </div>
+                <AnimatePresence>
+                  {activeFaq === i && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                      <div className="px-6 pb-6 pt-0">
+                        <p className="text-[14px] font-normal text-[var(--color-on-surface-variant)] leading-relaxed opacity-85">{faq.a}</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ))}
+          </div>
+
+          {/* Help Card */}
+          <div className="mt-12 bg-[#fafafa] rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-6 ring-1 ring-black/[0.02] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.02)]">
+            <div className="text-center md:text-left space-y-1">
+              <h4 className="text-[16px] font-semibold text-[var(--color-on-surface)]">Still have questions?</h4>
+              <p className="text-[14px] text-[var(--color-on-surface-variant)] opacity-85">Contact our team and we'll help you get started.</p>
+            </div>
+            <Link href="/contact" className="h-10 px-5 bg-white ring-1 ring-black/[0.05] shadow-sm rounded-xl flex items-center justify-center text-[13px] font-bold text-[var(--color-on-surface)] hover:bg-[#f8f9fa] hover:shadow transition-all">
+              Contact Us
+            </Link>
           </div>
         </section>
 
         {/* ── SECTION 9: FINAL CTA ── */}
-        <section className="py-24 px-6">
-          <div className="max-w-4xl mx-auto bg-[var(--color-primary)] rounded-[32px] p-10 md:p-16 text-center shadow-xl relative overflow-hidden">
+        <section className="py-24 px-6 relative flex justify-center group">
+          {/* Subtle Glow Behind Container */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] max-w-3xl h-[250px] bg-[var(--color-primary)]/20 blur-[100px] rounded-full pointer-events-none z-0 transition-opacity duration-700 opacity-50 group-hover:opacity-100"></div>
+
+          <div className="max-w-3xl w-full mx-auto bg-gradient-to-br from-[var(--color-primary)] to-[#0c4a22] rounded-[32px] p-10 md:p-12 text-center shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] group-hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.25)] transition-shadow duration-700 ease-out relative overflow-hidden z-10">
             {/* Background Decoration */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-black opacity-10 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
+            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-white opacity-[0.04] rounded-full blur-[60px] transform translate-x-1/3 -translate-y-1/3"></div>
+            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-black opacity-[0.15] rounded-full blur-[60px] transform -translate-x-1/3 translate-y-1/3"></div>
             
-            <div className="relative z-10 space-y-6">
-              <h2 className="text-[32px] md:text-[40px] font-extrabold text-white tracking-tight leading-tight">
-                Ready To Stop Guessing What To Cook?
-              </h2>
-              <p className="text-[16px] font-medium text-white/90 max-w-xl mx-auto">
-                Generate a personalized Nigerian meal plan in under a minute.
-              </p>
-              <div className="pt-4">
-                <Link href="/auth/register" className="inline-flex items-center justify-center h-12 px-8 rounded-xl bg-white text-[var(--color-primary)] text-[15px] font-extrabold hover:scale-105 transition-transform duration-300 shadow-md">
+            <div className="relative z-10 space-y-8">
+              <div className="space-y-4">
+                <h2 className="text-[28px] md:text-[36px] font-extrabold text-white tracking-tight leading-[1.15]">
+                  Your Next Week's Meals Are <br className="hidden md:block"/>One Click Away
+                </h2>
+                <p className="text-[15px] md:text-[16px] font-medium text-white/80 max-w-lg mx-auto">
+                  Generate a personalized Nigerian meal plan in under a minute.
+                </p>
+              </div>
+              
+              <div className="flex flex-col items-center gap-6">
+                <Link href="/auth/register" className="inline-flex items-center justify-center gap-2 h-12 px-7 rounded-xl bg-white text-[var(--color-primary)] text-[14px] font-extrabold shadow-sm hover:shadow-[0_8px_25px_-5px_rgba(255,255,255,0.3)] hover:bg-[#fcfcfc] transition-all duration-300">
                   Generate My First Meal Plan
+                  <ArrowRight className="w-4 h-4" />
                 </Link>
+                
+                {/* Trust Chips */}
+                <div className="flex flex-wrap items-center justify-center gap-4 md:gap-5">
+                  {[
+                    "Nigerian Meals",
+                    "Budget Aware",
+                    "Shopping Lists",
+                    "Save Meal History"
+                  ].map((chip, i) => (
+                    <div key={i} className="flex items-center gap-1.5 text-[12px] font-semibold text-white/80">
+                      <Check className="w-3.5 h-3.5 text-white/90" strokeWidth={3} />
+                      {chip}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
