@@ -22,17 +22,18 @@ export async function completeOnboarding(formData: FormData) {
   const { householdSize, primaryGoal } = validatedFields.data;
 
   try {
-    await db.user.update({
-      where: { id: session.user.id },
-      data: {
-        householdSize,
-        primaryGoal,
-        onboardingCompleted: true,
-      },
-    });
-
-    // Update the session cookie so middleware knows onboarding is done
-    await unstable_update({ user: { onboardingCompleted: true } } as any);
+    // Execute both the database update and the session cookie update concurrently for maximum speed
+    await Promise.all([
+      db.user.update({
+        where: { id: session.user.id },
+        data: {
+          householdSize,
+          primaryGoal,
+          onboardingCompleted: true,
+        },
+      }),
+      unstable_update({ user: { onboardingCompleted: true } } as any)
+    ]);
 
     // Revalidate dashboard to reflect completed onboarding
     revalidatePath('/dashboard');

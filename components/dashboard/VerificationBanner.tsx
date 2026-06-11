@@ -1,14 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, X, Mail, Loader2, CheckCircle } from 'lucide-react';
+import { AlertTriangle, X, Mail, Loader2, CheckCircle, Shield } from 'lucide-react';
 import { resendVerificationEmailAction } from '@/app/actions/auth/actions';
 
 interface VerificationBannerProps {
   email: string;
+  onDismiss?: () => void;
 }
 
-export function VerificationBanner({ email }: VerificationBannerProps) {
+export function VerificationBanner({ email, onDismiss }: VerificationBannerProps) {
   const [dismissed, setDismissed] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [resendState, setResendState] = useState<'idle' | 'success' | 'error'>('idle');
@@ -31,49 +32,56 @@ export function VerificationBanner({ email }: VerificationBannerProps) {
   return (
     <div
       role="alert"
-      className="flex items-start sm:items-center justify-between gap-3 px-4 py-3 rounded-xl border border-[var(--color-outline-variant)] bg-[color-mix(in_srgb,var(--color-accent)_8%,var(--color-surface))] text-sm"
+      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 md:px-5 md:py-4 gap-4 rounded-2xl bg-[color-mix(in_srgb,var(--color-accent)_8%,var(--color-surface))] shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-shadow duration-300"
     >
-      <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-        <AlertTriangle
-          className="w-4 h-4 text-[var(--color-accent)] flex-shrink-0 mt-0.5 sm:mt-0"
-          aria-hidden
-        />
-        <span className="text-[var(--color-on-surface)] font-medium leading-snug">
-          Verify your email to secure your account.
-        </span>
+      <div className="flex items-start sm:items-center gap-4">
+        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[color-mix(in_srgb,var(--color-accent)_15%,transparent)] text-[var(--color-accent)] flex-shrink-0">
+          <Shield className="w-5 h-5" />
+        </div>
+        <div>
+          <h3 className="text-[14px] font-semibold text-[var(--color-on-surface)]">Verify your email address</h3>
+          <p className="text-[13px] text-[var(--color-on-surface-variant)] opacity-80 mt-0.5">
+            Please verify your email to unlock all features and secure your account.
+          </p>
+        </div>
       </div>
 
-      <div className="flex items-center gap-3 flex-shrink-0">
+      <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
         {resendState === 'success' ? (
-          <span className="flex items-center gap-1.5 text-xs font-semibold text-[var(--color-primary)]">
-            <CheckCircle className="w-3.5 h-3.5" />
-            Sent!
+          <span className="flex items-center gap-1.5 text-[13px] font-semibold text-[var(--color-primary)]">
+            <CheckCircle className="w-4 h-4" />
+            Email Sent
           </span>
         ) : resendState === 'error' ? (
-          <span className="text-xs font-semibold text-[var(--color-error)]">Failed. Try again.</span>
+          <span className="text-[13px] font-semibold text-[var(--color-error)]">Failed. Try again.</span>
         ) : null}
 
         <button
           id="verification-banner-resend-btn"
           onClick={handleResend}
           disabled={isResending || resendState === 'success'}
-          className="flex items-center gap-1.5 text-xs font-semibold text-[var(--color-primary)] hover:underline disabled:opacity-50 disabled:no-underline transition-opacity"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] shadow-sm rounded-lg text-[13px] font-semibold text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-lowest)] disabled:opacity-50 transition-colors"
         >
           {isResending ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin text-[var(--color-on-surface-variant)]" />
           ) : (
-            <Mail className="w-3.5 h-3.5" />
+            <Mail className="w-4 h-4 text-[var(--color-on-surface-variant)]" />
           )}
-          Resend Email
+          Verify Email
         </button>
+
+        <div className="w-[1px] h-6 bg-[color-mix(in_srgb,var(--color-on-surface)_15%,transparent)] hidden sm:block mx-1"></div>
 
         <button
           id="verification-banner-dismiss-btn"
-          onClick={() => setDismissed(true)}
-          className="p-1 rounded-md hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-variant)] transition-colors"
+          onClick={() => {
+            setDismissed(true);
+            onDismiss?.();
+          }}
+          className="p-1.5 rounded-md hover:bg-[color-mix(in_srgb,var(--color-on-surface)_8%,transparent)] text-[var(--color-on-surface-variant)] transition-colors"
           aria-label="Dismiss banner"
         >
-          <X className="w-3.5 h-3.5" />
+          <X className="w-4 h-4" />
         </button>
       </div>
     </div>

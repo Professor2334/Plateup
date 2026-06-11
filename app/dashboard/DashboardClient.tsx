@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { saveMealPlan, deleteMealPlan } from '@/app/actions/meal-plans/actions';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { History, Bookmark, Settings, LogOut, Calendar, LayoutDashboard } from 'lucide-react';
+import { History, Bookmark, Settings, LogOut, Calendar, LayoutDashboard, Utensils } from 'lucide-react';
 import { VerificationBanner } from '@/components/dashboard/VerificationBanner';
 import { PlateUpLogo } from '@/components/shared/PlateUpLogo';
 import { logoutUser } from '@/app/actions/auth/actions';
@@ -33,10 +33,23 @@ type Tab = 'generate' | 'history' | 'saved' | 'settings' | 'view-plan';
 export function DashboardClient({ initialHistory, userName, userData }: DashboardClientProps) {
   const [history, setHistory] = useState(initialHistory);
   const [activeTab, setActiveTab] = useState<Tab>('generate');
+  const [isBannerDismissed, setIsBannerDismissed] = useState(false);
   
   useEffect(() => {
     setHistory(initialHistory);
   }, [initialHistory]);
+
+  // Re-show verification banner every 20 minutes if not verified
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    if (isBannerDismissed && !userData.emailVerified) {
+      // 20 minutes = 20 * 60 * 1000 = 1200000 ms
+      timeoutId = setTimeout(() => {
+        setIsBannerDismissed(false);
+      }, 1200000);
+    }
+    return () => clearTimeout(timeoutId);
+  }, [isBannerDismissed, userData.emailVerified]);
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -226,10 +239,6 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       {/* Left Form */}
       <div className="lg:col-span-4">
         <div className="lg:sticky lg:top-4 space-y-6">
-          <div>
-          <h2 className="text-2xl font-bold text-[var(--color-on-surface)]">Plan Your Week</h2>
-          <p className="text-sm text-[var(--color-on-surface-variant)] mt-1">Enter your budget and ingredients to get started.</p>
-        </div>
         <GenerateMealForm 
           onPlanGenerated={(plan, formData, id) => {
             const b = parseFloat(formData.get('budget') as string);
@@ -271,7 +280,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {generatedPlan.mealPlan.map((dayPlan, idx) => (
-                <div key={idx} className="border border-[var(--color-outline-variant)] rounded-lg p-4 space-y-3 bg-[var(--color-surface)]">
+                <div key={idx} className="rounded-xl p-4 space-y-3 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
                   <h3 className="font-bold text-[var(--color-primary)] border-b pb-2">{dayPlan.day}</h3>
                   <div className="text-sm">
                     <span className="font-semibold block text-[var(--color-secondary)]">Breakfast</span>
@@ -289,7 +298,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
               ))}
             </div>
 
-            <div className="border border-[var(--color-outline-variant)] rounded-lg p-6 bg-[var(--color-surface)] mt-8">
+            <div className="rounded-xl p-6 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] mt-8">
               <h2 className="text-xl font-bold text-[var(--color-primary)] mb-4">Shopping List</h2>
               <ul className="space-y-2 list-disc list-inside">
                 {generatedPlan.shoppingList.map((item, idx) => (
@@ -301,9 +310,12 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             </div>
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-[var(--color-outline-variant)] bg-[var(--color-surface-lowest)] p-12 text-center h-full flex flex-col items-center justify-center min-h-[400px]">
-            <h3 className="text-lg font-medium text-[var(--color-on-surface-variant)]">No meal plan active</h3>
-            <p className="mt-1 text-sm text-[var(--color-on-surface-variant)] opacity-80">
+          <div className="rounded-[18px] bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.02)] p-12 text-center h-full flex flex-col items-center justify-center min-h-[400px]">
+            <div className="w-16 h-16 rounded-full bg-[color-mix(in_srgb,var(--color-surface-container-low)_50%,transparent)] flex items-center justify-center mb-6">
+              <Utensils className="w-8 h-8 text-[var(--color-on-surface-variant)] opacity-60" strokeWidth={1.5} />
+            </div>
+            <h3 className="text-xl sm:text-2xl font-extrabold text-[var(--color-on-surface)] tracking-tight">No meal plan active</h3>
+            <p className="mt-3 text-[14px] font-medium text-[var(--color-on-surface-variant)] opacity-70 max-w-sm leading-relaxed">
               Use the form on the left to generate a new 7-day budget-aware Nigerian meal plan.
             </p>
           </div>
@@ -349,7 +361,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
         </div>
         
         {history.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[var(--color-outline-variant)] bg-[var(--color-surface)] p-20 flex flex-col items-center justify-center text-center">
+          <div className="rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-20 flex flex-col items-center justify-center text-center">
             <History className="w-12 h-12 text-[var(--color-outline-variant)] mb-4" />
             <h3 className="text-xl font-semibold text-[var(--color-on-surface)]">No activity yet</h3>
             <p className="text-[var(--color-on-surface-variant)] mt-2">Your timeline will populate once you generate your first meal plan.</p>
@@ -360,7 +372,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
               if (plans.length === 0) return null;
               return (
                 <div key={groupName} className="relative">
-                  <div className="sticky top-0 bg-[var(--color-surface-lowest)] z-10 py-3 border-b border-[var(--color-outline-variant)]">
+                  <div className="sticky top-0 bg-[#f9fafb] z-10 py-3">
                     <h3 className="text-[11px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-widest">{groupName}</h3>
                   </div>
                   <div className="mt-2 space-y-1">
@@ -428,7 +440,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       </div>
       
       {savedPlans.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[var(--color-outline-variant)] bg-[var(--color-surface)] p-20 flex flex-col items-center justify-center text-center">
+        <div className="rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-20 flex flex-col items-center justify-center text-center">
           <Bookmark className="w-12 h-12 text-[var(--color-outline-variant)] mb-4" />
           <h3 className="text-xl font-semibold text-[var(--color-on-surface)]">No saved plans yet</h3>
           <p className="text-[var(--color-on-surface-variant)] mt-2 max-w-md">Your saved meal plans will appear here. Generate a plan and click save to keep it for later.</p>
@@ -440,9 +452,9 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             const previewMeals = plan.generatedPlan?.slice(0, 2) || [];
             
             return (
-              <div key={plan.id} className="rounded-2xl border border-[var(--color-outline-variant)] bg-[var(--color-surface)] flex flex-col overflow-hidden hover:shadow-lg transition-all duration-300 group hover:border-[var(--color-primary)]">
+              <div key={plan.id} className="rounded-2xl bg-white flex flex-col overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-shadow duration-300">
                 {/* Header */}
-                <div className="p-6 border-b border-[var(--color-outline-variant)] bg-[var(--color-surface-container-lowest)] flex justify-between items-start">
+                <div className="p-6 bg-white flex justify-between items-start">
                   <div>
                     <span className="inline-flex items-center rounded-full bg-[var(--color-primary-container)] px-2.5 py-0.5 text-xs font-semibold text-[var(--color-on-primary-container)] mb-3">
                       7 Days
@@ -476,7 +488,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                 </div>
 
                 {/* Actions */}
-                <div className="p-4 border-t border-[var(--color-outline-variant)] bg-[var(--color-surface-container-lowest)] grid grid-cols-3 gap-2">
+                <div className="p-4 bg-white grid grid-cols-3 gap-2">
                   <Button 
                     variant="outline" 
                     className="w-full text-xs h-9 px-2 shadow-sm"
@@ -517,19 +529,19 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       </div>
 
       {/* Profile Section */}
-      <div className="rounded-2xl border border-[var(--color-outline-variant)] bg-[var(--color-surface)] overflow-hidden shadow-sm">
-        <div className="px-6 py-4 border-b border-[var(--color-outline-variant)] bg-[var(--color-surface-container-lowest)]">
+      <div className="rounded-2xl bg-white overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+        <div className="px-6 py-4 bg-white">
           <h3 className="text-lg font-bold text-[var(--color-on-surface)]">Profile</h3>
         </div>
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="text-xs font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-2 block">Name</label>
-              <div className="text-sm font-medium text-[var(--color-on-surface)] bg-[var(--color-surface-container-lowest)] border border-[var(--color-outline-variant)] rounded-lg px-4 py-3">{userData.name}</div>
+              <div className="text-sm font-medium text-[var(--color-on-surface)] bg-[#f9fafb] rounded-xl px-4 py-3">{userData.name}</div>
             </div>
             <div>
               <label className="text-xs font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-2 block">Email</label>
-              <div className="text-sm font-medium text-[var(--color-on-surface)] bg-[var(--color-surface-container-lowest)] border border-[var(--color-outline-variant)] rounded-lg px-4 py-3">{userData.email}</div>
+              <div className="text-sm font-medium text-[var(--color-on-surface)] bg-[#f9fafb] rounded-xl px-4 py-3">{userData.email}</div>
             </div>
           </div>
           <div>
@@ -541,8 +553,8 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       </div>
 
       {/* Preferences Section */}
-      <div className="rounded-2xl border border-[var(--color-outline-variant)] bg-[var(--color-surface)] overflow-hidden shadow-sm">
-        <div className="px-6 py-4 border-b border-[var(--color-outline-variant)] bg-[var(--color-surface-container-lowest)]">
+      <div className="rounded-2xl bg-white overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+        <div className="px-6 py-4 bg-white">
           <h3 className="text-lg font-bold text-[var(--color-on-surface)]">Preferences</h3>
         </div>
         <form 
@@ -565,7 +577,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
               <select 
                 value={prefHousehold}
                 onChange={e => setPrefHousehold(e.target.value)}
-                className="w-full sm:w-1/2 text-sm font-medium text-[var(--color-on-surface)] bg-[var(--color-surface)] border border-[var(--color-outline-variant)] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-shadow"
+                className="w-full sm:w-1/2 text-sm font-medium text-[var(--color-on-surface)] bg-[#f9fafb] rounded-xl px-4 py-3 focus:outline-none focus:bg-white focus:shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all"
               >
                 <option value="1">1 Person</option>
                 <option value="2">2 People</option>
@@ -578,7 +590,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
               <select 
                 value={prefGoal}
                 onChange={e => setPrefGoal(e.target.value)}
-                className="w-full sm:w-1/2 text-sm font-medium text-[var(--color-on-surface)] bg-[var(--color-surface)] border border-[var(--color-outline-variant)] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-shadow"
+                className="w-full sm:w-1/2 text-sm font-medium text-[var(--color-on-surface)] bg-[#f9fafb] rounded-xl px-4 py-3 focus:outline-none focus:bg-white focus:shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all"
               >
                 <option value="save-money">Save Money</option>
                 <option value="save-time">Save Time</option>
@@ -587,15 +599,15 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
               </select>
             </div>
           </div>
-          <div className="pt-2 border-t border-[var(--color-outline-variant)]">
+          <div className="pt-2">
             <Button type="submit" variant="primary" disabled={prefSaving}>{prefSaving ? 'Saving...' : 'Update Preferences'}</Button>
           </div>
         </form>
       </div>
 
       {/* Support Section */}
-      <div className="rounded-2xl border border-[var(--color-outline-variant)] bg-[var(--color-surface)] overflow-hidden shadow-sm">
-        <div className="px-6 py-4 border-b border-[var(--color-outline-variant)] bg-[var(--color-surface-container-lowest)]">
+      <div className="rounded-2xl bg-white overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+        <div className="px-6 py-4 bg-white">
           <h3 className="text-lg font-bold text-[var(--color-on-surface)]">Support & Legal</h3>
         </div>
         <div className="p-6 space-y-4">
@@ -606,10 +618,10 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             <Link href="/contact" className="inline-flex items-center justify-center h-10 px-5 rounded-lg bg-[var(--color-primary-container)] text-[var(--color-primary)] text-sm font-bold hover:opacity-90 transition-opacity">
               Contact Us
             </Link>
-            <Link href="/terms" className="inline-flex items-center justify-center h-10 px-5 rounded-lg border border-[var(--color-outline-variant)] text-[var(--color-on-surface-variant)] text-sm font-bold hover:bg-[var(--color-surface-container-low)] transition-colors">
+            <Link href="/terms" className="inline-flex items-center justify-center h-10 px-5 rounded-lg bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-[var(--color-on-surface-variant)] text-sm font-bold hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:text-[var(--color-on-surface)] transition-colors">
               Terms of Service
             </Link>
-            <Link href="/privacy" className="inline-flex items-center justify-center h-10 px-5 rounded-lg border border-[var(--color-outline-variant)] text-[var(--color-on-surface-variant)] text-sm font-bold hover:bg-[var(--color-surface-container-low)] transition-colors">
+            <Link href="/privacy" className="inline-flex items-center justify-center h-10 px-5 rounded-lg bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-[var(--color-on-surface-variant)] text-sm font-bold hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:text-[var(--color-on-surface)] transition-colors">
               Privacy Policy
             </Link>
           </div>
@@ -617,8 +629,8 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       </div>
 
       {/* Account Section */}
-      <div className="rounded-2xl border border-[var(--color-outline-variant)] bg-[var(--color-surface)] overflow-hidden shadow-sm">
-        <div className="px-6 py-4 border-b border-[var(--color-outline-variant)] bg-[var(--color-surface-container-lowest)]">
+      <div className="rounded-2xl bg-white overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+        <div className="px-6 py-4 bg-white">
           <h3 className="text-lg font-bold text-[var(--color-error)]">Account</h3>
         </div>
         <div className="p-6 space-y-8">
@@ -647,14 +659,14 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                 name="currentPassword" 
                 placeholder="Current Password" 
                 required
-                className="w-full text-sm text-[var(--color-on-surface)] bg-[var(--color-surface)] border border-[var(--color-outline-variant)] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-shadow"
+                className="w-full text-sm text-[var(--color-on-surface)] bg-[#f9fafb] rounded-xl px-4 py-3 focus:outline-none focus:bg-white focus:shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all"
               />
               <input 
                 type="password" 
                 name="newPassword" 
                 placeholder="New Password" 
                 required
-                className="w-full text-sm text-[var(--color-on-surface)] bg-[var(--color-surface)] border border-[var(--color-outline-variant)] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-shadow"
+                className="w-full text-sm text-[var(--color-on-surface)] bg-[#f9fafb] rounded-xl px-4 py-3 focus:outline-none focus:bg-white focus:shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all"
               />
             </div>
             {passError && <p className="text-xs font-semibold text-[var(--color-error)] mt-2">{passError}</p>}
@@ -664,7 +676,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             </div>
           </form>
 
-          <div className="pt-6 border-t border-[var(--color-outline-variant)]">
+          <div className="pt-6">
             <h4 className="text-sm font-semibold text-[var(--color-on-surface)] mb-2">Sign Out</h4>
             <p className="text-xs text-[var(--color-on-surface-variant)] mb-5">Sign out of your account on this device.</p>
             <button
@@ -683,63 +695,80 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
   const SidebarItem = ({ icon: Icon, label, tab }: { icon: any, label: string, tab: Tab }) => (
     <button
       onClick={() => setActiveTab(tab)}
-      className={`w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${
+      className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-[10px] transition-all duration-200 group ${
         activeTab === tab 
-          ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-sm font-semibold' 
+          ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[0_8px_30px_rgba(17,94,59,0.25)] font-semibold' 
           : 'text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-on-surface)] font-medium'
       }`}
     >
-      <Icon className="w-5 h-5" />
-      <span>{label}</span>
+      <Icon className={`w-4 h-4 transition-colors ${activeTab === tab ? 'text-[var(--color-on-primary)]' : 'text-[var(--color-on-surface-variant)] group-hover:text-[var(--color-on-surface)]'}`} />
+      <span className="text-[13px]">{label}</span>
     </button>
   );
 
   return (
     <>
-      <div className={`flex h-screen overflow-hidden bg-[var(--color-surface-lowest)] font-sans transition-all duration-300 ${isLogoutModalOpen ? 'blur-[4px] scale-[0.99] opacity-90' : ''}`}>
+      <div className={`flex h-screen overflow-hidden bg-[#f9fafb] font-sans transition-all duration-300 ${isLogoutModalOpen ? 'blur-[4px] scale-[0.99] opacity-90' : ''}`}>
         {/* Sidebar */}
-      <aside className="w-64 border-r border-[var(--color-outline-variant)] bg-[var(--color-surface)] flex flex-col flex-shrink-0 z-10 shadow-sm">
-        <div className="p-8 pb-6">
+      <aside className="w-64 bg-white shadow-[1px_0_12px_rgba(0,0,0,0.03)] dark:bg-[var(--color-surface-container-low)] flex flex-col flex-shrink-0 z-10">
+        <div className="px-8 pt-8 pb-4">
           <PlateUpLogo size="lg" href={null} />
-          <p className="text-sm text-[var(--color-on-surface-variant)] mt-2 font-medium">Welcome, {userName}</p>
         </div>
-        <nav className="flex-1 px-4 space-y-2 mt-4">
+        
+        <div className="px-8 pb-8">
+          <p className="text-[13px] font-medium text-[var(--color-on-surface-variant)] opacity-80 flex items-center justify-start gap-1.5">
+            <span className={`w-1.5 h-1.5 rounded-full ${userData.emailVerified ? 'bg-[#10b981]' : 'bg-[var(--color-accent)]'}`}></span> 
+            {userData.emailVerified ? 'Verified Account' : 'Unverified Account'}
+          </p>
+        </div>
+
+        <nav className="flex-1 px-5 space-y-1">
           <SidebarItem icon={LayoutDashboard} label="Generate Plan" tab="generate" />
           <SidebarItem icon={History} label="Meal History" tab="history" />
           <SidebarItem icon={Bookmark} label="Saved Plans" tab="saved" />
           <SidebarItem icon={Settings} label="Settings" tab="settings" />
         </nav>
-        <div className="p-6 border-t border-[var(--color-outline-variant)]">
+
+        <div className="px-5 pb-6 pt-4 flex flex-col gap-4">
           <button
             onClick={() => setIsLogoutModalOpen(true)}
-            className="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-[var(--color-error)] hover:bg-[var(--color-error-container)]/60 transition-colors mb-4"
+            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-[10px] text-[var(--color-on-surface-variant)] opacity-80 hover:bg-[color-mix(in_srgb,var(--color-error)_8%,transparent)] hover:text-[var(--color-error)] hover:opacity-100 transition-all group"
           >
-            <LogOut className="w-5 h-5" />
-            <span className="font-semibold text-sm">Logout</span>
+            <LogOut className="w-4 h-4 transition-colors group-hover:text-[var(--color-error)]" />
+            <span className="font-medium text-[13px]">Logout</span>
           </button>
-          <div className="px-2 space-y-2">
-            <Link href="/contact" className="block text-[13px] font-normal text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors">Contact Us</Link>
-            <Link href="/terms" className="block text-[13px] font-normal text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors">Terms of Service</Link>
-            <Link href="/privacy" className="block text-[13px] font-normal text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors">Privacy Policy</Link>
+
+          <div className="flex items-center justify-between gap-1 px-3">
+            <Link href="/contact" className="text-[12px] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Contact</Link>
+            <Link href="/terms" className="text-[12px] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Terms</Link>
+            <Link href="/privacy" className="text-[12px] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Privacy</Link>
           </div>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-10 lg:p-14">
-        {/* Verification banner — only shown to unverified users */}
-        {!userData.emailVerified && (
-          <div className="mb-8">
-            <VerificationBanner email={userData.email} />
+      <main className="flex-1 overflow-y-auto px-10 pb-10 pt-6 lg:px-14 lg:pb-14 lg:pt-8">
+        {/* Welcome Experience (Banner OR Welcome Section) */}
+        {(!userData.emailVerified && !isBannerDismissed) ? (
+          <div className="mb-8 animate-in fade-in duration-300">
+            <VerificationBanner email={userData.email} onDismiss={() => setIsBannerDismissed(true)} />
           </div>
-        )}
+        ) : activeTab === 'generate' ? (
+          <div className="mb-8 bg-white rounded-[20px] px-6 py-4 sm:px-8 sm:py-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex flex-col justify-center animate-in fade-in duration-300 relative overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[var(--color-primary)] opacity-80"></div>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-[var(--color-on-surface)] tracking-tight mb-0.5">
+              Welcome, {userName.split(' ')[0]}
+            </h1>
+            <p className="text-[14px] text-[var(--color-on-surface-variant)] font-medium opacity-80">Ready to plan this week's meals?</p>
+          </div>
+        ) : null}
         {activeTab === 'generate' && renderGenerateTab()}
         {activeTab === 'view-plan' && (
           <div className="max-w-5xl space-y-6">
             <button onClick={() => setActiveTab('history')} className="text-sm font-medium text-[var(--color-primary)] hover:underline mb-4 flex items-center gap-1">
               &larr; Back to History
             </button>
-            <div className="bg-[var(--color-surface)] p-8 rounded-2xl border border-[var(--color-outline-variant)] shadow-sm">
+            <div className="bg-white p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
               <div className="flex justify-between items-start mb-8">
                 <div>
                   <h1 className="text-3xl font-bold text-[var(--color-primary)]">Meal Plan Viewer</h1>
@@ -753,7 +782,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {generatedPlan?.mealPlan.map((dayPlan, idx) => (
-                  <div key={idx} className="border border-[var(--color-outline-variant)] rounded-xl p-5 space-y-4 bg-[var(--color-surface-container-lowest)]">
+                  <div key={idx} className="rounded-2xl p-5 space-y-4 bg-[#f9fafb]">
                     <h3 className="font-bold text-lg text-[var(--color-primary)] border-b pb-3">{dayPlan.day}</h3>
                     <div className="text-sm">
                       <span className="font-bold text-[var(--color-secondary)] block mb-1">Breakfast</span>

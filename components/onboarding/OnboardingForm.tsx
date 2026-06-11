@@ -39,6 +39,7 @@ export function OnboardingForm() {
     setTimeout(() => {
       setStep(newStep);
       setIsAnimating(false);
+      setLoading(false);
     }, 250); // Matches the CSS transition duration
   };
 
@@ -62,8 +63,8 @@ export function OnboardingForm() {
       setLoading(false);
     } else {
       // Show lightweight success screen instead of immediate redirect
+      // The loading state will be reset automatically after the transition animation finishes
       changeStep(3);
-      setLoading(false);
     }
   };
 
