@@ -6,7 +6,7 @@ import { MealPlanSkeleton } from '@/components/meal-plans/MealPlanSkeleton';
 import type { MealPlanResponse } from '@/lib/deepseek';
 import { Button } from '@/components/ui/button';
 import { saveMealPlan, deleteMealPlan } from '@/app/actions/meal-plans/actions';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { History, Bookmark, Settings, LogOut, Calendar, LayoutDashboard, Utensils } from 'lucide-react';
 import { VerificationBanner } from '@/components/dashboard/VerificationBanner';
@@ -31,9 +31,44 @@ interface DashboardClientProps {
 type Tab = 'generate' | 'history' | 'saved' | 'settings' | 'view-plan';
 
 export function DashboardClient({ initialHistory, userName, userData }: DashboardClientProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const viewParam = searchParams.get('view');
+
   const [history, setHistory] = useState(initialHistory);
   const [activeTab, setActiveTab] = useState<Tab>('generate');
   const [isBannerDismissed, setIsBannerDismissed] = useState(false);
+
+  useEffect(() => {
+    if (viewParam) {
+      const paramToTabMap: Record<string, Tab> = {
+        'generate-plan': 'generate',
+        'meal-history': 'history',
+        'saved-plans': 'saved',
+        'settings': 'settings',
+        'view-plan': 'view-plan'
+      };
+      if (paramToTabMap[viewParam]) {
+        setActiveTab(paramToTabMap[viewParam]);
+      }
+    } else {
+      router.replace(`${pathname}?view=generate-plan`, { scroll: false });
+    }
+  }, [viewParam, pathname, router]);
+
+  const handleTabChange = (tab: Tab) => {
+    setActiveTab(tab);
+    const tabToParamMap: Record<Tab, string> = {
+      'generate': 'generate-plan',
+      'history': 'meal-history',
+      'saved': 'saved-plans',
+      'settings': 'settings',
+      'view-plan': 'view-plan'
+    };
+    const newUrl = `${pathname}?view=${tabToParamMap[tab]}`;
+    window.history.pushState(null, '', newUrl);
+  };
   
   useEffect(() => {
     setHistory(initialHistory);
@@ -68,6 +103,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
   
   // Logout Modal State
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -78,8 +114,6 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isLogoutModalOpen]);
-
-  const router = useRouter();
 
   const handlePlanGenerated = (plan: MealPlanResponse, budget: number, ingredients: string, id: string) => {
     setGeneratedPlan(plan);
@@ -140,7 +174,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     setActiveBudget(plan.budget);
     setActiveIngredients(plan.ingredients);
     setActivePlanId(plan.id);
-    setActiveTab('generate');
+    handleTabChange('generate');
   };
 
   const handleViewOnlyPlan = (plan: any) => {
@@ -153,7 +187,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     setActiveBudget(plan.budget);
     setActiveIngredients(plan.ingredients);
     setActivePlanId(plan.id);
-    setActiveTab('view-plan');
+    handleTabChange('view-plan');
   };
 
   const shareViaWhatsApp = async () => {
@@ -694,7 +728,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
 
   const SidebarItem = ({ icon: Icon, label, tab }: { icon: any, label: string, tab: Tab }) => (
     <button
-      onClick={() => setActiveTab(tab)}
+      onClick={() => handleTabChange(tab)}
       className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-[10px] transition-all duration-200 group ${
         activeTab === tab 
           ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[0_8px_30px_rgba(17,94,59,0.25)] font-semibold' 
@@ -754,7 +788,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             <VerificationBanner email={userData.email} onDismiss={() => setIsBannerDismissed(true)} />
           </div>
         ) : activeTab === 'generate' ? (
-          <div className="mb-8 bg-white rounded-[20px] px-6 py-4 sm:px-8 sm:py-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex flex-col justify-center animate-in fade-in duration-300 relative overflow-hidden">
+          <div className="mb-8 bg-white rounded-[20px] px-6 py-4 sm:px-8 shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex flex-col justify-center animate-in fade-in duration-300 relative overflow-hidden">
             <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[var(--color-primary)] opacity-80"></div>
             <h1 className="text-xl sm:text-2xl font-extrabold text-[var(--color-on-surface)] tracking-tight mb-0.5">
               Welcome, {userName.split(' ')[0]}
@@ -765,7 +799,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
         {activeTab === 'generate' && renderGenerateTab()}
         {activeTab === 'view-plan' && (
           <div className="max-w-5xl space-y-6">
-            <button onClick={() => setActiveTab('history')} className="text-sm font-medium text-[var(--color-primary)] hover:underline mb-4 flex items-center gap-1">
+            <button onClick={() => handleTabChange('history')} className="text-sm font-medium text-[var(--color-primary)] hover:underline mb-4 flex items-center gap-1">
               &larr; Back to History
             </button>
             <div className="bg-white p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
@@ -776,7 +810,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" onClick={shareViaWhatsApp}>Share via WhatsApp</Button>
-                  <Button onClick={() => setActiveTab('generate')}>Load into Workspace</Button>
+                  <Button onClick={() => handleTabChange('generate')}>Load into Workspace</Button>
                 </div>
               </div>
               
@@ -822,11 +856,15 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           </p>
           <div className="flex flex-col gap-3">
             <Button 
-              onClick={() => logoutUser()}
-              className="w-full min-h-[48px] rounded-xl font-semibold shadow-sm text-[15px] hover:opacity-90 transition-opacity border-none"
+              onClick={async () => {
+                setIsLoggingOut(true);
+                await logoutUser();
+              }}
+              disabled={isLoggingOut}
+              className="w-full min-h-[48px] rounded-xl font-semibold shadow-sm text-[15px] hover:opacity-90 transition-opacity border-none disabled:opacity-50"
               style={{ backgroundColor: 'var(--color-error)', color: 'var(--color-on-error)' }}
             >
-              Logout
+              {isLoggingOut ? 'Logging out...' : 'Logout'}
             </Button>
             <Button 
               variant="outline" 
