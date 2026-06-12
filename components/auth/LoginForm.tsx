@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { checkLoginRateLimit } from '@/app/actions/auth/actions';
 
 export function LoginForm() {
   const [error, setError] = useState('');
@@ -33,6 +34,13 @@ export function LoginForm() {
     const password = formData.get('password') as string;
 
     try {
+      const rateLimitCheck = await checkLoginRateLimit(email);
+      if (!rateLimitCheck.success) {
+        setError(rateLimitCheck.error || 'Too many requests');
+        setLoading(false);
+        return;
+      }
+
       // In Auth.js v5 using next-auth/react, we can sign in via Client Component
       // or we can use a Server Action. Client-side signIn is standard.
       const { signIn } = await import('next-auth/react');
@@ -44,7 +52,11 @@ export function LoginForm() {
       });
 
       if (res?.error) {
-        setError('Invalid email or password');
+        if (res.error === "Too many requests. Please try again later.") {
+          setError(res.error);
+        } else {
+          setError('Invalid email or password');
+        }
       } else {
         router.push('/dashboard');
         router.refresh();
@@ -58,6 +70,11 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <p className="w-full mb-2 p-2 px-3 rounded-md bg-[color-mix(in_srgb,var(--color-error-container)_35%,transparent)] text-xs font-normal text-[var(--color-on-error-container)] text-center">
+          {error}
+        </p>
+      )}
       <div className="space-y-1">
         <label htmlFor="email" className="text-sm font-medium">Email</label>
         <Input 
@@ -68,6 +85,7 @@ export function LoginForm() {
           placeholder="Enter your email address"  
           required 
           autoFocus
+          onChange={() => setError('')}
           onBlur={(e) => setEmailDone(!!e.target.value.trim())}
           className={`placeholder:opacity-70 ${emailDone ? '!bg-[var(--color-inverse-on-surface)]' : ''}`}
         />
@@ -86,6 +104,7 @@ export function LoginForm() {
             type={showPassword ? 'text' : 'password'} 
             required 
             placeholder="Enter Password"
+            onChange={() => setError('')}
             onBlur={(e) => setPasswordDone(!!e.target.value)}
             className={`pr-14 placeholder:opacity-70 ${passwordDone ? '!bg-[var(--color-inverse-on-surface)]' : ''}`}
           />
@@ -98,7 +117,6 @@ export function LoginForm() {
           </button>
         </div>
       </div>
-      {error && <p className="text-[var(--color-error)] text-sm">{error}</p>}
       <div className="pt-2 md:pt-0">
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? (

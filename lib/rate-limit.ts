@@ -13,7 +13,7 @@ export const authRateLimit = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(5, "10 m"),
   analytics: true,
-  prefix: "@upstash/ratelimit/auth",
+  prefix: "@upstash/ratelimit/auth_v2",
 });
 
 // App Activity Rate Limiter: 20 requests per hour per IP (or per User ID)

@@ -48,13 +48,6 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const ip = headers().get("x-forwarded-for") ?? "127.0.0.1";
-        const { success: limitSuccess } = await authRateLimit.limit(ip);
-        
-        if (!limitSuccess) {
-          throw new Error("Too many requests. Please try again later.");
-        }
-
         const validatedFields = LoginSchema.safeParse(credentials);
 
         if (!validatedFields.success) {

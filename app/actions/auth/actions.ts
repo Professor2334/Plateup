@@ -142,3 +142,16 @@ export async function resendVerificationEmailAction(email: string) {
     return { success: false, error: 'Something went wrong' };
   }
 }
+
+export async function checkLoginRateLimit(email: string) {
+  const ip = headers().get('x-forwarded-for') ?? '127.0.0.1';
+  // Use both IP and email to prevent locking out other accounts on the same network
+  const identifier = `${ip}_${email.toLowerCase()}`;
+  const { success: limitSuccess, reset } = await authRateLimit.limit(identifier);
+  
+  if (!limitSuccess) {
+    const minutesLeft = Math.max(1, Math.ceil((reset - Date.now()) / 60000));
+    return { success: false, error: `Too many attempts. Try again in ${minutesLeft} minute${minutesLeft === 1 ? '' : 's'}` };
+  }
+  return { success: true };
+}
