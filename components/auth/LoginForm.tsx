@@ -75,7 +75,7 @@ export function LoginForm() {
       <div className="space-y-1">
         <div className="flex items-center justify-between">
           <label htmlFor="password" className="text-sm font-medium">Password</label>
-          <Link href="/auth/forgot-password" className="text-[13px] font-semibold text-[var(--color-primary)] hover:underline">
+          <Link href="/auth/forgot-password" className="text-[0.8125rem] font-semibold text-[var(--color-primary)] hover:underline">
             Forgot Password?
           </Link>
         </div>
@@ -92,7 +92,7 @@ export function LoginForm() {
           <button 
             type="button" 
             onClick={() => setShowPassword(!showPassword)} 
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[0.8125rem] font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity"
           >
             {showPassword ? 'Hide' : 'Show'}
           </button>

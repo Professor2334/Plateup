@@ -229,7 +229,7 @@ export function RegisterForm() {
           <button 
             type="button" 
             onClick={() => setShowPassword(!showPassword)} 
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[0.8125rem] font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity"
           >
             {showPassword ? 'Hide' : 'Show'}
           </button>
@@ -269,7 +269,7 @@ export function RegisterForm() {
           <button 
             type="button" 
             onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[0.8125rem] font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity"
           >
             {showConfirmPassword ? 'Hide' : 'Show'}
           </button>
@@ -286,7 +286,7 @@ export function RegisterForm() {
             'Create Account'
           )}
         </Button>
-        <p className="text-center text-[13px] text-[var(--color-on-surface-variant)] px-2">
+        <p className="text-center text-[0.8125rem] text-[var(--color-on-surface-variant)] px-2">
           By creating an account, you agree to our <Link href="/terms" className="font-bold text-[var(--color-primary)] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="font-bold text-[var(--color-primary)] hover:underline">Privacy Policy</Link>.
         </p>
         <div className="text-center">

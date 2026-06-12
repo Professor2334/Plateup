@@ -315,7 +315,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       <div className="lg:col-span-8">
         {loading ? (
           <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-[var(--color-primary)]">Generating your meal plan...</h1>
+            <h1 className="text-[clamp(1.25rem,2vw+0.5rem,1.5rem)] font-bold text-[var(--color-primary)]">Generating your meal plan...</h1>
             <p className="text-[var(--color-on-surface-variant)]">This takes about 10-15 seconds. Hang tight!</p>
             <MealPlanSkeleton />
           </div>
@@ -338,8 +338,8 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             <div className="w-16 h-16 rounded-full bg-[color-mix(in_srgb,var(--color-surface-container-low)_50%,transparent)] flex items-center justify-center mb-6">
               <Utensils className="w-8 h-8 text-[var(--color-on-surface-variant)] opacity-60" strokeWidth={1.5} />
             </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-[var(--color-on-surface)] tracking-tight">No meal plan active</h3>
-            <p className="mt-3 text-[14px] font-medium text-[var(--color-on-surface-variant)] opacity-70 max-w-sm leading-relaxed">
+            <h3 className="text-[clamp(1.125rem,2vw,1.25rem)] sm:text-[clamp(1.25rem,2vw+0.5rem,1.5rem)] font-bold text-[var(--color-on-surface)] tracking-tight">No meal plan active</h3>
+            <p className="mt-3 text-[0.875rem] font-medium text-[var(--color-on-surface-variant)] opacity-70 max-w-sm leading-relaxed">
               Use the form on the left to generate a new 7-day budget-aware Nigerian meal plan.
             </p>
           </div>
@@ -404,7 +404,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           <div className="max-w-5xl">
             <div className="flex flex-col">
               <div className="flex items-center justify-between">
-                <h2 className={`font-bold text-[var(--color-on-surface)] tracking-tight transition-all duration-500 ease-in-out origin-left ${isScrolled ? 'text-xl scale-95' : 'text-3xl scale-100'}`}>Meal History</h2>
+                <h2 className={`font-bold text-[var(--color-on-surface)] tracking-tight transition-all duration-500 ease-in-out origin-left ${isScrolled ? 'text-[clamp(1.125rem,2vw,1.25rem)] scale-95' : 'text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] scale-100'}`}>Meal History</h2>
               </div>
               
               {/* Perfectly smooth collapse using CSS Grid */}
@@ -458,7 +458,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
         {history.length === 0 ? (
           <div className="py-20 flex flex-col items-center justify-center text-center">
             <div className="w-16 h-16 rounded-full bg-[#f9fafb] flex items-center justify-center mb-4">
-              <span className="text-3xl">🍲</span>
+              <span className="text-[clamp(1.5rem,3vw+0.5rem,1.875rem)]">🍲</span>
             </div>
             <h3 className="text-lg font-bold text-[var(--color-on-surface)]">No meal plans yet</h3>
             <p className="text-sm text-[var(--color-on-surface-variant)] mt-2 max-w-sm">Generate your first meal plan to start building your history.</p>
@@ -474,7 +474,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
               if (plans.length === 0) return null;
               return (
                 <div key={groupName} className="relative bg-white rounded-[24px] p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                  <h3 className="text-[11px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-widest mb-6 ml-6">{groupName}</h3>
+                  <h3 className="text-[0.6875rem] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-widest mb-6 ml-6">{groupName}</h3>
                   <div className="space-y-0 relative">
                     {/* Vertical Timeline Spine */}
                     <div className="absolute left-2 top-2 bottom-4 w-px bg-[var(--color-outline-variant)]/30"></div>
@@ -491,40 +491,46 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                           
                           {/* Left Section (Content) */}
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-[16px] font-extrabold text-[var(--color-on-surface)] tracking-tight mb-2">Generated Meal Plan</h4>
+                            <h4 className="text-[1rem] font-extrabold text-[var(--color-on-surface)] tracking-tight mb-2">Generated Meal Plan</h4>
                             
                             <div className="space-y-1.5 mb-5">
-                              <p className="text-[14px] font-semibold text-[var(--color-on-surface)]">
+                              <p className="text-[0.875rem] font-semibold text-[var(--color-on-surface)]">
                                 Budget: NGN {plan.budget.toLocaleString()}
                               </p>
-                              <p className="text-[13px] font-medium text-[var(--color-secondary)]">
+                              <p className="text-[0.8125rem] font-medium text-[var(--color-secondary)]">
                                 Ingredients: {plan.ingredients.split(',').map((i: string) => i.trim()).filter((i: string) => i).join(' • ')}
                               </p>
                             </div>
 
                             {/* Actions - visible under entry */}
                             <div className="flex flex-wrap gap-3 sm:opacity-40 sm:group-hover:opacity-100 transition-opacity">
-                              <button onClick={() => handleViewOnlyPlan(plan)} className="text-[12px] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors px-3 py-1.5 rounded-md bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-primary)]/30 shadow-sm">View Plan</button>
+                              <button onClick={() => handleViewOnlyPlan(plan)} className="text-[0.75rem] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors px-3 py-1.5 rounded-md bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-primary)]/30 shadow-sm">View Plan</button>
                               {!plan.isSaved && (
-                                <button onClick={() => handleSavePlanById(plan.id)} className="text-[12px] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors px-3 py-1.5 rounded-md bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-primary)]/30 shadow-sm">Save</button>
+                                <button onClick={() => handleSavePlanById(plan.id)} className="text-[0.75rem] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors px-3 py-1.5 rounded-md bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-primary)]/30 shadow-sm">Save</button>
                               )}
-                              <button onClick={() => handleDeletePlan(plan.id)} className="text-[12px] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-error)] transition-colors px-3 py-1.5 rounded-md bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-error)]/30 shadow-sm">Delete</button>
+                              <button onClick={() => handleDeletePlan(plan.id)} className="text-[0.75rem] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-error)] transition-colors px-3 py-1.5 rounded-md bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-error)]/30 shadow-sm">Delete</button>
                             </div>
                           </div>
                           
                           {/* Right Section (Metadata) */}
                           <div className="md:w-48 flex flex-col items-start md:items-end text-left md:text-right gap-1 pt-1 border-t border-[var(--color-outline-variant)]/10 md:border-t-0 mt-4 md:mt-0 md:pt-0">
                             {plan.isSaved ? (
-                              <span className="text-[12px] font-bold text-[var(--color-primary)] mb-1 flex items-center">🟢 Saved</span>
+                              <span className="text-[0.75rem] font-bold text-[var(--color-primary)] mb-1 flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]"></span>
+                                Saved
+                              </span>
                             ) : (
-                              <span className="text-[12px] font-bold text-[var(--color-secondary)] mb-1 flex items-center">🟡 Unsaved</span>
+                              <span className="text-[0.75rem] font-bold text-[var(--color-secondary)] mb-1 flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
+                                Unsaved
+                              </span>
                             )}
-                            <div className="text-[13px] font-bold text-[var(--color-on-surface-variant)]">{dateString}</div>
-                            <div className="text-[12px] font-medium text-[var(--color-secondary)]">{time}</div>
+                            <div className="text-[0.8125rem] font-bold text-[var(--color-on-surface-variant)]">{dateString}</div>
+                            <div className="text-[0.75rem] font-medium text-[var(--color-secondary)]">{time}</div>
                             
                             <div className="mt-3 flex flex-wrap md:justify-end gap-1.5">
-                               <div className="text-[11px] font-bold tracking-wider uppercase text-[var(--color-secondary)] bg-[#f9fafb] px-2 py-0.5 rounded border border-[var(--color-outline-variant)]/20">7 Days</div>
-                               <div className="text-[11px] font-bold tracking-wider uppercase text-[var(--color-secondary)] bg-[#f9fafb] px-2 py-0.5 rounded border border-[var(--color-outline-variant)]/20">21 Meals</div>
+                               <div className="text-[0.6875rem] font-bold tracking-wider uppercase text-[var(--color-secondary)] bg-[#f9fafb] px-2 py-0.5 rounded border border-[var(--color-outline-variant)]/20">7 Days</div>
+                               <div className="text-[0.6875rem] font-bold tracking-wider uppercase text-[var(--color-secondary)] bg-[#f9fafb] px-2 py-0.5 rounded border border-[var(--color-outline-variant)]/20">21 Meals</div>
                             </div>
                           </div>
                         </div>
@@ -598,7 +604,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           <div className="max-w-5xl">
             <div className="flex flex-col">
               <div className="flex items-center justify-between">
-                <h2 className={`font-bold text-[var(--color-on-surface)] tracking-tight transition-all duration-500 ease-in-out origin-left ${isScrolled ? 'text-xl scale-95' : 'text-3xl scale-100'}`}>{title}</h2>
+                <h2 className={`font-bold text-[var(--color-on-surface)] tracking-tight transition-all duration-500 ease-in-out origin-left ${isScrolled ? 'text-[clamp(1.125rem,2vw,1.25rem)] scale-95' : 'text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] scale-100'}`}>{title}</h2>
               </div>
               
               {/* Perfectly smooth collapse using CSS Grid */}
@@ -652,7 +658,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           {allSavedPlans.length === 0 ? (
           <div className="rounded-2xl bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 p-20 flex flex-col items-center justify-center text-center mt-8">
             <Bookmark className="w-12 h-12 text-[var(--color-outline-variant)] mb-4" />
-            <h3 className="text-xl font-semibold text-[var(--color-on-surface)]">No saved plans yet</h3>
+            <h3 className="text-[clamp(1.125rem,2vw,1.25rem)] font-semibold text-[var(--color-on-surface)]">No saved plans yet</h3>
             <p className="text-[var(--color-on-surface-variant)] mt-2 max-w-md">Your saved meal plans will appear here. Generate a plan and click save to keep it for later.</p>
             <Button className="mt-6 font-bold" onClick={() => handleTabChange('generate')}>Generate Meal Plan</Button>
           </div>
@@ -673,8 +679,8 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                   
                   {/* Top Row: Title & Tag */}
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-extrabold text-[var(--color-on-surface)] tracking-tight">{titleTag}</h3>
-                    <span className="text-[11px] font-bold tracking-wider uppercase text-[var(--color-secondary)] bg-[#f9fafb] px-2.5 py-1 rounded border border-[var(--color-outline-variant)]/20">
+                    <h3 className="text-[clamp(1.125rem,2vw,1.25rem)] font-extrabold text-[var(--color-on-surface)] tracking-tight">{titleTag}</h3>
+                    <span className="text-[0.6875rem] font-bold tracking-wider uppercase text-[var(--color-secondary)] bg-[#f9fafb] px-2.5 py-1 rounded border border-[var(--color-outline-variant)]/20">
                       [7 Days]
                     </span>
                   </div>
@@ -688,18 +694,18 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
 
                   {/* Ingredients */}
                   <div className="mb-6 max-w-3xl">
-                    <h4 className="text-[11px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-2">Ingredients</h4>
-                    <p className="text-[14px] text-[var(--color-on-surface)] font-medium leading-relaxed">
+                    <h4 className="text-[0.6875rem] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-2">Ingredients</h4>
+                    <p className="text-[0.875rem] text-[var(--color-on-surface)] font-medium leading-relaxed">
                       {plan.ingredients.split(',').map((i: string) => i.trim()).filter((i: string) => i).join(' • ')}
                     </p>
                   </div>
 
                   {/* Meal Preview */}
                   <div className="mb-8 max-w-3xl">
-                    <h4 className="text-[11px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-3">Preview</h4>
+                    <h4 className="text-[0.6875rem] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-3">Preview</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       {previewMeals.map((day: any, i: number) => (
-                        <div key={i} className="flex gap-3 text-[13px]">
+                        <div key={i} className="flex gap-3 text-[0.8125rem]">
                           <span className="font-bold text-[var(--color-primary)] w-8 flex-shrink-0">{day.day.substring(0, 3)}</span>
                           <span className="text-[var(--color-on-surface-variant)] truncate font-medium">{day.lunch}</span>
                         </div>
@@ -709,16 +715,16 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
 
                   {/* Footer & Actions */}
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-5 border-t border-[var(--color-outline-variant)]/10 gap-4 sm:gap-0">
-                    <div className="flex items-center gap-2 text-[12px] font-bold text-[var(--color-secondary)]">
+                    <div className="flex items-center gap-2 text-[0.75rem] font-bold text-[var(--color-secondary)]">
                       <span>7 Meals</span>
                       <span>•</span>
                       <span>21 Dishes</span>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
-                      <button onClick={() => handleViewOnlyPlan(plan)} className="text-[13px] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors px-4 py-2 rounded-lg bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-primary)]/30 shadow-sm">View Plan</button>
-                      <button onClick={() => handleDeletePlan(plan.id)} className="text-[13px] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-error)] transition-colors px-4 py-2 rounded-lg bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-error)]/30 shadow-sm">Delete</button>
-                      <Button onClick={() => handleReusePlan(plan)} className="h-9 px-6 text-[13px] font-bold shadow-sm">Reuse Plan</Button>
+                      <button onClick={() => handleViewOnlyPlan(plan)} className="text-[0.8125rem] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors px-4 py-2 rounded-lg bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-primary)]/30 shadow-sm">View Plan</button>
+                      <button onClick={() => handleDeletePlan(plan.id)} className="text-[0.8125rem] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-error)] transition-colors px-4 py-2 rounded-lg bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-error)]/30 shadow-sm">Delete</button>
+                      <Button onClick={() => handleReusePlan(plan)} className="h-9 px-6 text-[0.8125rem] font-bold shadow-sm">Reuse Plan</Button>
                     </div>
                   </div>
 
@@ -743,7 +749,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           <div className="max-w-5xl">
             <div className="flex flex-col">
               <div className="flex items-center justify-between">
-                <h2 className={`font-bold text-[var(--color-on-surface)] tracking-tight transition-all duration-500 ease-in-out origin-left ${isScrolled ? 'text-xl scale-95' : 'text-3xl scale-100'}`}>Settings</h2>
+                <h2 className={`font-bold text-[var(--color-on-surface)] tracking-tight transition-all duration-500 ease-in-out origin-left ${isScrolled ? 'text-[clamp(1.125rem,2vw,1.25rem)] scale-95' : 'text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] scale-100'}`}>Settings</h2>
               </div>
               
               {/* Perfectly smooth collapse using CSS Grid */}
@@ -771,16 +777,16 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
               </h3>
               
               <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-8">
-                <div className="w-20 h-20 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_15%,white)] flex items-center justify-center flex-shrink-0 text-[var(--color-primary)] text-2xl font-bold tracking-tight">
+                <div className="w-20 h-20 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_15%,white)] flex items-center justify-center flex-shrink-0 text-[var(--color-primary)] text-[clamp(1.25rem,2vw+0.5rem,1.5rem)] font-bold tracking-tight">
                   {initials}
                 </div>
                 <div className="space-y-1.5 flex-1 min-w-0">
-                  <h4 className="text-xl font-bold text-[var(--color-on-surface)] truncate">{userData.name}</h4>
-                  <p className="text-[14px] text-[var(--color-on-surface-variant)] flex items-center gap-2 truncate">
+                  <h4 className="text-[clamp(1.125rem,2vw,1.25rem)] font-bold text-[var(--color-on-surface)] truncate">{userData.name}</h4>
+                  <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] flex items-center gap-2 truncate">
                     <Mail className="w-3.5 h-3.5 flex-shrink-0" />
                     <span className="truncate">{userData.email}</span>
                   </p>
-                  <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-[var(--color-primary)]">
+                  <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.6875rem] font-bold uppercase tracking-wider bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-[var(--color-primary)]">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     Verified
                   </div>
@@ -818,23 +824,23 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                 {/* Simulated static row */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[var(--color-outline-variant)]/20">
                   <div>
-                    <p className="text-[14px] font-bold text-[var(--color-on-surface)]">Currency</p>
-                    <p className="text-[13px] text-[var(--color-on-surface-variant)]">Display currency for meal plans</p>
+                    <p className="text-[0.875rem] font-bold text-[var(--color-on-surface)]">Currency</p>
+                    <p className="text-[0.8125rem] text-[var(--color-on-surface-variant)]">Display currency for meal plans</p>
                   </div>
-                  <div className="text-[14px] font-semibold text-[var(--color-on-surface)] px-4 py-2 bg-[#f9fafb] rounded-lg border border-[var(--color-outline-variant)]/20">
+                  <div className="text-[0.875rem] font-semibold text-[var(--color-on-surface)] px-4 py-2 bg-[#f9fafb] rounded-lg border border-[var(--color-outline-variant)]/20">
                     NGN (₦)
                   </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-between gap-4 pb-4 border-b border-[var(--color-outline-variant)]/20">
                   <div className="flex-1">
-                    <label className="text-[14px] font-bold text-[var(--color-on-surface)] mb-1 block">Household Size</label>
-                    <p className="text-[13px] text-[var(--color-on-surface-variant)] mb-3 sm:mb-0">How many people are you cooking for?</p>
+                    <label className="text-[0.875rem] font-bold text-[var(--color-on-surface)] mb-1 block">Household Size</label>
+                    <p className="text-[0.8125rem] text-[var(--color-on-surface-variant)] mb-3 sm:mb-0">How many people are you cooking for?</p>
                   </div>
                   <select 
                     value={prefHousehold}
                     onChange={e => setPrefHousehold(e.target.value)}
-                    className="w-full sm:w-48 text-[14px] font-medium text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-3 py-2 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-colors h-10"
+                    className="w-full sm:w-48 text-[0.875rem] font-medium text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-3 py-2 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-colors h-10"
                   >
                     <option value="1">1 Person</option>
                     <option value="2">2 People</option>
@@ -845,13 +851,13 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
 
                 <div className="flex flex-col sm:flex-row justify-between gap-4 pb-4 border-b border-[var(--color-outline-variant)]/20">
                   <div className="flex-1">
-                    <label className="text-[14px] font-bold text-[var(--color-on-surface)] mb-1 block">Primary Goal</label>
-                    <p className="text-[13px] text-[var(--color-on-surface-variant)] mb-3 sm:mb-0">What is your main focus for meal planning?</p>
+                    <label className="text-[0.875rem] font-bold text-[var(--color-on-surface)] mb-1 block">Primary Goal</label>
+                    <p className="text-[0.8125rem] text-[var(--color-on-surface-variant)] mb-3 sm:mb-0">What is your main focus for meal planning?</p>
                   </div>
                   <select 
                     value={prefGoal}
                     onChange={e => setPrefGoal(e.target.value)}
-                    className="w-full sm:w-48 text-[14px] font-medium text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-3 py-2 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-colors h-10"
+                    className="w-full sm:w-48 text-[0.875rem] font-medium text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-3 py-2 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-colors h-10"
                   >
                     <option value="save-money">Save Money</option>
                     <option value="save-time">Save Time</option>
@@ -898,27 +904,27 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                 }}
               >
                 <div>
-                  <label className="text-[13px] font-bold text-[var(--color-on-surface)] mb-2 block">Change Password</label>
+                  <label className="text-[0.8125rem] font-bold text-[var(--color-on-surface)] mb-2 block">Change Password</label>
                   <div className="space-y-3">
                     <input 
                       type="password" 
                       name="currentPassword" 
                       placeholder="Current Password" 
                       required
-                      className="w-full text-[14px] text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-4 py-2.5 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all"
+                      className="w-full text-[0.875rem] text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-4 py-2.5 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all"
                     />
                     <input 
                       type="password" 
                       name="newPassword" 
                       placeholder="New Password" 
                       required
-                      className="w-full text-[14px] text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-4 py-2.5 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all"
+                      className="w-full text-[0.875rem] text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-4 py-2.5 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all"
                     />
                   </div>
                 </div>
                 
-                {passError && <p className="text-[13px] font-semibold text-[var(--color-error)]">{passError}</p>}
-                {passSuccess && <p className="text-[13px] font-semibold text-[var(--color-primary)]">{passSuccess}</p>}
+                {passError && <p className="text-[0.8125rem] font-semibold text-[var(--color-error)]">{passError}</p>}
+                {passSuccess && <p className="text-[0.8125rem] font-semibold text-[var(--color-primary)]">{passSuccess}</p>}
                 
                 <div className="pt-2">
                   <Button type="submit" variant="outline" disabled={passSaving} className="w-full sm:w-auto text-sm font-bold shadow-sm">
@@ -931,12 +937,12 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                 <div className="bg-[color-mix(in_srgb,var(--color-error)_4%,transparent)] rounded-[12px] p-5 border border-[var(--color-error)]/10">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <h4 className="text-[14px] font-bold text-[var(--color-error)]">Sign Out</h4>
-                      <p className="text-[13px] text-[var(--color-error)]/70 mt-1">End your session on this device.</p>
+                      <h4 className="text-[0.875rem] font-bold text-[var(--color-error)]">Sign Out</h4>
+                      <p className="text-[0.8125rem] text-[var(--color-error)]/70 mt-1">End your session on this device.</p>
                     </div>
                     <button
                       onClick={() => setIsLogoutModalOpen(true)}
-                      className="flex items-center justify-center gap-2 text-[14px] font-bold text-white bg-[var(--color-error)] px-6 py-2.5 rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+                      className="flex items-center justify-center gap-2 text-[0.875rem] font-bold text-white bg-[var(--color-error)] px-6 py-2.5 rounded-lg hover:bg-red-700 transition-colors shadow-sm"
                     >
                       <LogOut className="w-4 h-4" />
                       Logout
@@ -959,7 +965,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                     <div className="w-8 h-8 rounded-lg bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] flex items-center justify-center text-[var(--color-primary)]">
                       <LifeBuoy className="w-4 h-4" />
                     </div>
-                    <span className="text-[14px] font-semibold text-[var(--color-on-surface)] group-hover:text-[var(--color-primary)] transition-colors">Contact Support</span>
+                    <span className="text-[0.875rem] font-semibold text-[var(--color-on-surface)] group-hover:text-[var(--color-primary)] transition-colors">Contact Support</span>
                   </div>
                   <span className="text-[var(--color-on-surface-variant)] opacity-50">&rarr;</span>
                 </button>
@@ -969,7 +975,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                     <div className="w-8 h-8 rounded-lg bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 flex items-center justify-center text-[var(--color-secondary)]">
                       <FileText className="w-4 h-4" />
                     </div>
-                    <span className="text-[14px] font-semibold text-[var(--color-on-surface)]">Terms of Service</span>
+                    <span className="text-[0.875rem] font-semibold text-[var(--color-on-surface)]">Terms of Service</span>
                   </div>
                   <span className="text-[var(--color-on-surface-variant)] opacity-50">&rarr;</span>
                 </button>
@@ -979,7 +985,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                     <div className="w-8 h-8 rounded-lg bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 flex items-center justify-center text-[var(--color-secondary)]">
                       <Shield className="w-4 h-4" />
                     </div>
-                    <span className="text-[14px] font-semibold text-[var(--color-on-surface)]">Privacy Policy</span>
+                    <span className="text-[0.875rem] font-semibold text-[var(--color-on-surface)]">Privacy Policy</span>
                   </div>
                   <span className="text-[var(--color-on-surface-variant)] opacity-50">&rarr;</span>
                 </button>
@@ -1003,7 +1009,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       }`}
     >
       <Icon className={`w-4 h-4 transition-colors ${activeTab === tab ? 'text-[var(--color-on-primary)]' : 'text-[var(--color-on-surface-variant)] group-hover:text-[var(--color-on-surface)]'}`} />
-      <span className="text-[13px]">{label}</span>
+      <span className="text-[0.8125rem]">{label}</span>
     </button>
   );
 
@@ -1021,7 +1027,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
         </div>
         
         <div className="px-8 pb-8">
-          <p className="text-[13px] font-medium text-[var(--color-on-surface-variant)] opacity-80 flex items-center justify-start gap-1.5">
+          <p className="text-[0.8125rem] font-medium text-[var(--color-on-surface-variant)] opacity-80 flex items-center justify-start gap-1.5">
             <span className={`w-1.5 h-1.5 rounded-full ${userData.emailVerified ? 'bg-[#10b981]' : 'bg-[var(--color-accent)]'}`}></span> 
             {userData.emailVerified ? 'Verified Account' : 'Unverified Account'}
           </p>
@@ -1040,13 +1046,13 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-[10px] text-[var(--color-on-surface-variant)] opacity-80 hover:bg-[color-mix(in_srgb,var(--color-error)_8%,transparent)] hover:text-[var(--color-error)] hover:opacity-100 transition-all group"
           >
             <LogOut className="w-4 h-4 transition-colors group-hover:text-[var(--color-error)]" />
-            <span className="font-medium text-[13px]">Logout</span>
+            <span className="font-medium text-[0.8125rem]">Logout</span>
           </button>
 
           <div className="flex items-center justify-between gap-1 px-3">
-            <button onClick={() => handleTabChange('support')} className="text-[12px] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Contact</button>
-            <button onClick={() => handleTabChange('terms')} className="text-[12px] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Terms</button>
-            <button onClick={() => handleTabChange('privacy')} className="text-[12px] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Privacy</button>
+            <button onClick={() => handleTabChange('support')} className="text-[0.75rem] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Contact</button>
+            <button onClick={() => handleTabChange('terms')} className="text-[0.75rem] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Terms</button>
+            <button onClick={() => handleTabChange('privacy')} className="text-[0.75rem] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Privacy</button>
           </div>
         </div>
       </aside>
@@ -1064,10 +1070,10 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
         ) : activeTab === 'generate' ? (
           <div className="mb-8 bg-white rounded-[20px] px-6 py-4 sm:px-8 shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex flex-col justify-center animate-in fade-in duration-300 relative overflow-hidden">
             <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[var(--color-primary)] opacity-80"></div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-[var(--color-on-surface)] tracking-tight mb-0.5">
+            <h1 className="text-[clamp(1.125rem,2vw,1.25rem)] sm:text-[clamp(1.25rem,2vw+0.5rem,1.5rem)] font-extrabold text-[var(--color-on-surface)] tracking-tight mb-0.5">
               Welcome, {userName.split(' ')[0]}
             </h1>
-            <p className="text-[14px] text-[var(--color-on-surface-variant)] font-medium opacity-80">Ready to plan this week's meals?</p>
+            <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] font-medium opacity-80">Ready to plan this week's meals?</p>
           </div>
         ) : null}
         {activeTab === 'generate' && renderGenerateTab()}
@@ -1093,9 +1099,9 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
         {activeTab === 'history' && renderHistoryTab()}
         {activeTab === 'saved' && renderSavedTab('Saved Plans')}
         {activeTab === 'settings' && renderSettingsTab()}
-        {activeTab === 'support' && <SupportTab email={userData.email} />}
-        {activeTab === 'privacy' && <PrivacyTab />}
-        {activeTab === 'terms' && <TermsTab />}
+        {activeTab === 'support' && <SupportTab email={userData.email} isScrolled={isScrolled} />}
+        {activeTab === 'privacy' && <PrivacyTab isScrolled={isScrolled} />}
+        {activeTab === 'terms' && <TermsTab isScrolled={isScrolled} />}
       </main>
     </div>
 
@@ -1107,8 +1113,8 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           onClick={() => setIsLogoutModalOpen(false)}
         />
         <div className="relative bg-[var(--color-surface)] w-full max-w-[360px] rounded-[24px] shadow-[0_16px_40px_rgb(0,0,0,0.12)] p-6 sm:p-8 animate-in zoom-in-95 fade-in duration-200">
-          <h3 className="text-[20px] font-bold text-[var(--color-on-surface)] mb-2 tracking-tight">Log out of PlateUp?</h3>
-          <p className="text-[14px] text-[var(--color-on-surface-variant)] mb-8 leading-relaxed">
+          <h3 className="text-[1.25rem] font-bold text-[var(--color-on-surface)] mb-2 tracking-tight">Log out of PlateUp?</h3>
+          <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-8 leading-relaxed">
             You'll need to sign in again to access your meal plans and saved history.
           </p>
           <div className="flex flex-col gap-3">
@@ -1118,7 +1124,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                 await logoutUser();
               }}
               disabled={isLoggingOut}
-              className="w-full min-h-[48px] rounded-xl font-semibold shadow-sm text-[15px] hover:opacity-90 transition-opacity border-none disabled:opacity-50"
+              className="w-full min-h-[48px] rounded-xl font-semibold shadow-sm text-[0.9375rem] hover:opacity-90 transition-opacity border-none disabled:opacity-50"
               style={{ backgroundColor: 'var(--color-error)', color: 'var(--color-on-error)' }}
             >
               {isLoggingOut ? 'Logging out...' : 'Logout'}
@@ -1126,7 +1132,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             <Button 
               variant="outline" 
               onClick={() => setIsLogoutModalOpen(false)}
-              className="w-full min-h-[48px] rounded-xl font-semibold border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface)] text-[15px]"
+              className="w-full min-h-[48px] rounded-xl font-semibold border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface)] text-[0.9375rem]"
             >
               Cancel
             </Button>
@@ -1143,8 +1149,8 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           onClick={() => setIsEditProfileModalOpen(false)}
         />
         <div className="relative bg-[var(--color-surface)] w-full max-w-[400px] rounded-[24px] shadow-[0_16px_40px_rgb(0,0,0,0.12)] p-6 sm:p-8 animate-in zoom-in-95 fade-in duration-200">
-          <h3 className="text-[20px] font-bold text-[var(--color-on-surface)] mb-2 tracking-tight">Edit Profile</h3>
-          <p className="text-[14px] text-[var(--color-on-surface-variant)] mb-6 leading-relaxed">
+          <h3 className="text-[1.25rem] font-bold text-[var(--color-on-surface)] mb-2 tracking-tight">Edit Profile</h3>
+          <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-6 leading-relaxed">
             Update your display name.
           </p>
           <form onSubmit={async (e) => {
@@ -1169,21 +1175,21 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           }}>
             <div className="space-y-4 mb-8">
               <div>
-                <label className="text-[13px] font-bold text-[var(--color-on-surface)] mb-2 block">Display Name</label>
+                <label className="text-[0.8125rem] font-bold text-[var(--color-on-surface)] mb-2 block">Display Name</label>
                 <input 
                   type="text" 
                   name="name" 
                   defaultValue={userData.name}
                   required
                   minLength={2}
-                  className="w-full text-[15px] font-medium text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-xl px-4 py-3.5 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all"
+                  className="w-full text-[0.9375rem] font-medium text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-xl px-4 py-3.5 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all"
                 />
               </div>
             </div>
             <div className="flex flex-col gap-3">
               <Button 
                 type="submit"
-                className="w-full min-h-[48px] rounded-xl font-semibold shadow-sm text-[15px] hover:opacity-90 transition-opacity border-none"
+                className="w-full min-h-[48px] rounded-xl font-semibold shadow-sm text-[0.9375rem] hover:opacity-90 transition-opacity border-none"
                 style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
               >
                 Save Changes
@@ -1192,7 +1198,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                 type="button"
                 variant="outline" 
                 onClick={() => setIsEditProfileModalOpen(false)}
-                className="w-full min-h-[48px] rounded-xl font-semibold border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface)] text-[15px]"
+                className="w-full min-h-[48px] rounded-xl font-semibold border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface)] text-[0.9375rem]"
               >
                 Cancel
               </Button>

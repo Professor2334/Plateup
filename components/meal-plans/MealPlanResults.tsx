@@ -51,7 +51,7 @@ export function MealPlanResults({
       {/* Top Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--color-on-surface)] tracking-tight flex items-center gap-2">
+          <h1 className="text-[clamp(1.25rem,2vw+0.5rem,1.5rem)] sm:text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] font-extrabold text-[var(--color-on-surface)] tracking-tight flex items-center gap-2">
             AI Meal Plan
             <Sparkles className="w-6 h-6 text-[var(--color-primary)]" />
           </h1>
@@ -74,8 +74,8 @@ export function MealPlanResults({
                 {/* Invisible overlay to catch outside clicks */}
                 <div className="fixed inset-0 z-40" onClick={() => setShowRegenerateConfirm(false)} />
                 <div className="absolute bottom-full mb-2 right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 w-64 bg-white rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-[var(--color-outline-variant)]/30 p-4 z-50 animate-in fade-in zoom-in-95 duration-200">
-                  <p className="text-[14px] font-bold text-[var(--color-on-surface)] mb-1">Regenerate Plan?</p>
-                  <p className="text-[12px] text-[var(--color-on-surface-variant)] mb-3 leading-tight">This will overwrite your current plan.</p>
+                  <p className="text-[0.875rem] font-bold text-[var(--color-on-surface)] mb-1">Regenerate Plan?</p>
+                  <p className="text-[0.75rem] text-[var(--color-on-surface-variant)] mb-3 leading-tight">This will overwrite your current plan.</p>
                   <div className="flex gap-2">
                     <Button variant="outline" className="flex-1 h-8 text-xs" onClick={() => setShowRegenerateConfirm(false)}>Cancel</Button>
                     <Button className="flex-1 h-8 text-xs bg-[var(--color-primary)] text-white hover:bg-[color-mix(in_srgb,var(--color-primary)_85%,black)]" onClick={() => { setShowRegenerateConfirm(false); onRegenerate(); }}>Yes, regenerate</Button>
@@ -100,8 +100,8 @@ export function MealPlanResults({
             <Sparkles className="w-5 h-5 text-[var(--color-primary)]" strokeWidth={2.5} />
           </div>
           <div>
-            <h3 className="text-[15px] font-bold text-[var(--color-on-surface)] mb-1">AI Optimization Strategy</h3>
-            <p className="text-[14px] text-[var(--color-on-surface-variant)] leading-relaxed">
+            <h3 className="text-[0.9375rem] font-bold text-[var(--color-on-surface)] mb-1">AI Optimization Strategy</h3>
+            <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] leading-relaxed">
               This plan maximizes your <strong>NGN {budget.toLocaleString()}</strong> budget by prioritizing affordable Nigerian staples. 
               It intelligently incorporates your available ingredients ({ingredients || 'none provided'}) to minimize additional grocery costs.
             </p>
@@ -122,7 +122,7 @@ export function MealPlanResults({
                 <CalendarDays className="w-4 h-4" />
                 <span className="text-xs font-semibold uppercase tracking-wider">Duration</span>
               </div>
-              <p className="text-xl font-bold text-[var(--color-on-surface)]">7 Days</p>
+              <p className="text-[clamp(1.125rem,2vw,1.25rem)] font-bold text-[var(--color-on-surface)]">7 Days</p>
             </div>
             
             <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-[var(--color-outline-variant)]/20">
@@ -130,7 +130,7 @@ export function MealPlanResults({
                 <Utensils className="w-4 h-4" />
                 <span className="text-xs font-semibold uppercase tracking-wider">Meals</span>
               </div>
-              <p className="text-xl font-bold text-[var(--color-on-surface)]">21</p>
+              <p className="text-[clamp(1.125rem,2vw,1.25rem)] font-bold text-[var(--color-on-surface)]">21</p>
             </div>
             
             <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-[var(--color-outline-variant)]/20">
@@ -138,7 +138,7 @@ export function MealPlanResults({
                 <PiggyBank className="w-4 h-4" />
                 <span className="text-xs font-semibold uppercase tracking-wider">Estimated</span>
               </div>
-              <p className="text-xl font-bold text-[var(--color-on-surface)] tracking-tight">
+              <p className="text-[clamp(1.125rem,2vw,1.25rem)] font-bold text-[var(--color-on-surface)] tracking-tight">
                 ₦{plan.estimatedCost.toLocaleString()}
               </p>
             </div>
@@ -148,7 +148,7 @@ export function MealPlanResults({
                 <TrendingDown className="w-4 h-4" />
                 <span className="text-xs font-semibold uppercase tracking-wider">Savings</span>
               </div>
-              <p className="text-xl font-bold text-[var(--color-primary)] tracking-tight">
+              <p className="text-[clamp(1.125rem,2vw,1.25rem)] font-bold text-[var(--color-primary)] tracking-tight">
                 ₦{estimatedSavings.toLocaleString()}
               </p>
             </div>
@@ -165,8 +165,8 @@ export function MealPlanResults({
               {plan.mealPlan.map((dayPlan, idx) => (
                 <div key={idx} className="bg-white rounded-[24px] p-5 sm:p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all duration-300 group">
                   <div className="flex items-center justify-between border-b border-[var(--color-outline-variant)]/30 pb-4 mb-4">
-                    <h3 className="font-extrabold text-[17px] text-[var(--color-on-surface)] tracking-tight">{dayPlan.day}</h3>
-                    <span className="text-[11px] font-bold px-2.5 py-1 bg-[#f9fafb] text-[var(--color-secondary)] rounded-full uppercase tracking-widest border border-[var(--color-outline-variant)]/50">
+                    <h3 className="font-extrabold text-[1.0625rem] text-[var(--color-on-surface)] tracking-tight">{dayPlan.day}</h3>
+                    <span className="text-[0.6875rem] font-bold px-2.5 py-1 bg-[#f9fafb] text-[var(--color-secondary)] rounded-full uppercase tracking-widest border border-[var(--color-outline-variant)]/50">
                       Day {idx + 1}
                     </span>
                   </div>
@@ -177,7 +177,7 @@ export function MealPlanResults({
                         <Coffee className="w-4 h-4" />
                         <span className="text-xs font-bold uppercase tracking-widest">Breakfast</span>
                       </div>
-                      <p className="text-[14px] font-medium text-[var(--color-on-surface)]">{dayPlan.breakfast}</p>
+                      <p className="text-[0.875rem] font-medium text-[var(--color-on-surface)]">{dayPlan.breakfast}</p>
                     </div>
                     
                     <div className="space-y-1.5">
@@ -185,7 +185,7 @@ export function MealPlanResults({
                         <Sun className="w-4 h-4" />
                         <span className="text-xs font-bold uppercase tracking-widest">Lunch</span>
                       </div>
-                      <p className="text-[14px] font-medium text-[var(--color-on-surface)]">{dayPlan.lunch}</p>
+                      <p className="text-[0.875rem] font-medium text-[var(--color-on-surface)]">{dayPlan.lunch}</p>
                     </div>
                     
                     <div className="space-y-1.5">
@@ -193,14 +193,14 @@ export function MealPlanResults({
                         <Utensils className="w-4 h-4" />
                         <span className="text-xs font-bold uppercase tracking-widest">Dinner</span>
                       </div>
-                      <p className="text-[14px] font-medium text-[var(--color-on-surface)]">{dayPlan.dinner}</p>
+                      <p className="text-[0.875rem] font-medium text-[var(--color-on-surface)]">{dayPlan.dinner}</p>
                     </div>
                   </div>
                   
                   {/* Card Footer AI Reasoning */}
                   <div className="mt-5 pt-4 border-t border-dashed border-[var(--color-outline-variant)]/40 flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-[var(--color-primary)] opacity-70" />
-                    <p className="text-[12px] font-medium text-[var(--color-on-surface-variant)] opacity-80">
+                    <p className="text-[0.75rem] font-medium text-[var(--color-on-surface-variant)] opacity-80">
                       Budget optimized • Incorporates available ingredients
                     </p>
                   </div>
@@ -220,7 +220,7 @@ export function MealPlanResults({
                 <ShoppingBag className="w-6 h-6 text-[var(--color-accent)]" />
               </div>
               <div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--color-on-surface)] tracking-tight">Shopping List</h2>
+                <h2 className="text-[clamp(1.25rem,2vw+0.5rem,1.5rem)] sm:text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] font-extrabold text-[var(--color-on-surface)] tracking-tight">Shopping List</h2>
                 <p className="text-sm text-[var(--color-secondary)] font-medium mt-1">For {plan.mealPlan.length} Days of Meals</p>
               </div>
             </div>
@@ -290,10 +290,10 @@ export function MealPlanResults({
                           {isChecked && <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                         </div>
                         <div className="flex-1 min-w-0 flex justify-between items-start">
-                          <span className="text-[15px] font-semibold leading-tight pr-2 text-[var(--color-on-surface)] mt-0.5">
+                          <span className="text-[0.9375rem] font-semibold leading-tight pr-2 text-[var(--color-on-surface)] mt-0.5">
                             {item.item}
                           </span>
-                          <span className="text-[14px] font-bold px-2.5 py-1 rounded-md whitespace-nowrap bg-white border border-[var(--color-outline-variant)]/40 text-[var(--color-secondary)] shadow-sm">
+                          <span className="text-[0.875rem] font-bold px-2.5 py-1 rounded-md whitespace-nowrap bg-white border border-[var(--color-outline-variant)]/40 text-[var(--color-secondary)] shadow-sm">
                             {item.quantity}
                           </span>
                         </div>
@@ -311,7 +311,7 @@ export function MealPlanResults({
                   <PiggyBank className="w-5 h-5" />
                   <span className="text-sm font-bold uppercase tracking-wider">Estimated Cost</span>
                 </div>
-                <p className="text-3xl font-extrabold text-[var(--color-primary)] tracking-tight">
+                <p className="text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] font-extrabold text-[var(--color-primary)] tracking-tight">
                   ₦{plan.estimatedCost.toLocaleString()}
                 </p>
                 <p className="text-xs text-[var(--color-primary)] opacity-80 mt-2 font-medium">

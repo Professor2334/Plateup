@@ -2,26 +2,41 @@ import { ContactForm } from '@/components/contact/ContactForm';
 
 interface SupportTabProps {
   email: string;
+  isScrolled?: boolean;
 }
 
-export function SupportTab({ email }: SupportTabProps) {
+export function SupportTab({ email, isScrolled = false }: SupportTabProps) {
   return (
-    <div className="animate-in fade-in duration-300 max-w-3xl pt-2">
-      <div className="mb-10">
-        <h2 className="text-2xl font-extrabold text-[var(--color-on-surface)] tracking-tight mb-3">Contact Support</h2>
-        <p className="text-[15px] font-medium text-[var(--color-on-surface-variant)] leading-relaxed">
-          Use this form to send us a message, or email us directly at{' '}
-          <a href="mailto:support@plateup.app" className="text-[var(--color-primary)] hover:underline font-semibold">
-            support@plateup.app
-          </a>.
-        </p>
-        <div className="mt-6 bg-[var(--color-surface-container)] p-5 rounded-2xl border border-[var(--color-outline-variant)]/30 shadow-sm">
-          <p className="text-[14px] font-medium text-[var(--color-on-surface-variant)] leading-relaxed">
+    <div className="animate-in fade-in duration-300 pb-12 relative w-full">
+      <div className={`sticky top-[-24px] lg:top-[-32px] z-40 -mx-10 px-10 lg:-mx-14 lg:px-14 pt-6 lg:pt-8 pb-4 mb-6 transition-all duration-500 ease-in-out ${isScrolled ? 'bg-white/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.02)]' : 'bg-[#f9fafb]'}`}>
+        <div className="max-w-3xl">
+          <div className="flex flex-col">
+            <div className="flex items-center justify-between">
+              <h2 className={`font-bold text-[var(--color-on-surface)] tracking-tight transition-all duration-500 ease-in-out origin-left ${isScrolled ? 'text-[clamp(1.125rem,2vw,1.25rem)] scale-95' : 'text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] scale-100'}`}>Contact Support</h2>
+            </div>
+            
+            <div className={`grid transition-all duration-500 ease-in-out ${isScrolled ? 'grid-rows-[0fr] opacity-0 mb-0' : 'grid-rows-[1fr] opacity-100 mt-2'}`}>
+              <div className="overflow-hidden">
+                <p className="text-[0.9375rem] font-medium text-[var(--color-on-surface-variant)] leading-relaxed">
+                  Use this form to send us a message, or email us directly at{' '}
+                  <a href="mailto:support@plateup.app" className="text-[var(--color-primary)] hover:underline font-semibold">
+                    support@plateup.app
+                  </a>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-3xl">
+        <div className="mb-8 bg-[var(--color-surface-container)] p-5 rounded-2xl border border-[var(--color-outline-variant)]/30 shadow-sm">
+          <p className="text-[0.875rem] font-medium text-[var(--color-on-surface-variant)] leading-relaxed">
             We'll send an immediate email confirmation that we got your message. We usually respond same-day, but it can sometimes take us one to two business days to get back to you.
           </p>
         </div>
+        <ContactForm defaultEmail={email} />
       </div>
-      <ContactForm defaultEmail={email} />
     </div>
   );
 }

@@ -109,8 +109,8 @@ export function OnboardingForm() {
         {step === 1 && (
           <div className="space-y-6 max-w-lg mx-auto">
             <div className="text-center sm:text-left">
-              <h2 className="text-[28px] font-bold text-[var(--color-on-surface-variant)] mb-1 tracking-tight">What is your household size?</h2>
-              <p className="text-[16px] text-[var(--color-on-surface-variant)] opacity-70">This helps the AI scale your recipes and shopping lists correctly.</p>
+              <h2 className="text-[clamp(1.5rem,3vw+0.5rem,1.75rem)] font-bold text-[var(--color-on-surface-variant)] mb-1 tracking-tight">What is your household size?</h2>
+              <p className="text-[1rem] text-[var(--color-on-surface-variant)] opacity-70">This helps the AI scale your recipes and shopping lists correctly.</p>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -139,8 +139,8 @@ export function OnboardingForm() {
                       </div>
                     </div>
                     <div>
-                      <h3 className={`font-bold text-[17px] mb-1 transition-colors duration-300 ${isSelected ? 'text-[var(--color-primary)]' : 'text-[var(--color-on-surface)]'}`}>{size.label}</h3>
-                      <p className="text-[14px] text-[var(--color-on-surface-variant)] font-medium">{size.description}</p>
+                      <h3 className={`font-bold text-[1.0625rem] mb-1 transition-colors duration-300 ${isSelected ? 'text-[var(--color-primary)]' : 'text-[var(--color-on-surface)]'}`}>{size.label}</h3>
+                      <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] font-medium">{size.description}</p>
                     </div>
                   </button>
                 );
@@ -151,7 +151,7 @@ export function OnboardingForm() {
               <Button 
                 onClick={handleNextStep1} 
                 disabled={!householdSize}
-                className="w-full min-h-[56px] text-[16px] font-semibold rounded-xl"
+                className="w-full min-h-[56px] text-[1rem] font-semibold rounded-xl"
               >
                 Continue <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
@@ -163,8 +163,8 @@ export function OnboardingForm() {
         {step === 2 && (
           <div className="space-y-6 max-w-lg mx-auto">
             <div className="text-center sm:text-left">
-              <h2 className="text-[28px] font-bold text-[var(--color-on-surface-variant)] mb-1 tracking-tight">What is your primary goal?</h2>
-              <p className="text-[16px] text-[var(--color-on-surface-variant)] opacity-70">We'll optimize your meal plans to help you achieve this objective.</p>
+              <h2 className="text-[clamp(1.5rem,3vw+0.5rem,1.75rem)] font-bold text-[var(--color-on-surface-variant)] mb-1 tracking-tight">What is your primary goal?</h2>
+              <p className="text-[1rem] text-[var(--color-on-surface-variant)] opacity-70">We'll optimize your meal plans to help you achieve this objective.</p>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -193,8 +193,8 @@ export function OnboardingForm() {
                       </div>
                     </div>
                     <div>
-                      <h3 className={`font-bold text-[17px] mb-1 transition-colors duration-300 ${isSelected ? 'text-[var(--color-primary)]' : 'text-[var(--color-on-surface)]'}`}>{goal.label}</h3>
-                      <p className="text-[14px] text-[var(--color-on-surface-variant)] font-medium">{goal.description}</p>
+                      <h3 className={`font-bold text-[1.0625rem] mb-1 transition-colors duration-300 ${isSelected ? 'text-[var(--color-primary)]' : 'text-[var(--color-on-surface)]'}`}>{goal.label}</h3>
+                      <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] font-medium">{goal.description}</p>
                     </div>
                   </button>
                 );
@@ -207,7 +207,7 @@ export function OnboardingForm() {
               <Button 
                 onClick={handleComplete} 
                 disabled={!primaryGoal || loading}
-                className="w-full min-h-[56px] text-[16px] font-semibold rounded-xl"
+                className="w-full min-h-[56px] text-[1rem] font-semibold rounded-xl"
               >
                 {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Complete Setup'}
               </Button>
@@ -215,7 +215,7 @@ export function OnboardingForm() {
               <button 
                 onClick={() => changeStep(1)}
                 disabled={loading}
-                className="inline-flex items-center justify-center gap-1.5 text-[14px] font-medium text-[var(--color-on-surface-variant)] opacity-70 hover:opacity-100 hover:text-[var(--color-on-surface)] transition-all mx-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] rounded-md px-2 py-1"
+                className="inline-flex items-center justify-center gap-1.5 text-[0.875rem] font-medium text-[var(--color-on-surface-variant)] opacity-70 hover:opacity-100 hover:text-[var(--color-on-surface)] transition-all mx-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] rounded-md px-2 py-1"
               >
                 <ArrowLeft className="w-4 h-4" /> Back
               </button>
@@ -246,13 +246,13 @@ export function OnboardingForm() {
                 </div>
                 
                 <div className="space-y-2">
-                  <span className="inline-flex items-center justify-center px-3.5 py-1.5 text-[12px] font-bold uppercase tracking-widest text-[var(--color-primary)] bg-[var(--color-primary)]/10 rounded-full mb-1">
+                  <span className="inline-flex items-center justify-center px-3.5 py-1.5 text-[0.75rem] font-bold uppercase tracking-widest text-[var(--color-primary)] bg-[var(--color-primary)]/10 rounded-full mb-1">
                     Setup Complete
                   </span>
-                  <h2 className="text-[32px] md:text-[36px] font-extrabold text-[var(--color-on-surface-variant)] leading-tight tracking-tight">
+                  <h2 className="text-[clamp(1.5rem,3vw+0.5rem,2rem)] md:text-[36px] font-extrabold text-[var(--color-on-surface-variant)] leading-tight tracking-tight">
                     You're Ready to Start Planning
                   </h2>
-                  <p className="text-[16px] text-[var(--color-on-surface-variant)] opacity-70 leading-relaxed max-w-sm mx-auto">
+                  <p className="text-[1rem] text-[var(--color-on-surface-variant)] opacity-70 leading-relaxed max-w-sm mx-auto">
                     We'll now generate personalized Nigerian meal plans tailored to your household.
                   </p>
                 </div>
@@ -261,18 +261,18 @@ export function OnboardingForm() {
               {/* Compact Summary Section */}
               <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto w-full">
                 <div className="flex-1 w-full p-4 rounded-xl border border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-surface)] shadow-sm flex flex-col items-center justify-center text-center">
-                  <span className="text-[13px] font-medium text-[var(--color-on-surface-variant)] mb-1 flex items-center gap-1.5">
+                  <span className="text-[0.8125rem] font-medium text-[var(--color-on-surface-variant)] mb-1 flex items-center gap-1.5">
                     🏠 Household Size
                   </span>
-                  <span className="text-[16px] font-semibold text-[var(--color-on-surface)]">
+                  <span className="text-[1rem] font-semibold text-[var(--color-on-surface)]">
                     {householdSizes.find(s => s.value === householdSize)?.label}
                   </span>
                 </div>
                 <div className="flex-1 w-full p-4 rounded-xl border border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-surface)] shadow-sm flex flex-col items-center justify-center text-center">
-                  <span className="text-[13px] font-medium text-[var(--color-on-surface-variant)] mb-1 flex items-center gap-1.5">
+                  <span className="text-[0.8125rem] font-medium text-[var(--color-on-surface-variant)] mb-1 flex items-center gap-1.5">
                     🎯 Primary Goal
                   </span>
-                  <span className="text-[16px] font-semibold text-[var(--color-on-surface)]">
+                  <span className="text-[1rem] font-semibold text-[var(--color-on-surface)]">
                     {primaryGoals.find(g => g.value === primaryGoal)?.label}
                   </span>
                 </div>
@@ -292,7 +292,7 @@ export function OnboardingForm() {
                       <div className="w-6 h-6 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0">
                         <Check className="w-3.5 h-3.5 text-[var(--color-primary)]" strokeWidth={3} />
                       </div>
-                      <span className="text-[15px] font-medium text-[var(--color-on-surface)]">{feature}</span>
+                      <span className="text-[0.9375rem] font-medium text-[var(--color-on-surface)]">{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -303,7 +303,7 @@ export function OnboardingForm() {
                 <Button 
                   onClick={handleGenerateMealPlan}
                   disabled={loading}
-                  className="w-full min-h-[60px] text-[18px] font-semibold rounded-xl bg-[var(--color-primary)] text-white shadow-[0_8px_20px_0_rgba(17,94,59,0.25)] hover:shadow-[0_8px_25px_rgba(17,94,59,0.35)] hover:-translate-y-0.5 transition-all"
+                  className="w-full min-h-[60px] text-[1.125rem] font-semibold rounded-xl bg-[var(--color-primary)] text-white shadow-[0_8px_20px_0_rgba(17,94,59,0.25)] hover:shadow-[0_8px_25px_rgba(17,94,59,0.35)] hover:-translate-y-0.5 transition-all"
                 >
                   {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <>Generate My First Meal Plan <ArrowRight className="w-5 h-5 ml-2.5" /></>}
                 </Button>

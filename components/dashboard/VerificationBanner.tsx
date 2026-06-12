@@ -39,8 +39,8 @@ export function VerificationBanner({ email, onDismiss }: VerificationBannerProps
           <Shield className="w-5 h-5" />
         </div>
         <div>
-          <h3 className="text-[14px] font-semibold text-[var(--color-on-surface)]">Verify your email address</h3>
-          <p className="text-[13px] text-[var(--color-on-surface-variant)] opacity-80 mt-0.5">
+          <h3 className="text-[0.875rem] font-semibold text-[var(--color-on-surface)]">Verify your email address</h3>
+          <p className="text-[0.8125rem] text-[var(--color-on-surface-variant)] opacity-80 mt-0.5">
             Please verify your email to unlock all features and secure your account.
           </p>
         </div>
@@ -48,19 +48,19 @@ export function VerificationBanner({ email, onDismiss }: VerificationBannerProps
 
       <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
         {resendState === 'success' ? (
-          <span className="flex items-center gap-1.5 text-[13px] font-semibold text-[var(--color-primary)]">
+          <span className="flex items-center gap-1.5 text-[0.8125rem] font-semibold text-[var(--color-primary)]">
             <CheckCircle className="w-4 h-4" />
             Email Sent
           </span>
         ) : resendState === 'error' ? (
-          <span className="text-[13px] font-semibold text-[var(--color-error)]">Failed. Try again.</span>
+          <span className="text-[0.8125rem] font-semibold text-[var(--color-error)]">Failed. Try again.</span>
         ) : null}
 
         <button
           id="verification-banner-resend-btn"
           onClick={handleResend}
           disabled={isResending || resendState === 'success'}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] shadow-sm rounded-lg text-[13px] font-semibold text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-lowest)] disabled:opacity-50 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] shadow-sm rounded-lg text-[0.8125rem] font-semibold text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-lowest)] disabled:opacity-50 transition-colors"
         >
           {isResending ? (
             <Loader2 className="w-4 h-4 animate-spin text-[var(--color-on-surface-variant)]" />
