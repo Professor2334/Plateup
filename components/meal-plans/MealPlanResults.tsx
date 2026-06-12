@@ -63,10 +63,27 @@ export function MealPlanResults({
             <Share2 className="w-4 h-4" />
             <span className="hidden sm:inline">Share</span>
           </Button>
-          <Button variant="outline" onClick={() => setShowRegenerateConfirm(true)} className="gap-2 h-10">
-            <RefreshCcw className="w-4 h-4" />
-            <span className="hidden sm:inline">Regenerate</span>
-          </Button>
+          <div className="relative">
+            <Button variant="outline" onClick={() => setShowRegenerateConfirm(true)} className="gap-2 h-10">
+              <RefreshCcw className="w-4 h-4" />
+              <span className="hidden sm:inline">Regenerate</span>
+            </Button>
+            
+            {showRegenerateConfirm && (
+              <>
+                {/* Invisible overlay to catch outside clicks */}
+                <div className="fixed inset-0 z-40" onClick={() => setShowRegenerateConfirm(false)} />
+                <div className="absolute bottom-full mb-2 right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 w-64 bg-white rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-[var(--color-outline-variant)]/30 p-4 z-50 animate-in fade-in zoom-in-95 duration-200">
+                  <p className="text-[14px] font-bold text-[var(--color-on-surface)] mb-1">Regenerate Plan?</p>
+                  <p className="text-[12px] text-[var(--color-on-surface-variant)] mb-3 leading-tight">This will overwrite your current plan.</p>
+                  <div className="flex gap-2">
+                    <Button variant="outline" className="flex-1 h-8 text-xs" onClick={() => setShowRegenerateConfirm(false)}>Cancel</Button>
+                    <Button className="flex-1 h-8 text-xs bg-[var(--color-primary)] text-white hover:bg-[color-mix(in_srgb,var(--color-primary)_85%,black)]" onClick={() => { setShowRegenerateConfirm(false); onRegenerate(); }}>Yes, regenerate</Button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
           {!isSaved && (
             <Button onClick={onSave} disabled={isSaving} className="gap-2 h-10 shadow-sm">
               <Save className="w-4 h-4" />
@@ -318,41 +335,6 @@ export function MealPlanResults({
         </div>
         
       </div>
-
-      {/* Regenerate Confirmation Modal */}
-      {showRegenerateConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 border border-[var(--color-outline-variant)]/20">
-            <div className="p-6 text-center space-y-3">
-              <div className="w-14 h-14 rounded-full bg-[#f9fafb] border border-[var(--color-outline-variant)]/40 mx-auto flex items-center justify-center mb-4">
-                <RefreshCcw className="w-6 h-6 text-[var(--color-primary)]" />
-              </div>
-              <h3 className="text-xl font-extrabold text-[var(--color-on-surface)]">Regenerate Plan?</h3>
-              <p className="text-sm text-[var(--color-on-surface-variant)] leading-relaxed">
-                Are you sure you want to regenerate? This will overwrite your currently generated meal plan.
-              </p>
-            </div>
-            <div className="p-5 bg-[#f9fafb] border-t border-[var(--color-outline-variant)]/30 flex gap-3">
-              <Button 
-                variant="outline" 
-                className="flex-1 h-11 font-bold border-[var(--color-outline-variant)]/50 text-[var(--color-secondary)] hover:bg-[var(--color-surface-variant)]"
-                onClick={() => setShowRegenerateConfirm(false)}
-              >
-                No
-              </Button>
-              <Button 
-                className="flex-1 h-11 font-bold bg-[var(--color-primary)] hover:bg-[color-mix(in_srgb,var(--color-primary)_85%,black)] text-white shadow-sm"
-                onClick={() => {
-                  setShowRegenerateConfirm(false);
-                  onRegenerate();
-                }}
-              >
-                Yes
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
