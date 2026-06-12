@@ -77,8 +77,8 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange }: GenerateM
           <Sparkles className="w-3.5 h-3.5" />
           AI Meal Planner
         </div>
-        <h2 className="text-2xl font-extrabold text-[var(--color-on-surface)] tracking-tight">Plan Your Week</h2>
-        <p className="text-sm text-[var(--color-on-surface-variant)] opacity-[0.80] mt-1 leading-relaxed">Set your budget and ingredients to get started.</p>
+        <h2 className="text-2xl font-bold text-[var(--color-on-surface-variant)] tracking-tight">Plan Your Week</h2>
+        <p className="text-sm text-[var(--color-on-surface-variant)] opacity-[0.73] mt-1 leading-relaxed">Set your budget and ingredients to get started.</p>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-5">

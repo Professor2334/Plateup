@@ -28,6 +28,30 @@ export async function updatePreferences(householdSize: string, primaryGoal: stri
   }
 }
 
+export async function updateProfile(name: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  if (!name || name.trim().length < 2) {
+    return { success: false, error: 'Name must be at least 2 characters long' };
+  }
+
+  try {
+    await db.user.update({
+      where: { id: session.user.id },
+      data: { name: name.trim() }
+    });
+
+    revalidatePath('/dashboard');
+    return { success: true };
+  } catch (error) {
+    console.error('Update profile error:', error);
+    return { success: false, error: 'Failed to update profile' };
+  }
+}
+
 export async function changePassword(formData: FormData) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -48,6 +72,10 @@ export async function changePassword(formData: FormData) {
 
     if (!user) {
       return { success: false, error: 'User not found' };
+    }
+
+    if (!user.password) {
+      return { success: false, error: 'Cannot change password for users authenticated via Google.' };
     }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);

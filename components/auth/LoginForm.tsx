@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import Link from 'next/link';
 
 export function LoginForm() {
   const [error, setError] = useState('');
@@ -72,7 +73,12 @@ export function LoginForm() {
         />
       </div>
       <div className="space-y-1">
-        <label htmlFor="password" className="text-sm font-medium">Password</label>
+        <div className="flex items-center justify-between">
+          <label htmlFor="password" className="text-sm font-medium">Password</label>
+          <Link href="/auth/forgot-password" className="text-[13px] font-semibold text-[var(--color-primary)] hover:underline">
+            Forgot Password?
+          </Link>
+        </div>
         <div className="relative">
           <Input 
             id="password" 

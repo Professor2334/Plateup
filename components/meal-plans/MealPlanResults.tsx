@@ -59,12 +59,12 @@ export function MealPlanResults({
         </div>
         
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" onClick={() => onShare(checkedItems)} className="gap-2 h-10">
+          <Button variant="outline" onClick={() => onShare(checkedItems)} className="gap-2 h-10 border-0 bg-[var(--color-surface-container-lowest)] shadow-sm hover:bg-[#f9fafb]">
             <Share2 className="w-4 h-4" />
             <span className="hidden sm:inline">Share</span>
           </Button>
           <div className="relative">
-            <Button variant="outline" onClick={() => setShowRegenerateConfirm(true)} className="gap-2 h-10">
+            <Button variant="outline" onClick={() => setShowRegenerateConfirm(true)} className="gap-2 h-10 border-0 bg-[var(--color-surface-container-lowest)] shadow-sm hover:bg-[#f9fafb]">
               <RefreshCcw className="w-4 h-4" />
               <span className="hidden sm:inline">Regenerate</span>
             </Button>
@@ -163,7 +163,7 @@ export function MealPlanResults({
             
             <div className="grid grid-cols-1 gap-4">
               {plan.mealPlan.map((dayPlan, idx) => (
-                <div key={idx} className="bg-white rounded-2xl p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[var(--color-outline-variant)]/30 group hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all duration-300">
+                <div key={idx} className="bg-white rounded-[24px] p-5 sm:p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all duration-300 group">
                   <div className="flex items-center justify-between border-b border-[var(--color-outline-variant)]/30 pb-4 mb-4">
                     <h3 className="font-extrabold text-[17px] text-[var(--color-on-surface)] tracking-tight">{dayPlan.day}</h3>
                     <span className="text-[11px] font-bold px-2.5 py-1 bg-[#f9fafb] text-[var(--color-secondary)] rounded-full uppercase tracking-widest border border-[var(--color-outline-variant)]/50">
@@ -211,7 +211,7 @@ export function MealPlanResults({
         </div>
 
         {/* Section 2: Shopping List */}
-        <div className="w-full bg-white rounded-3xl p-6 sm:p-10 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[var(--color-outline-variant)]/30">
+        <div className="w-full bg-white rounded-3xl p-6 sm:p-10 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
           
           {/* Header */}
           <div className="border-b border-[var(--color-outline-variant)]/40 pb-6 mb-8">
@@ -306,7 +306,7 @@ export function MealPlanResults({
 
             {/* Right: Summary & Actions */}
             <div className="lg:col-span-4 space-y-6">
-              <div className="bg-[color-mix(in_srgb,var(--color-primary)_4%,transparent)] border border-[color-mix(in_srgb,var(--color-primary)_15%,transparent)] rounded-2xl p-6 shadow-sm">
+              <div className="bg-white rounded-[24px] p-6 shadow-[0_8px_30px_color-mix(in_srgb,var(--color-primary)_15%,transparent)]">
                 <div className="flex items-center gap-2 text-[var(--color-primary)] mb-3">
                   <PiggyBank className="w-5 h-5" />
                   <span className="text-sm font-bold uppercase tracking-wider">Estimated Cost</span>
@@ -319,7 +319,7 @@ export function MealPlanResults({
                 </p>
               </div>
 
-              <div className="bg-[#f9fafb] rounded-2xl p-6 border border-[var(--color-outline-variant)]/30 space-y-4">
+              <div className="bg-white rounded-[24px] p-6 shadow-[0_8px_30px_color-mix(in_srgb,var(--color-primary)_15%,transparent)] space-y-4">
                 <h4 className="font-bold text-[var(--color-on-surface)] text-sm uppercase tracking-wider">Actions</h4>
                 <Button onClick={() => onShare(checkedItems)} className="w-full bg-[var(--color-primary)] hover:bg-[color-mix(in_srgb,var(--color-primary)_85%,black)] text-white shadow-sm font-bold h-12 text-base gap-2">
                   <Share2 className="w-4 h-4" />

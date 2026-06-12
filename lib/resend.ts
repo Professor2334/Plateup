@@ -171,3 +171,34 @@ const sendRawEmail = async (to: string, subject: string, html: string) => {
   return { success: false };
 };
 
+export const sendPasswordResetEmail = async (email: string, token: string) => {
+  const resetLink = `${process.env.AUTH_URL || 'http://localhost:3000'}/auth/reset-password?token=${token}`;
+  const subject = 'Reset your PlateUp password';
+  const html = `
+    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #fff; border-radius: 12px;">
+      <h2 style="color: #0e6529; margin-top: 0;">Password Reset Request</h2>
+      <p style="color: #333; font-size: 15px; line-height: 1.6;">
+        We received a request to reset the password for your PlateUp account.
+      </p>
+      <p style="color: #333; font-size: 15px; line-height: 1.6;">
+        Click the button below to choose a new password. This link will expire in 1 hour.
+      </p>
+      <a href="${resetLink}"
+         style="display:inline-block;padding:12px 28px;background:#0e6529;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;margin:20px 0;font-size:15px;">
+        Reset Password
+      </a>
+      <p style="color:#666;font-size:13px;">Or copy this link: <br/><a href="${resetLink}" style="color:#0e6529;">${resetLink}</a></p>
+      <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+      <p style="color:#999;font-size:12px; margin: 0;">If you did not request a password reset, please ignore this email or contact support if you have concerns.</p>
+    </div>
+  `;
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('\n─────────────────────────────────────────────────');
+    console.log(`[DEV PREVIEW] Password reset link for ${email}:`);
+    console.log(resetLink);
+    console.log('─────────────────────────────────────────────────\n');
+  }
+
+  return await sendRawEmail(email, subject, html);
+};

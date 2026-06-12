@@ -8,13 +8,13 @@ import { Button } from '@/components/ui/button';
 import { saveMealPlan, deleteMealPlan } from '@/app/actions/meal-plans/actions';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { History, Bookmark, Settings, LogOut, Calendar, LayoutDashboard, Utensils } from 'lucide-react';
+import { History, Bookmark, Settings, LogOut, Calendar, LayoutDashboard, Utensils, Search, User, Lock, Shield, FileText, LifeBuoy, Mail, CheckCircle2 } from 'lucide-react';
 import { VerificationBanner } from '@/components/dashboard/VerificationBanner';
 import { PlateUpLogo } from '@/components/shared/PlateUpLogo';
 import { logoutUser } from '@/app/actions/auth/actions';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { updatePreferences, changePassword } from '@/app/actions/settings/actions';
+import { updatePreferences, changePassword, updateProfile } from '@/app/actions/settings/actions';
 import { MealPlanResults } from '@/components/meal-plans/MealPlanResults';
 
 interface DashboardClientProps {
@@ -60,6 +60,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
 
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
+    setIsScrolled(false);
     const tabToParamMap: Record<Tab, string> = {
       'generate': 'generate-plan',
       'history': 'meal-history',
@@ -105,6 +106,18 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
   // Logout Modal State
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Edit Profile Modal State
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+
+  // History State
+  const [historySearchText, setHistorySearchText] = useState('');
+  const [historyFilter, setHistoryFilter] = useState<'All' | 'Saved' | 'Unsaved'>('All');
+
+  // Saved Plans State
+  const [savedSearchText, setSavedSearchText] = useState('');
+  const [savedFilter, setSavedFilter] = useState<'All' | 'Recent' | 'Budget Friendly'>('All');
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -316,7 +329,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             <div className="w-16 h-16 rounded-full bg-[color-mix(in_srgb,var(--color-surface-container-low)_50%,transparent)] flex items-center justify-center mb-6">
               <Utensils className="w-8 h-8 text-[var(--color-on-surface-variant)] opacity-60" strokeWidth={1.5} />
             </div>
-            <h3 className="text-xl sm:text-2xl font-extrabold text-[var(--color-on-surface)] tracking-tight">No meal plan active</h3>
+            <h3 className="text-xl sm:text-2xl font-bold text-[var(--color-on-surface)] tracking-tight">No meal plan active</h3>
             <p className="mt-3 text-[14px] font-medium text-[var(--color-on-surface-variant)] opacity-70 max-w-sm leading-relaxed">
               Use the form on the left to generate a new 7-day budget-aware Nigerian meal plan.
             </p>
@@ -327,94 +340,183 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
   );
 
   const renderHistoryTab = () => {
-    // Group history by date
+    // 1. Filter history
+    const filteredHistory = history.filter((plan: any) => {
+      if (historyFilter === 'Saved' && !plan.isSaved) return false;
+      if (historyFilter === 'Unsaved' && plan.isSaved) return false;
+      if (historySearchText) {
+        const searchLower = historySearchText.toLowerCase();
+        if (
+          !plan.ingredients.toLowerCase().includes(searchLower) &&
+          !plan.budget.toString().includes(searchLower)
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    // 2. Group history by date
     const groups: Record<string, any[]> = {
-      'Today': [],
-      'Yesterday': [],
-      'Earlier This Week': [],
-      'Older': []
+      'TODAY': [],
+      'EARLIER THIS WEEK': [],
+      'LAST WEEK': [],
+      'OLDER': []
     };
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const oneWeekAgo = new Date(today);
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const earlierThisWeek = new Date(today);
+    earlierThisWeek.setDate(earlierThisWeek.getDate() - 3);
+    const lastWeek = new Date(today);
+    lastWeek.setDate(lastWeek.getDate() - 7);
 
-    history.forEach((plan: any) => {
+    filteredHistory.forEach((plan: any) => {
       const d = new Date(plan.createdAt);
       if (d >= today) {
-        groups['Today'].push(plan);
-      } else if (d >= yesterday && d < today) {
-        groups['Yesterday'].push(plan);
-      } else if (d >= oneWeekAgo && d < yesterday) {
-        groups['Earlier This Week'].push(plan);
+        groups['TODAY'].push(plan);
+      } else if (d >= earlierThisWeek && d < today) {
+        groups['EARLIER THIS WEEK'].push(plan);
+      } else if (d >= lastWeek && d < earlierThisWeek) {
+        groups['LAST WEEK'].push(plan);
       } else {
-        groups['Older'].push(plan);
+        groups['OLDER'].push(plan);
       }
     });
 
+    const totalGenerated = history.length;
+    const totalSaved = history.filter(p => p.isSaved).length;
+    const thisWeekGenerated = history.filter((p: any) => new Date(p.createdAt) >= lastWeek).length;
+
     return (
-      <div className="max-w-4xl space-y-8">
-        <div>
-          <h2 className="text-3xl font-bold text-[var(--color-on-surface)] tracking-tight">Meal History</h2>
-          <p className="text-sm text-[var(--color-on-surface-variant)] mt-2">A timeline of all your generated meal plans.</p>
+      <div className="pb-12 relative w-full">
+        {/* Full-width sticky header container */}
+        <div className={`sticky top-[-24px] lg:top-[-32px] z-40 -mx-10 px-10 lg:-mx-14 lg:px-14 pt-6 lg:pt-8 pb-4 mb-6 transition-all duration-500 ease-in-out ${isScrolled ? 'bg-white/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.02)]' : 'bg-[#f9fafb]'}`}>
+          <div className="max-w-5xl">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between">
+                <h2 className={`font-bold text-[var(--color-on-surface)] tracking-tight transition-all duration-500 ease-in-out origin-left ${isScrolled ? 'text-xl scale-95' : 'text-3xl scale-100'}`}>Meal History</h2>
+              </div>
+              
+              {/* Perfectly smooth collapse using CSS Grid */}
+              <div className={`grid transition-all duration-500 ease-in-out ${isScrolled ? 'grid-rows-[0fr] opacity-0 mb-0' : 'grid-rows-[1fr] opacity-100 mt-2 mb-6'}`}>
+                <div className="overflow-hidden">
+                  <p className="text-sm text-[var(--color-on-surface-variant)]">A timeline of all your generated meal plans.</p>
+                  <div className="mt-4 flex flex-wrap items-center gap-2 text-sm font-medium text-[var(--color-on-surface-variant)]">
+                    <span>{totalGenerated} Plans Generated</span>
+                    <span className="opacity-50">•</span>
+                    <span>{totalSaved} Saved</span>
+                    <span className="opacity-50">•</span>
+                    <span>{thisWeekGenerated} This Week</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Search & Filter */}
+              {history.length > 0 && (
+                <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-500 ease-in-out ${isScrolled ? 'mt-3' : ''}`}>
+                  <div className="relative flex-1 flex items-center">
+                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                      <Search className="w-4 h-4 text-[var(--color-on-surface-variant)] opacity-50 mt-[1px]" />
+                    </div>
+                    <input 
+                      type="text" 
+                      placeholder="Search meal plans..." 
+                      value={historySearchText}
+                      onChange={(e) => setHistorySearchText(e.target.value)}
+                      className="w-full h-12 pl-12 pr-4 rounded-full bg-white sm:bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 focus:bg-white focus:border-[var(--color-primary)]/50 focus:ring-1 focus:ring-[var(--color-primary)]/20 text-sm transition-all outline-none"
+                    />
+                  </div>
+                  <div className="flex bg-white sm:bg-[#f9fafb] p-1 rounded-full border border-[var(--color-outline-variant)]/30 self-start">
+                    {(['All', 'Saved', 'Unsaved'] as const).map(filter => (
+                      <button
+                        key={filter}
+                        onClick={() => setHistoryFilter(filter)}
+                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${historyFilter === filter ? 'bg-white text-[var(--color-primary)] shadow-sm border border-[var(--color-outline-variant)]/20' : 'text-[var(--color-secondary)] hover:text-[var(--color-on-surface)]'}`}
+                      >
+                        {filter}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-        
+
+        {/* Timeline Content */}
+        <div className="max-w-5xl">
         {history.length === 0 ? (
-          <div className="rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-20 flex flex-col items-center justify-center text-center">
-            <History className="w-12 h-12 text-[var(--color-outline-variant)] mb-4" />
-            <h3 className="text-xl font-semibold text-[var(--color-on-surface)]">No activity yet</h3>
-            <p className="text-[var(--color-on-surface-variant)] mt-2">Your timeline will populate once you generate your first meal plan.</p>
+          <div className="py-20 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 rounded-full bg-[#f9fafb] flex items-center justify-center mb-4">
+              <span className="text-3xl">🍲</span>
+            </div>
+            <h3 className="text-lg font-bold text-[var(--color-on-surface)]">No meal plans yet</h3>
+            <p className="text-sm text-[var(--color-on-surface-variant)] mt-2 max-w-sm">Generate your first meal plan to start building your history.</p>
+            <Button className="mt-6 font-bold" onClick={() => handleTabChange('generate')}>Generate Meal Plan</Button>
+          </div>
+        ) : filteredHistory.length === 0 ? (
+          <div className="py-20 text-center text-[var(--color-on-surface-variant)] text-sm">
+            No meal plans match your current filters.
           </div>
         ) : (
-          <div className="space-y-10">
+          <div className="space-y-8">
             {Object.entries(groups).map(([groupName, plans]) => {
               if (plans.length === 0) return null;
               return (
-                <div key={groupName} className="relative">
-                  <div className="sticky top-0 bg-[#f9fafb] z-10 py-3">
-                    <h3 className="text-[11px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-widest">{groupName}</h3>
-                  </div>
-                  <div className="mt-2 space-y-1">
+                <div key={groupName} className="relative bg-white rounded-[24px] p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                  <h3 className="text-[11px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-widest mb-6 ml-6">{groupName}</h3>
+                  <div className="space-y-0 relative">
+                    {/* Vertical Timeline Spine */}
+                    <div className="absolute left-2 top-2 bottom-4 w-px bg-[var(--color-outline-variant)]/30"></div>
+                    
                     {plans.map((plan: any) => {
-                      const time = new Date(plan.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                      const planDate = new Date(plan.createdAt);
+                      const time = planDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                      const dateString = planDate.toLocaleDateString('en-US', { weekday: 'long' });
                       
                       return (
-                        <div key={plan.id} className="group relative flex flex-col sm:flex-row sm:items-start py-3 hover:bg-[var(--color-surface)] transition-colors px-4 -mx-4 rounded-xl gap-2 sm:gap-0">
-                          {/* Time */}
-                          <div className="w-24 pt-0.5 flex-shrink-0 text-[13px] font-medium text-[var(--color-secondary)]">
-                            {time}
+                        <div key={plan.id} className="group relative flex flex-col md:flex-row py-6 px-6 ml-6 rounded-2xl hover:bg-[#f9fafb] transition-colors gap-6 border border-transparent hover:border-[var(--color-outline-variant)]/10">
+                          {/* Timeline Dot */}
+                          <div className="absolute -left-[27px] top-[30px] w-[12px] h-[12px] rounded-full bg-[var(--color-outline-variant)] border-2 border-white group-hover:bg-[var(--color-primary)] group-hover:scale-125 transition-all duration-300 z-10 shadow-sm"></div>
+                          
+                          {/* Left Section (Content) */}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-[16px] font-extrabold text-[var(--color-on-surface)] tracking-tight mb-2">Generated Meal Plan</h4>
+                            
+                            <div className="space-y-1.5 mb-5">
+                              <p className="text-[14px] font-semibold text-[var(--color-on-surface)]">
+                                Budget: NGN {plan.budget.toLocaleString()}
+                              </p>
+                              <p className="text-[13px] font-medium text-[var(--color-secondary)]">
+                                Ingredients: {plan.ingredients.split(',').map((i: string) => i.trim()).filter((i: string) => i).join(' • ')}
+                              </p>
+                            </div>
+
+                            {/* Actions - visible under entry */}
+                            <div className="flex flex-wrap gap-3 sm:opacity-40 sm:group-hover:opacity-100 transition-opacity">
+                              <button onClick={() => handleViewOnlyPlan(plan)} className="text-[12px] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors px-3 py-1.5 rounded-md bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-primary)]/30 shadow-sm">View Plan</button>
+                              {!plan.isSaved && (
+                                <button onClick={() => handleSavePlanById(plan.id)} className="text-[12px] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors px-3 py-1.5 rounded-md bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-primary)]/30 shadow-sm">Save</button>
+                              )}
+                              <button onClick={() => handleDeletePlan(plan.id)} className="text-[12px] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-error)] transition-colors px-3 py-1.5 rounded-md bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-error)]/30 shadow-sm">Delete</button>
+                            </div>
                           </div>
                           
-                          {/* Content */}
-                          <div className="flex-1 min-w-0 pr-4">
-                            <div className="flex items-center flex-wrap gap-2">
-                              <span className="text-sm text-[var(--color-on-surface)]">
-                                Generated a <span className="font-semibold">7-day</span> meal plan for
-                              </span>
-                              <span className="text-sm font-semibold text-[var(--color-on-surface)]">
-                                NGN {plan.budget.toLocaleString()}
-                              </span>
-                              {plan.isSaved ? (
-                                <span className="text-[10px] font-bold text-[var(--color-on-primary-container)] bg-[var(--color-primary-container)] px-2 py-0.5 rounded uppercase tracking-wider ml-1">Saved</span>
-                              ) : (
-                                <span className="text-[10px] font-bold text-[var(--color-secondary)] bg-[var(--color-surface-container-high)] px-2 py-0.5 rounded uppercase tracking-wider ml-1">Unsaved</span>
-                              )}
-                            </div>
-                            <p className="text-sm text-[var(--color-on-surface-variant)] mt-1 truncate">
-                              Using: {plan.ingredients}
-                            </p>
-                          </div>
-
-                          {/* Actions - visible on hover (desktop) or always (mobile) */}
-                          <div className="flex gap-4 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity pt-2 sm:pt-0">
-                            <button onClick={() => handleViewOnlyPlan(plan)} className="text-[13px] font-medium text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors">View</button>
-                            {!plan.isSaved && (
-                              <button onClick={() => handleSavePlanById(plan.id)} className="text-[13px] font-medium text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors">Save</button>
+                          {/* Right Section (Metadata) */}
+                          <div className="md:w-48 flex flex-col items-start md:items-end text-left md:text-right gap-1 pt-1 border-t border-[var(--color-outline-variant)]/10 md:border-t-0 mt-4 md:mt-0 md:pt-0">
+                            {plan.isSaved ? (
+                              <span className="text-[12px] font-bold text-[var(--color-primary)] mb-1 flex items-center">🟢 Saved</span>
+                            ) : (
+                              <span className="text-[12px] font-bold text-[var(--color-secondary)] mb-1 flex items-center">🟡 Unsaved</span>
                             )}
-                            <button onClick={() => handleDeletePlan(plan.id)} className="text-[13px] font-medium text-[var(--color-on-surface-variant)] hover:text-[var(--color-error)] transition-colors">Delete</button>
+                            <div className="text-[13px] font-bold text-[var(--color-on-surface-variant)]">{dateString}</div>
+                            <div className="text-[12px] font-medium text-[var(--color-secondary)]">{time}</div>
+                            
+                            <div className="mt-3 flex flex-wrap md:justify-end gap-1.5">
+                               <div className="text-[11px] font-bold tracking-wider uppercase text-[var(--color-secondary)] bg-[#f9fafb] px-2 py-0.5 rounded border border-[var(--color-outline-variant)]/20">7 Days</div>
+                               <div className="text-[11px] font-bold tracking-wider uppercase text-[var(--color-secondary)] bg-[#f9fafb] px-2 py-0.5 rounded border border-[var(--color-outline-variant)]/20">21 Meals</div>
+                            </div>
                           </div>
                         </div>
                       );
@@ -425,274 +527,462 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             })}
           </div>
         )}
+        </div>
       </div>
     );
   };
 
   const renderSavedTab = (title: string) => {
-    const savedPlans = history.filter(p => p.isSaved);
+    const allSavedPlans = history.filter(p => p.isSaved);
+    // Stats
+    const totalSaved = allSavedPlans.length;
+    const thisMonth = new Date().getMonth();
+    const thisYear = new Date().getFullYear();
+    const savedThisMonth = allSavedPlans.filter(p => {
+      const d = new Date(p.createdAt);
+      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    }).length;
     
-    return (
-    <div className="max-w-6xl space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-        <div>
-          <h2 className="text-3xl font-bold text-[var(--color-on-surface)] tracking-tight">{title}</h2>
-          <p className="text-sm text-[var(--color-on-surface-variant)] mt-2">Manage and reuse your previously generated meal plans.</p>
-        </div>
-      </div>
+    // Calculate last saved today
+    const todayStr = new Date().toDateString();
+    let lastSavedStr = "Never";
+    if (allSavedPlans.length > 0) {
+      // sort by date descending
+      const sorted = [...allSavedPlans].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      const lastDate = new Date(sorted[0].createdAt);
+      if (lastDate.toDateString() === todayStr) {
+        lastSavedStr = "Today";
+      } else {
+        lastSavedStr = lastDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+    }
+
+    // Filter
+    let filteredPlans = allSavedPlans.filter((plan: any) => {
+      if (savedFilter === 'Budget Friendly' && plan.budget > 15000) return false;
+      if (savedFilter === 'Recent') {
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        if (new Date(plan.createdAt) < oneWeekAgo) return false;
+      }
       
-      {savedPlans.length === 0 ? (
-        <div className="rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-20 flex flex-col items-center justify-center text-center">
-          <Bookmark className="w-12 h-12 text-[var(--color-outline-variant)] mb-4" />
-          <h3 className="text-xl font-semibold text-[var(--color-on-surface)]">No saved plans yet</h3>
-          <p className="text-[var(--color-on-surface-variant)] mt-2 max-w-md">Your saved meal plans will appear here. Generate a plan and click save to keep it for later.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {savedPlans.map((plan: any) => {
-            const date = new Date(plan.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-            const previewMeals = plan.generatedPlan?.slice(0, 2) || [];
-            
-            return (
-              <div key={plan.id} className="rounded-2xl bg-white flex flex-col overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-shadow duration-300">
-                {/* Header */}
-                <div className="p-6 bg-white flex justify-between items-start">
-                  <div>
-                    <span className="inline-flex items-center rounded-full bg-[var(--color-primary-container)] px-2.5 py-0.5 text-xs font-semibold text-[var(--color-on-primary-container)] mb-3">
-                      7 Days
-                    </span>
-                    <h3 className="text-2xl font-extrabold text-[var(--color-primary)]">NGN {plan.budget.toLocaleString()}</h3>
-                    <p className="text-xs font-medium text-[var(--color-on-surface-variant)] mt-1 flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      Saved on {date}
-                    </p>
+      if (savedSearchText) {
+        const searchLower = savedSearchText.toLowerCase();
+        if (
+          !plan.ingredients.toLowerCase().includes(searchLower) &&
+          !plan.budget.toString().includes(searchLower)
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+    
+    // sort filtered plans by newest first
+    filteredPlans.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return (
+      <div className="pb-12 relative w-full">
+        {/* Full-width sticky header container */}
+        <div className={`sticky top-[-24px] lg:top-[-32px] z-40 -mx-10 px-10 lg:-mx-14 lg:px-14 pt-6 lg:pt-8 pb-4 mb-6 transition-all duration-500 ease-in-out ${isScrolled ? 'bg-white/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.02)]' : 'bg-[#f9fafb]'}`}>
+          {/* Inner content aligned with the list below */}
+          <div className="max-w-5xl">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between">
+                <h2 className={`font-bold text-[var(--color-on-surface)] tracking-tight transition-all duration-500 ease-in-out origin-left ${isScrolled ? 'text-xl scale-95' : 'text-3xl scale-100'}`}>{title}</h2>
+              </div>
+              
+              {/* Perfectly smooth collapse using CSS Grid */}
+              <div className={`grid transition-all duration-500 ease-in-out ${isScrolled ? 'grid-rows-[0fr] opacity-0 mb-0' : 'grid-rows-[1fr] opacity-100 mt-2 mb-6'}`}>
+                <div className="overflow-hidden">
+                  <p className="text-sm text-[var(--color-on-surface-variant)]">Manage and reuse your previously generated meal plans.</p>
+                  <div className="mt-4 flex flex-wrap items-center gap-2 text-sm font-medium text-[var(--color-on-surface-variant)]">
+                    <span>{totalSaved} Saved Plans</span>
+                    <span className="opacity-50">•</span>
+                    <span>{savedThisMonth} This Month</span>
+                    <span className="opacity-50">•</span>
+                    <span>Last Saved {lastSavedStr}</span>
                   </div>
                 </div>
+              </div>
 
-                {/* Body Preview */}
-                <div className="p-6 flex-1 space-y-5">
-                  <div>
-                    <h4 className="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-2">Ingredients</h4>
-                    <p className="text-sm text-[var(--color-on-surface)] line-clamp-2 leading-relaxed">{plan.ingredients}</p>
+              {/* Search & Filter */}
+              {allSavedPlans.length > 0 && (
+                <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-500 ease-in-out ${isScrolled ? 'mt-3' : ''}`}>
+                  <div className="relative flex-1 flex items-center">
+                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                      <Search className="w-4 h-4 text-[var(--color-on-surface-variant)] opacity-50 mt-[1px]" />
+                    </div>
+                    <input 
+                      type="text" 
+                      placeholder="Search saved plans..." 
+                      value={savedSearchText}
+                      onChange={(e) => setSavedSearchText(e.target.value)}
+                      className="w-full h-12 pl-12 pr-4 rounded-full bg-white sm:bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 focus:bg-white focus:border-[var(--color-primary)]/50 focus:ring-1 focus:ring-[var(--color-primary)]/20 text-sm transition-all outline-none"
+                    />
                   </div>
+                  <div className="flex bg-white sm:bg-[#f9fafb] p-1 rounded-full border border-[var(--color-outline-variant)]/30 self-start">
+                    {(['All', 'Recent', 'Budget Friendly'] as const).map(filter => (
+                      <button
+                        key={filter}
+                        onClick={() => setSavedFilter(filter)}
+                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${savedFilter === filter ? 'bg-white text-[var(--color-primary)] shadow-sm border border-[var(--color-outline-variant)]/20' : 'text-[var(--color-secondary)] hover:text-[var(--color-on-surface)]'}`}
+                      >
+                        {filter}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {/* Main Content List Container */}
+        <div className="max-w-5xl">
+          {allSavedPlans.length === 0 ? (
+          <div className="rounded-2xl bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 p-20 flex flex-col items-center justify-center text-center mt-8">
+            <Bookmark className="w-12 h-12 text-[var(--color-outline-variant)] mb-4" />
+            <h3 className="text-xl font-semibold text-[var(--color-on-surface)]">No saved plans yet</h3>
+            <p className="text-[var(--color-on-surface-variant)] mt-2 max-w-md">Your saved meal plans will appear here. Generate a plan and click save to keep it for later.</p>
+            <Button className="mt-6 font-bold" onClick={() => handleTabChange('generate')}>Generate Meal Plan</Button>
+          </div>
+        ) : filteredPlans.length === 0 ? (
+          <div className="py-20 text-center text-[var(--color-on-surface-variant)] text-sm">
+            No saved plans match your current filters.
+          </div>
+        ) : (
+          <div className="space-y-0 rounded-[24px] bg-white overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.02)]">
+            {filteredPlans.map((plan: any, index: number) => {
+              const date = new Date(plan.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+              const previewMeals = plan.generatedPlan?.slice(0, 3) || [];
+              const isBudgetFriendly = plan.budget <= 15000;
+              const titleTag = isBudgetFriendly ? "Budget-Friendly Student Plan" : "Standard Nigerian Plan";
+              
+              return (
+                <div key={plan.id} className={`group relative p-6 sm:p-8 hover:bg-[#f9fafb] transition-colors ${index !== filteredPlans.length - 1 ? 'border-b border-[var(--color-outline-variant)]/10' : ''}`}>
                   
-                  <div>
-                    <h4 className="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-2">Preview</h4>
-                    <div className="space-y-2">
+                  {/* Top Row: Title & Tag */}
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-xl font-extrabold text-[var(--color-on-surface)] tracking-tight">{titleTag}</h3>
+                    <span className="text-[11px] font-bold tracking-wider uppercase text-[var(--color-secondary)] bg-[#f9fafb] px-2.5 py-1 rounded border border-[var(--color-outline-variant)]/20">
+                      [7 Days]
+                    </span>
+                  </div>
+
+                  {/* Metadata Row: Budget & Date */}
+                  <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-on-surface)] mb-6">
+                    <span className="text-[var(--color-primary)]">₦{plan.budget.toLocaleString()}</span>
+                    <span className="text-[var(--color-outline-variant)]">•</span>
+                    <span className="text-[var(--color-secondary)]">Saved {date}</span>
+                  </div>
+
+                  {/* Ingredients */}
+                  <div className="mb-6 max-w-3xl">
+                    <h4 className="text-[11px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-2">Ingredients</h4>
+                    <p className="text-[14px] text-[var(--color-on-surface)] font-medium leading-relaxed">
+                      {plan.ingredients.split(',').map((i: string) => i.trim()).filter((i: string) => i).join(' • ')}
+                    </p>
+                  </div>
+
+                  {/* Meal Preview */}
+                  <div className="mb-8 max-w-3xl">
+                    <h4 className="text-[11px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-3">Preview</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       {previewMeals.map((day: any, i: number) => (
-                        <div key={i} className="text-sm flex gap-3">
+                        <div key={i} className="flex gap-3 text-[13px]">
                           <span className="font-bold text-[var(--color-primary)] w-8 flex-shrink-0">{day.day.substring(0, 3)}</span>
-                          <span className="text-[var(--color-on-surface-variant)] truncate">{day.lunch}</span>
+                          <span className="text-[var(--color-on-surface-variant)] truncate font-medium">{day.lunch}</span>
                         </div>
                       ))}
                     </div>
                   </div>
-                </div>
 
-                {/* Actions */}
-                <div className="p-4 bg-white grid grid-cols-3 gap-2">
-                  <Button 
-                    variant="outline" 
-                    className="w-full text-xs h-9 px-2 shadow-sm"
-                    onClick={() => handleViewOnlyPlan(plan)}
-                  >
-                    View
-                  </Button>
-                  <Button 
-                    variant="primary" 
-                    className="w-full text-xs h-9 px-2 shadow-sm"
-                    onClick={() => handleReusePlan(plan)}
-                  >
-                    Reuse
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full text-xs h-9 px-2 text-[var(--color-error)] hover:bg-[var(--color-error-container)] hover:text-[var(--color-error)] border-[var(--color-error)] border-opacity-20 hover:border-opacity-100 transition-colors shadow-sm"
-                    onClick={() => handleDeletePlan(plan.id)}
-                  >
-                    Delete
-                  </Button>
+                  {/* Footer & Actions */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-5 border-t border-[var(--color-outline-variant)]/10 gap-4 sm:gap-0">
+                    <div className="flex items-center gap-2 text-[12px] font-bold text-[var(--color-secondary)]">
+                      <span>7 Meals</span>
+                      <span>•</span>
+                      <span>21 Dishes</span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button onClick={() => handleViewOnlyPlan(plan)} className="text-[13px] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors px-4 py-2 rounded-lg bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-primary)]/30 shadow-sm">View Plan</button>
+                      <button onClick={() => handleDeletePlan(plan.id)} className="text-[13px] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-error)] transition-colors px-4 py-2 rounded-lg bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-error)]/30 shadow-sm">Delete</button>
+                      <Button onClick={() => handleReusePlan(plan)} className="h-9 px-6 text-[13px] font-bold shadow-sm">Reuse Plan</Button>
+                    </div>
+                  </div>
+
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+        )}
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
   };
 
   const renderSettingsTab = () => {
+    // Generate initials for avatar
+    const initials = userData.name ? userData.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : 'U';
+
     return (
-    <div className="max-w-3xl space-y-8 pb-12">
-      <div>
-        <h2 className="text-3xl font-bold text-[var(--color-on-surface)] tracking-tight">Settings</h2>
-        <p className="text-sm text-[var(--color-on-surface-variant)] mt-2">Manage your account settings and preferences.</p>
-      </div>
-
-      {/* Profile Section */}
-      <div className="rounded-2xl bg-white overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-        <div className="px-6 py-4 bg-white">
-          <h3 className="text-lg font-bold text-[var(--color-on-surface)]">Profile</h3>
-        </div>
-        <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="text-xs font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-2 block">Name</label>
-              <div className="text-sm font-medium text-[var(--color-on-surface)] bg-[#f9fafb] rounded-xl px-4 py-3">{userData.name}</div>
-            </div>
-            <div>
-              <label className="text-xs font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-2 block">Email</label>
-              <div className="text-sm font-medium text-[var(--color-on-surface)] bg-[#f9fafb] rounded-xl px-4 py-3">{userData.email}</div>
+      <div className="pb-12 relative w-full">
+        {/* Full-width sticky header container */}
+        <div className={`sticky top-[-24px] lg:top-[-32px] z-40 -mx-10 px-10 lg:-mx-14 lg:px-14 pt-6 lg:pt-8 pb-4 mb-6 transition-all duration-500 ease-in-out ${isScrolled ? 'bg-white/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.02)]' : 'bg-[#f9fafb]'}`}>
+          <div className="max-w-5xl">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between">
+                <h2 className={`font-bold text-[var(--color-on-surface)] tracking-tight transition-all duration-500 ease-in-out origin-left ${isScrolled ? 'text-xl scale-95' : 'text-3xl scale-100'}`}>Settings</h2>
+              </div>
+              
+              {/* Perfectly smooth collapse using CSS Grid */}
+              <div className={`grid transition-all duration-500 ease-in-out ${isScrolled ? 'grid-rows-[0fr] opacity-0 mb-0' : 'grid-rows-[1fr] opacity-100 mt-2 mb-6'}`}>
+                <div className="overflow-hidden">
+                  <p className="text-sm text-[var(--color-on-surface-variant)]">Manage your account preferences and security settings.</p>
+                </div>
+              </div>
             </div>
           </div>
-          <div>
-            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-wide ${userData.emailVerified ? 'bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]' : 'bg-[var(--color-error-container)] text-[var(--color-error)]'}`}>
-              {userData.emailVerified ? 'Email Verified' : 'Email Not Verified'}
-            </span>
-          </div>
         </div>
-      </div>
 
-      {/* Preferences Section */}
-      <div className="rounded-2xl bg-white overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-        <div className="px-6 py-4 bg-white">
-          <h3 className="text-lg font-bold text-[var(--color-on-surface)]">Preferences</h3>
-        </div>
-        <form 
-          className="p-6 space-y-6"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setPrefSaving(true);
-            const res = await updatePreferences(prefHousehold, prefGoal);
-            setPrefSaving(false);
-            if (res.success) {
-              alert('Preferences updated successfully!');
-            } else {
-              alert(res.error || 'Failed to update preferences.');
-            }
-          }}
-        >
-          <div className="space-y-5">
-            <div>
-              <label className="text-xs font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-2 block">Household Size</label>
-              <select 
-                value={prefHousehold}
-                onChange={e => setPrefHousehold(e.target.value)}
-                className="w-full sm:w-1/2 text-sm font-medium text-[var(--color-on-surface)] bg-[#f9fafb] rounded-xl px-4 py-3 focus:outline-none focus:bg-white focus:shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all"
+        <div className="max-w-5xl">
+          {/* 2-Column Responsive Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          
+          {/* Left Column */}
+          <div className="space-y-6 lg:space-y-8">
+            
+            {/* Profile Section */}
+            <div className="bg-white border border-black/[0.03] rounded-[16px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-6 sm:p-8">
+              <h3 className="text-lg font-semibold text-[var(--color-on-surface)] mb-8 flex items-center gap-2">
+                <User className="w-5 h-5 text-[var(--color-primary)]" />
+                Profile Information
+              </h3>
+              
+              <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-8">
+                <div className="w-20 h-20 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_15%,white)] flex items-center justify-center flex-shrink-0 text-[var(--color-primary)] text-2xl font-bold tracking-tight">
+                  {initials}
+                </div>
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <h4 className="text-xl font-bold text-[var(--color-on-surface)] truncate">{userData.name}</h4>
+                  <p className="text-[14px] text-[var(--color-on-surface-variant)] flex items-center gap-2 truncate">
+                    <Mail className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span className="truncate">{userData.email}</span>
+                  </p>
+                  <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-[var(--color-primary)]">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Verified
+                  </div>
+                </div>
+              </div>
+              
+              <div className="pt-6 border-t border-[var(--color-outline-variant)]/20">
+                <Button onClick={() => setIsEditProfileModalOpen(true)} variant="outline" className="w-full sm:w-auto text-sm font-bold shadow-sm">
+                  Edit Profile
+                </Button>
+              </div>
+            </div>
+
+            {/* Preferences Section */}
+            <div className="bg-white border border-black/[0.03] rounded-[16px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-6 sm:p-8">
+              <h3 className="text-lg font-semibold text-[var(--color-on-surface)] mb-8 flex items-center gap-2">
+                <Settings className="w-5 h-5 text-[var(--color-primary)]" />
+                Preferences
+              </h3>
+              
+              <form 
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setPrefSaving(true);
+                  const res = await updatePreferences(prefHousehold, prefGoal);
+                  setPrefSaving(false);
+                  if (res.success) {
+                    alert('Preferences updated successfully!');
+                  } else {
+                    alert(res.error || 'Failed to update preferences.');
+                  }
+                }}
+                className="space-y-6"
               >
-                <option value="1">1 Person</option>
-                <option value="2">2 People</option>
-                <option value="3-4">3-4 People</option>
-                <option value="5+">5+ People</option>
-              </select>
+                {/* Simulated static row */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[var(--color-outline-variant)]/20">
+                  <div>
+                    <p className="text-[14px] font-bold text-[var(--color-on-surface)]">Currency</p>
+                    <p className="text-[13px] text-[var(--color-on-surface-variant)]">Display currency for meal plans</p>
+                  </div>
+                  <div className="text-[14px] font-semibold text-[var(--color-on-surface)] px-4 py-2 bg-[#f9fafb] rounded-lg border border-[var(--color-outline-variant)]/20">
+                    NGN (₦)
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row justify-between gap-4 pb-4 border-b border-[var(--color-outline-variant)]/20">
+                  <div className="flex-1">
+                    <label className="text-[14px] font-bold text-[var(--color-on-surface)] mb-1 block">Household Size</label>
+                    <p className="text-[13px] text-[var(--color-on-surface-variant)] mb-3 sm:mb-0">How many people are you cooking for?</p>
+                  </div>
+                  <select 
+                    value={prefHousehold}
+                    onChange={e => setPrefHousehold(e.target.value)}
+                    className="w-full sm:w-48 text-[14px] font-medium text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-3 py-2 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-colors h-10"
+                  >
+                    <option value="1">1 Person</option>
+                    <option value="2">2 People</option>
+                    <option value="3-4">3-4 People</option>
+                    <option value="5+">5+ People</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col sm:flex-row justify-between gap-4 pb-4 border-b border-[var(--color-outline-variant)]/20">
+                  <div className="flex-1">
+                    <label className="text-[14px] font-bold text-[var(--color-on-surface)] mb-1 block">Primary Goal</label>
+                    <p className="text-[13px] text-[var(--color-on-surface-variant)] mb-3 sm:mb-0">What is your main focus for meal planning?</p>
+                  </div>
+                  <select 
+                    value={prefGoal}
+                    onChange={e => setPrefGoal(e.target.value)}
+                    className="w-full sm:w-48 text-[14px] font-medium text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-3 py-2 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-colors h-10"
+                  >
+                    <option value="save-money">Save Money</option>
+                    <option value="save-time">Save Time</option>
+                    <option value="reduce-waste">Reduce Food Waste</option>
+                    <option value="eat-healthier">Eat Healthier</option>
+                  </select>
+                </div>
+                
+                <div className="pt-2 flex justify-end">
+                  <Button type="submit" disabled={prefSaving} className="w-full sm:w-auto font-bold shadow-sm text-sm">
+                    {prefSaving ? 'Saving...' : 'Save Preferences'}
+                  </Button>
+                </div>
+              </form>
             </div>
-            <div>
-              <label className="text-xs font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-2 block">Primary Goal</label>
-              <select 
-                value={prefGoal}
-                onChange={e => setPrefGoal(e.target.value)}
-                className="w-full sm:w-1/2 text-sm font-medium text-[var(--color-on-surface)] bg-[#f9fafb] rounded-xl px-4 py-3 focus:outline-none focus:bg-white focus:shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all"
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6 lg:space-y-8">
+            
+            {/* Security Section */}
+            <div className="bg-white border border-black/[0.03] rounded-[16px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-6 sm:p-8">
+              <h3 className="text-lg font-semibold text-[var(--color-on-surface)] mb-8 flex items-center gap-2">
+                <Lock className="w-5 h-5 text-[var(--color-primary)]" />
+                Security
+              </h3>
+              
+              <form 
+                className="space-y-4"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setPassSaving(true);
+                  setPassSuccess('');
+                  setPassError('');
+                  const formData = new FormData(e.currentTarget);
+                  const res = await changePassword(formData);
+                  setPassSaving(false);
+                  if (res.success) {
+                    setPassSuccess('Password updated successfully');
+                    (e.target as HTMLFormElement).reset();
+                  } else {
+                    setPassError(res.error || 'Failed to update password');
+                  }
+                }}
               >
-                <option value="save-money">Save Money</option>
-                <option value="save-time">Save Time</option>
-                <option value="reduce-waste">Reduce Food Waste</option>
-                <option value="eat-healthier">Eat Healthier</option>
-              </select>
-            </div>
-          </div>
-          <div className="pt-2">
-            <Button type="submit" variant="primary" disabled={prefSaving}>{prefSaving ? 'Saving...' : 'Update Preferences'}</Button>
-          </div>
-        </form>
-      </div>
+                <div>
+                  <label className="text-[13px] font-bold text-[var(--color-on-surface)] mb-2 block">Change Password</label>
+                  <div className="space-y-3">
+                    <input 
+                      type="password" 
+                      name="currentPassword" 
+                      placeholder="Current Password" 
+                      required
+                      className="w-full text-[14px] text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-4 py-2.5 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all"
+                    />
+                    <input 
+                      type="password" 
+                      name="newPassword" 
+                      placeholder="New Password" 
+                      required
+                      className="w-full text-[14px] text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-4 py-2.5 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all"
+                    />
+                  </div>
+                </div>
+                
+                {passError && <p className="text-[13px] font-semibold text-[var(--color-error)]">{passError}</p>}
+                {passSuccess && <p className="text-[13px] font-semibold text-[var(--color-primary)]">{passSuccess}</p>}
+                
+                <div className="pt-2">
+                  <Button type="submit" variant="outline" disabled={passSaving} className="w-full sm:w-auto text-sm font-bold shadow-sm">
+                    {passSaving ? 'Updating...' : 'Update Password'}
+                  </Button>
+                </div>
+              </form>
 
-      {/* Support Section */}
-      <div className="rounded-2xl bg-white overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-        <div className="px-6 py-4 bg-white">
-          <h3 className="text-lg font-bold text-[var(--color-on-surface)]">Support & Legal</h3>
-        </div>
-        <div className="p-6 space-y-4">
-          <p className="text-sm text-[var(--color-on-surface-variant)] leading-relaxed">
-            Need help with your account or meal plans? Send us a message and we'll get back to you within 1-2 business days.
-          </p>
-          <div className="pt-2 flex flex-wrap gap-3">
-            <Link href="/contact" className="inline-flex items-center justify-center h-10 px-5 rounded-lg bg-[var(--color-primary-container)] text-[var(--color-primary)] text-sm font-bold hover:opacity-90 transition-opacity">
-              Contact Us
-            </Link>
-            <Link href="/terms" className="inline-flex items-center justify-center h-10 px-5 rounded-lg bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-[var(--color-on-surface-variant)] text-sm font-bold hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:text-[var(--color-on-surface)] transition-colors">
-              Terms of Service
-            </Link>
-            <Link href="/privacy" className="inline-flex items-center justify-center h-10 px-5 rounded-lg bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-[var(--color-on-surface-variant)] text-sm font-bold hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:text-[var(--color-on-surface)] transition-colors">
-              Privacy Policy
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Account Section */}
-      <div className="rounded-2xl bg-white overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-        <div className="px-6 py-4 bg-white">
-          <h3 className="text-lg font-bold text-[var(--color-error)]">Account</h3>
-        </div>
-        <div className="p-6 space-y-8">
-          <form 
-            className="space-y-5"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setPassSaving(true);
-              setPassSuccess('');
-              setPassError('');
-              const formData = new FormData(e.currentTarget);
-              const res = await changePassword(formData);
-              setPassSaving(false);
-              if (res.success) {
-                setPassSuccess('Password updated successfully');
-                (e.target as HTMLFormElement).reset();
-              } else {
-                setPassError(res.error || 'Failed to update password');
-              }
-            }}
-          >
-            <h4 className="text-sm font-semibold text-[var(--color-on-surface)]">Change Password</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input 
-                type="password" 
-                name="currentPassword" 
-                placeholder="Current Password" 
-                required
-                className="w-full text-sm text-[var(--color-on-surface)] bg-[#f9fafb] rounded-xl px-4 py-3 focus:outline-none focus:bg-white focus:shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all"
-              />
-              <input 
-                type="password" 
-                name="newPassword" 
-                placeholder="New Password" 
-                required
-                className="w-full text-sm text-[var(--color-on-surface)] bg-[#f9fafb] rounded-xl px-4 py-3 focus:outline-none focus:bg-white focus:shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all"
-              />
+              <div className="mt-8 pt-8 border-t border-[var(--color-outline-variant)]/10">
+                <div className="bg-[color-mix(in_srgb,var(--color-error)_4%,transparent)] rounded-[12px] p-5 border border-[var(--color-error)]/10">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h4 className="text-[14px] font-bold text-[var(--color-error)]">Sign Out</h4>
+                      <p className="text-[13px] text-[var(--color-error)]/70 mt-1">End your session on this device.</p>
+                    </div>
+                    <button
+                      onClick={() => setIsLogoutModalOpen(true)}
+                      className="flex items-center justify-center gap-2 text-[14px] font-bold text-white bg-[var(--color-error)] px-6 py-2.5 rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-            {passError && <p className="text-xs font-semibold text-[var(--color-error)] mt-2">{passError}</p>}
-            {passSuccess && <p className="text-xs font-semibold text-[var(--color-primary)] mt-2">{passSuccess}</p>}
-            <div className="pt-2">
-              <Button type="submit" variant="outline" disabled={passSaving}>{passSaving ? 'Updating...' : 'Update Password'}</Button>
-            </div>
-          </form>
 
-          <div className="pt-6">
-            <h4 className="text-sm font-semibold text-[var(--color-on-surface)] mb-2">Sign Out</h4>
-            <p className="text-xs text-[var(--color-on-surface-variant)] mb-5">Sign out of your account on this device.</p>
-            <button
-              onClick={() => setIsLogoutModalOpen(true)}
-              className="text-sm font-bold bg-[var(--color-error)] text-white px-6 py-2.5 rounded-lg hover:bg-red-700 transition-colors shadow-sm"
-            >
-              Logout
-            </button>
+            {/* Support & Legal Section */}
+            <div className="bg-white border border-black/[0.03] rounded-[16px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-6 sm:p-8">
+              <h3 className="text-lg font-semibold text-[var(--color-on-surface)] mb-8 flex items-center gap-2">
+                <Shield className="w-5 h-5 text-[var(--color-primary)]" />
+                Support & Legal
+              </h3>
+              
+              <div className="space-y-2">
+                <Link href="/contact" className="flex items-center justify-between p-3 rounded-xl hover:bg-[#f9fafb] transition-colors group">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] flex items-center justify-center text-[var(--color-primary)]">
+                      <LifeBuoy className="w-4 h-4" />
+                    </div>
+                    <span className="text-[14px] font-semibold text-[var(--color-on-surface)] group-hover:text-[var(--color-primary)] transition-colors">Contact Support</span>
+                  </div>
+                  <span className="text-[var(--color-on-surface-variant)] opacity-50">&rarr;</span>
+                </Link>
+
+                <Link href="/terms" className="flex items-center justify-between p-3 rounded-xl hover:bg-[#f9fafb] transition-colors group">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 flex items-center justify-center text-[var(--color-secondary)]">
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <span className="text-[14px] font-semibold text-[var(--color-on-surface)]">Terms of Service</span>
+                  </div>
+                  <span className="text-[var(--color-on-surface-variant)] opacity-50">&rarr;</span>
+                </Link>
+
+                <Link href="/privacy" className="flex items-center justify-between p-3 rounded-xl hover:bg-[#f9fafb] transition-colors group">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 flex items-center justify-center text-[var(--color-secondary)]">
+                      <Shield className="w-4 h-4" />
+                    </div>
+                    <span className="text-[14px] font-semibold text-[var(--color-on-surface)]">Privacy Policy</span>
+                  </div>
+                  <span className="text-[var(--color-on-surface-variant)] opacity-50">&rarr;</span>
+                </Link>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
     </div>
-    );
-  };
+  );
+};
 
   const SidebarItem = ({ icon: Icon, label, tab }: { icon: any, label: string, tab: Tab }) => (
     <button
@@ -707,6 +997,10 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       <span className="text-[13px]">{label}</span>
     </button>
   );
+
+  const handleMainScroll = (e: React.UIEvent<HTMLElement>) => {
+    setIsScrolled(e.currentTarget.scrollTop > 30);
+  };
 
   return (
     <>
@@ -749,7 +1043,10 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto px-10 pb-10 pt-6 lg:px-14 lg:pb-14 lg:pt-8">
+      <main 
+        className="flex-1 overflow-y-auto px-10 pb-10 pt-6 lg:px-14 lg:pb-14 lg:pt-8 relative"
+        onScroll={handleMainScroll}
+      >
         {/* Welcome Experience (Banner OR Welcome Section) */}
         {(!userData.emailVerified && !isBannerDismissed) ? (
           <div className="mb-8 animate-in fade-in duration-300">
@@ -771,7 +1068,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
               &larr; Back to History
             </button>
             <MealPlanResults
-              plan={generatedPlan}
+              plan={generatedPlan!}
               budget={activeBudget}
               ingredients={activeIngredients}
               onSave={handleSavePlan}
@@ -822,6 +1119,73 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
               Cancel
             </Button>
           </div>
+        </div>
+      </div>
+    )}
+
+    {/* Edit Profile Modal */}
+    {isEditProfileModalOpen && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+        <div 
+          className="absolute inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300"
+          onClick={() => setIsEditProfileModalOpen(false)}
+        />
+        <div className="relative bg-[var(--color-surface)] w-full max-w-[400px] rounded-[24px] shadow-[0_16px_40px_rgb(0,0,0,0.12)] p-6 sm:p-8 animate-in zoom-in-95 fade-in duration-200">
+          <h3 className="text-[20px] font-bold text-[var(--color-on-surface)] mb-2 tracking-tight">Edit Profile</h3>
+          <p className="text-[14px] text-[var(--color-on-surface-variant)] mb-6 leading-relaxed">
+            Update your display name.
+          </p>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            const name = formData.get('name') as string;
+            
+            const submitBtn = e.currentTarget.querySelector('button[type="submit"]') as HTMLButtonElement;
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Saving...';
+            submitBtn.disabled = true;
+
+            const res = await updateProfile(name);
+            
+            if (res.success) {
+              setIsEditProfileModalOpen(false);
+            } else {
+              alert(res.error || 'Failed to update profile');
+              submitBtn.textContent = originalText;
+              submitBtn.disabled = false;
+            }
+          }}>
+            <div className="space-y-4 mb-8">
+              <div>
+                <label className="text-[13px] font-bold text-[var(--color-on-surface)] mb-2 block">Display Name</label>
+                <input 
+                  type="text" 
+                  name="name" 
+                  defaultValue={userData.name}
+                  required
+                  minLength={2}
+                  className="w-full text-[15px] font-medium text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-xl px-4 py-3.5 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-3">
+              <Button 
+                type="submit"
+                className="w-full min-h-[48px] rounded-xl font-semibold shadow-sm text-[15px] hover:opacity-90 transition-opacity border-none"
+                style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+              >
+                Save Changes
+              </Button>
+              <Button 
+                type="button"
+                variant="outline" 
+                onClick={() => setIsEditProfileModalOpen(false)}
+                className="w-full min-h-[48px] rounded-xl font-semibold border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface)] text-[15px]"
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
         </div>
       </div>
     )}

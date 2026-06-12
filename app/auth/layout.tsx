@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, Suspense } from 'react';
 import AuthRightPanel from './AuthRightPanel';
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
@@ -12,7 +12,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       </div>
       
       {/* Right side: Dynamic Illustration and copy */}
-      <AuthRightPanel />
+      <Suspense fallback={<div className="hidden lg:flex flex-1 flex-col justify-center items-center bg-white p-12 lg:w-[55%] relative overflow-hidden" />}>
+        <AuthRightPanel />
+      </Suspense>
     </div>
   );
 }
