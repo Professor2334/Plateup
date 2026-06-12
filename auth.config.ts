@@ -10,7 +10,7 @@ export const authConfig = {
     async jwt({ token, user, trigger, session }: { token: any, user: any, trigger?: string, session?: any }) {
       if (user) {
         token.sub = user.id;
-        token.emailVerified = user.emailVerified;
+        token.emailVerified = !!user.emailVerified;
         token.onboardingCompleted = user.onboardingCompleted;
       }
       if (trigger === "update" && session?.user) {

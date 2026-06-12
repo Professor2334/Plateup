@@ -8,12 +8,32 @@ import { LoginSchema } from "@/lib/validators";
 import { headers } from "next/headers";
 import { authRateLimit } from "@/lib/rate-limit";
 
+import { PrismaAdapter } from "@auth/prisma-adapter";
+
 export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
   ...authConfig,
+  callbacks: {
+    ...authConfig.callbacks,
+    async signIn({ user, account, profile }) {
+      // Automatically verify email for Google sign-ins if not already verified
+      if (account?.provider === "google" && user.email) {
+        const existingUser = await db.user.findUnique({ where: { email: user.email } });
+        if (existingUser && !existingUser.emailVerified) {
+          await db.user.update({
+            where: { email: user.email },
+            data: { emailVerified: new Date() }
+          });
+        }
+      }
+      return true;
+    }
+  },
+  adapter: PrismaAdapter(db),
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      allowDangerousEmailAccountLinking: true,
     }),
     Credentials({
       credentials: {
@@ -51,7 +71,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             id: user.id,
             email: user.email,
             name: user.name,
-            emailVerified: user.emailVerified,
+            emailVerified: user.emailVerified !== null,
             onboardingCompleted: user.onboardingCompleted,
           };
         }

@@ -140,10 +140,14 @@ const config: Config = {
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-12px)' },
+        },
+        shimmer: {
+          '100%': { transform: 'translateX(100%)' }
         }
       },
       animation: {
         float: 'float 6s ease-in-out infinite',
+        shimmer: 'shimmer 2s infinite',
       },
     },
   },

@@ -152,9 +152,9 @@ export default function LandingPage() {
               
               {/* Social Proof Row */}
               <div className="mt-8 flex flex-wrap justify-center gap-5 text-[13px] font-medium text-[var(--color-on-surface-variant)]">
-                <span className="flex items-center gap-2"><Check className="w-4 h-4 text-[var(--color-primary)]" strokeWidth={3} /> Nigerian Meals</span>
-                <span className="flex items-center gap-2"><Check className="w-4 h-4 text-[var(--color-primary)]" strokeWidth={3} /> Budget Planning</span>
-                <span className="flex items-center gap-2"><Check className="w-4 h-4 text-[var(--color-primary)]" strokeWidth={3} /> Smart Shopping Lists</span>
+                <span className="flex items-center gap-2 group cursor-default"><Sparkles className="w-4 h-4 text-[var(--color-primary)] opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300" strokeWidth={2} /> Nigerian Meals</span>
+                <span className="flex items-center gap-2 group cursor-default"><Sparkles className="w-4 h-4 text-[var(--color-primary)] opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300" strokeWidth={2} /> Budget Planning</span>
+                <span className="flex items-center gap-2 group cursor-default"><Sparkles className="w-4 h-4 text-[var(--color-primary)] opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300" strokeWidth={2} /> Smart Shopping Lists</span>
               </div>
             </div>
           </div>
@@ -176,8 +176,10 @@ export default function LandingPage() {
                   "Meal History",
                   "WhatsApp Sharing"
                 ].map((metric, i) => (
-                  <div key={`${arrayIndex}-${i}`} className="flex items-center gap-3 px-8 py-4 rounded-[100px] bg-[var(--color-surface)] text-[var(--color-on-surface)] font-medium text-[15px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-default whitespace-nowrap">
-                    <Check className="w-5 h-5 text-[var(--color-primary)]" strokeWidth={3} />
+                  <div key={`${arrayIndex}-${i}`} className="group flex items-center gap-3 px-8 py-4 rounded-[100px] bg-[var(--color-surface)] text-[var(--color-on-surface)] font-medium text-[15px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 cursor-default whitespace-nowrap border border-transparent">
+                    <div className="flex items-center justify-center bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)] group-hover:bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] w-8 h-8 rounded-full transition-colors duration-300">
+                      <Sparkles className="w-4 h-4 text-[var(--color-primary)] opacity-90 group-hover:opacity-100 group-hover:rotate-12 transition-all duration-300" strokeWidth={2.5} />
+                    </div>
                     {metric}
                   </div>
                 ))}

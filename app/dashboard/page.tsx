@@ -28,7 +28,7 @@ export default async function DashboardPage() {
       userData={{
         name: user.name || '',
         email: user.email || '',
-        emailVerified: user.emailVerified || false,
+        emailVerified: user.emailVerified !== null,
         householdSize: user.householdSize || '',
         primaryGoal: user.primaryGoal || ''
       }}

@@ -82,7 +82,7 @@ export async function verifyEmailToken(token: string) {
 
     await db.user.update({
       where: { id: verificationToken.userId },
-      data: { emailVerified: true },
+      data: { emailVerified: new Date() },
     });
 
     await db.verificationToken.delete({
@@ -116,7 +116,7 @@ export async function resendVerificationEmailAction(email: string) {
       return { success: false, error: 'User not found' };
     }
 
-    if (user.emailVerified) {
+    if (user.emailVerified !== null) {
       return { success: false, error: 'Email already verified' };
     }
 

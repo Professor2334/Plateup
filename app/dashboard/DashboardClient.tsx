@@ -15,6 +15,7 @@ import { logoutUser } from '@/app/actions/auth/actions';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { updatePreferences, changePassword } from '@/app/actions/settings/actions';
+import { MealPlanResults } from '@/components/meal-plans/MealPlanResults';
 
 interface DashboardClientProps {
   initialHistory: any[];
@@ -190,7 +191,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     handleTabChange('view-plan');
   };
 
-  const shareViaWhatsApp = async () => {
+  const shareViaWhatsApp = async (selectedItems?: Set<number>) => {
     if (!generatedPlan) return;
     
     // 1. Generate PDF
@@ -231,7 +232,11 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     doc.text('Shopping List', 14, finalY + 15);
 
     // Add Shopping List Table
-    const shoppingData = generatedPlan.shoppingList.map(item => [
+    const filteredList = selectedItems && selectedItems.size > 0
+      ? generatedPlan.shoppingList.filter((_, idx) => selectedItems.has(idx))
+      : generatedPlan.shoppingList;
+
+    const shoppingData = filteredList.map(item => [
       item.item,
       item.quantity
     ]);
@@ -272,7 +277,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-7xl relative">
       {/* Left Form */}
       <div className="lg:col-span-4">
-        <div className="lg:sticky lg:top-4 space-y-6">
+        <div className="lg:sticky lg:top-6 space-y-6 max-h-[calc(100vh-3rem)] overflow-y-auto scrollbar-thin overflow-x-hidden pr-2 pb-4">
         <GenerateMealForm 
           onPlanGenerated={(plan, formData, id) => {
             const b = parseFloat(formData.get('budget') as string);
@@ -293,56 +298,19 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             <MealPlanSkeleton />
           </div>
         ) : generatedPlan ? (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-[var(--color-primary)]">Your Meal Plan</h1>
-                <div className="flex items-center flex-wrap gap-3 mt-1.5">
-                  <p className="text-[var(--color-on-surface-variant)]">
-                    Budget: NGN {activeBudget.toLocaleString()}
-                  </p>
-                  <span className="px-3 py-1 bg-[var(--color-primary-container)] text-[var(--color-primary)] rounded-full text-sm font-medium tracking-wide border border-[var(--color-primary)] border-opacity-20">
-                    {generatedPlan.budgetStatus.replace('_', ' ')}
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" onClick={shareViaWhatsApp}>Share via WhatsApp</Button>
-                <Button onClick={handleSavePlan} disabled={saving}>{saving ? 'Saving...' : 'Save Plan'}</Button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {generatedPlan.mealPlan.map((dayPlan, idx) => (
-                <div key={idx} className="rounded-xl p-4 space-y-3 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                  <h3 className="font-bold text-[var(--color-primary)] border-b pb-2">{dayPlan.day}</h3>
-                  <div className="text-sm">
-                    <span className="font-semibold block text-[var(--color-secondary)]">Breakfast</span>
-                    <span className="text-[var(--color-on-surface)]">{dayPlan.breakfast}</span>
-                  </div>
-                  <div className="text-sm">
-                    <span className="font-semibold block text-[var(--color-secondary)]">Lunch</span>
-                    <span className="text-[var(--color-on-surface)]">{dayPlan.lunch}</span>
-                  </div>
-                  <div className="text-sm">
-                    <span className="font-semibold block text-[var(--color-secondary)]">Dinner</span>
-                    <span className="text-[var(--color-on-surface)]">{dayPlan.dinner}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="rounded-xl p-6 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] mt-8">
-              <h2 className="text-xl font-bold text-[var(--color-primary)] mb-4">Shopping List</h2>
-              <ul className="space-y-2 list-disc list-inside">
-                {generatedPlan.shoppingList.map((item, idx) => (
-                  <li key={idx} className="text-sm text-[var(--color-on-surface)]">
-                    <span className="font-medium">{item.item}</span> - {item.quantity}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+          <MealPlanResults
+            plan={generatedPlan}
+            budget={activeBudget}
+            ingredients={activeIngredients}
+            onSave={handleSavePlan}
+            isSaving={saving}
+            onShare={shareViaWhatsApp}
+            onRegenerate={() => {
+              setGeneratedPlan(null);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            isSaved={history.some(p => p.id === activePlanId && p.isSaved)}
+          />
         ) : (
           <div className="rounded-[18px] bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.02)] p-12 text-center h-full flex flex-col items-center justify-center min-h-[400px]">
             <div className="w-16 h-16 rounded-full bg-[color-mix(in_srgb,var(--color-surface-container-low)_50%,transparent)] flex items-center justify-center mb-6">
@@ -797,43 +765,23 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           </div>
         ) : null}
         {activeTab === 'generate' && renderGenerateTab()}
-        {activeTab === 'view-plan' && (
-          <div className="max-w-5xl space-y-6">
+        {activeTab === 'view-plan' && generatedPlan && (
+          <div className="max-w-7xl space-y-6">
             <button onClick={() => handleTabChange('history')} className="text-sm font-medium text-[var(--color-primary)] hover:underline mb-4 flex items-center gap-1">
               &larr; Back to History
             </button>
-            <div className="bg-white p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-              <div className="flex justify-between items-start mb-8">
-                <div>
-                  <h1 className="text-3xl font-bold text-[var(--color-primary)]">Meal Plan Viewer</h1>
-                  <p className="text-[var(--color-on-surface-variant)] mt-2">Budget: NGN {activeBudget.toLocaleString()} | Ingredients: {activeIngredients}</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={shareViaWhatsApp}>Share via WhatsApp</Button>
-                  <Button onClick={() => handleTabChange('generate')}>Load into Workspace</Button>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {generatedPlan?.mealPlan.map((dayPlan, idx) => (
-                  <div key={idx} className="rounded-2xl p-5 space-y-4 bg-[#f9fafb]">
-                    <h3 className="font-bold text-lg text-[var(--color-primary)] border-b pb-3">{dayPlan.day}</h3>
-                    <div className="text-sm">
-                      <span className="font-bold text-[var(--color-secondary)] block mb-1">Breakfast</span>
-                      <span className="text-[var(--color-on-surface)]">{dayPlan.breakfast}</span>
-                    </div>
-                    <div className="text-sm">
-                      <span className="font-bold text-[var(--color-secondary)] block mb-1">Lunch</span>
-                      <span className="text-[var(--color-on-surface)]">{dayPlan.lunch}</span>
-                    </div>
-                    <div className="text-sm">
-                      <span className="font-bold text-[var(--color-secondary)] block mb-1">Dinner</span>
-                      <span className="text-[var(--color-on-surface)]">{dayPlan.dinner}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <MealPlanResults
+              plan={generatedPlan}
+              budget={activeBudget}
+              ingredients={activeIngredients}
+              onSave={handleSavePlan}
+              isSaving={saving}
+              onShare={shareViaWhatsApp}
+              onRegenerate={() => {
+                handleTabChange('generate');
+              }}
+              isSaved={history.some(p => p.id === activePlanId && p.isSaved)}
+            />
           </div>
         )}
         {activeTab === 'history' && renderHistoryTab()}
