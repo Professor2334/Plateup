@@ -49,16 +49,16 @@ export function MealPlanResults({
   return (
     <div className="w-full space-y-8 animate-in fade-in duration-500">
       {/* Top Header & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-[clamp(1.25rem,2vw+0.5rem,1.5rem)] sm:text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] font-extrabold text-[var(--color-on-surface)] tracking-tight flex items-center gap-2">
+      <div className="flex flex-col items-center sm:flex-row sm:items-center justify-between gap-5 sm:gap-4 text-center sm:text-left">
+        <div className="flex flex-col items-center sm:items-start">
+          <h1 className="text-[clamp(1.25rem,2vw+0.5rem,1.5rem)] sm:text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] font-extrabold text-[var(--color-on-surface)] tracking-tight flex items-center justify-center sm:justify-start gap-2">
             AI Meal Plan
             <Sparkles className="w-6 h-6 text-[var(--color-primary)]" />
           </h1>
           <p className="text-[var(--color-on-surface-variant)] text-sm mt-1">Generated based on your ingredients and budget.</p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap justify-center sm:justify-end items-center gap-2 w-full sm:w-auto">
           <Button variant="outline" onClick={() => onShare(checkedItems)} className="gap-2 h-10 border-0 bg-[var(--color-surface-container-lowest)] shadow-sm hover:bg-[#f9fafb]">
             <Share2 className="w-4 h-4" />
             <span className="hidden sm:inline">Share</span>

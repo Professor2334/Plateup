@@ -77,17 +77,28 @@ export function OnboardingForm() {
   return (
     <div className="w-full">
       
-      {/* ── Brand logo — top-left edge of the page ── */}
-      <div className="absolute top-6 left-6 md:top-8 md:left-10 z-50">
+      {/* ── Brand logo & Mobile Back — top-left edge of the page ── */}
+      <div className="absolute top-10 left-6 md:top-8 md:left-10 z-50 flex items-center gap-3">
+        {step === 2 && (
+          <button
+            type="button"
+            onClick={() => changeStep(1)}
+            disabled={loading}
+            className="md:hidden p-2 rounded-full bg-[var(--color-surface-container-lowest)] shadow-sm border border-[color-mix(in_srgb,var(--color-outline-variant)_30%,transparent)] text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-low)] transition-all focus:outline-none"
+            aria-label="Go back"
+          >
+            <ArrowLeft size={20} />
+          </button>
+        )}
         <PlateUpLogo size="md" href="/" />
       </div>
 
       {/* Progress Bar Header */}
       {step < 3 && (
         <div className="mb-10 max-w-lg mx-auto">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-bold text-[var(--color-on-surface)]">Personalize PlateUp</span>
-            <span className="text-sm font-medium text-[var(--color-on-surface-variant)]">Step {step} of 2</span>
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-3 gap-2 md:gap-0">
+            <span className="text-center md:text-left text-sm font-bold text-[var(--color-on-surface)]">Personalize PlateUp</span>
+            <span className="text-center md:text-right text-[0.8125rem] font-medium text-[var(--color-on-surface-variant)] tracking-wide uppercase">Step {step} of 2</span>
           </div>
           <div className="w-full h-1.5 bg-[var(--color-surface-container-highest)] rounded-full overflow-hidden">
             <div 
@@ -107,9 +118,9 @@ export function OnboardingForm() {
         
         {/* STEP 1 */}
         {step === 1 && (
-          <div className="space-y-6 max-w-lg mx-auto">
-            <div className="text-center sm:text-left">
-              <h2 className="text-[clamp(1.5rem,3vw+0.5rem,1.75rem)] font-bold text-[var(--color-on-surface-variant)] mb-1 tracking-tight">What is your household size?</h2>
+          <div className="space-y-8 md:space-y-6 max-w-lg mx-auto">
+            <div className="text-center md:text-left mb-2 md:mb-0">
+              <h2 className="text-[clamp(1.5rem,3vw+0.5rem,1.75rem)] font-bold text-[var(--color-on-surface-variant)] mb-3 md:mb-1 tracking-tight text-balance">What is your household size?</h2>
               <p className="text-[1rem] text-[var(--color-on-surface-variant)] opacity-70">This helps the AI scale your recipes and shopping lists correctly.</p>
             </div>
             
@@ -121,10 +132,10 @@ export function OnboardingForm() {
                   <button
                     key={size.value}
                     onClick={() => setHouseholdSize(size.value)}
-                    className={`group relative p-5 text-left rounded-2xl transition-all duration-300 flex flex-col gap-4 focus:outline-none cursor-pointer hover:-translate-y-1
+                    className={`group relative p-4 md:p-5 text-left rounded-2xl transition-all duration-300 flex flex-row md:flex-col items-center md:items-start gap-4 focus:outline-none cursor-pointer hover:-translate-y-1
                       ${isSelected 
-                        ? 'border-2 border-[var(--color-primary)] bg-[var(--color-primary)]/10 shadow-[0_8px_20px_0_rgba(17,94,59,0.15)] scale-[1.01]' 
-                        : 'border-2 border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-surface)] hover:border-[color-mix(in_srgb,var(--color-outline-variant)_80%,transparent)] hover:bg-[var(--color-surface-container-low)] hover:shadow-sm'
+                        ? 'border-0 md:border-2 border-[var(--color-primary)] bg-[var(--color-primary)]/10 shadow-[0_8px_24px_rgba(17,94,59,0.15)] md:shadow-[0_8px_20px_0_rgba(17,94,59,0.15)] scale-[1.01]' 
+                        : 'border-0 md:border-2 border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-inverse-on-surface)] dark:bg-[var(--color-surface)] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] md:shadow-none md:hover:border-[color-mix(in_srgb,var(--color-outline-variant)_80%,transparent)] hover:bg-[var(--color-surface-container-low)] md:hover:shadow-sm'
                       }
                     `}
                   >
@@ -133,7 +144,7 @@ export function OnboardingForm() {
                       <Check className="w-4 h-4" strokeWidth={3} />
                     </div>
 
-                    <div className="flex items-center w-full">
+                    <div className="flex-shrink-0">
                       <div className="w-12 h-12 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)] transition-transform duration-300 group-hover:scale-105">
                         <Icon className="w-6 h-6" />
                       </div>
@@ -153,7 +164,7 @@ export function OnboardingForm() {
                 disabled={!householdSize}
                 className="w-full min-h-[56px] text-[1rem] font-semibold rounded-xl"
               >
-                Continue <ArrowRight className="w-5 h-5 ml-2" />
+                Continue <ArrowRight className="hidden md:block w-5 h-5 ml-2" />
               </Button>
             </div>
           </div>
@@ -161,9 +172,9 @@ export function OnboardingForm() {
 
         {/* STEP 2 */}
         {step === 2 && (
-          <div className="space-y-6 max-w-lg mx-auto">
-            <div className="text-center sm:text-left">
-              <h2 className="text-[clamp(1.5rem,3vw+0.5rem,1.75rem)] font-bold text-[var(--color-on-surface-variant)] mb-1 tracking-tight">What is your primary goal?</h2>
+          <div className="space-y-8 md:space-y-6 max-w-lg mx-auto">
+            <div className="text-center md:text-left mb-2 md:mb-0">
+              <h2 className="text-[clamp(1.5rem,3vw+0.5rem,1.75rem)] font-bold text-[var(--color-on-surface-variant)] mb-3 md:mb-1 tracking-tight text-balance">What is your primary goal?</h2>
               <p className="text-[1rem] text-[var(--color-on-surface-variant)] opacity-70">We'll optimize your meal plans to help you achieve this objective.</p>
             </div>
             
@@ -175,10 +186,10 @@ export function OnboardingForm() {
                   <button
                     key={goal.value}
                     onClick={() => setPrimaryGoal(goal.value)}
-                    className={`group relative p-5 text-left rounded-2xl transition-all duration-300 flex flex-col gap-4 focus:outline-none cursor-pointer hover:-translate-y-1
+                    className={`group relative p-4 md:p-5 text-left rounded-2xl transition-all duration-300 flex flex-row md:flex-col items-center md:items-start gap-4 focus:outline-none cursor-pointer hover:-translate-y-1
                       ${isSelected 
-                        ? 'border-2 border-[var(--color-primary)] bg-[var(--color-primary)]/10 shadow-[0_8px_20px_0_rgba(17,94,59,0.15)] scale-[1.01]' 
-                        : 'border-2 border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-surface)] hover:border-[color-mix(in_srgb,var(--color-outline-variant)_80%,transparent)] hover:bg-[var(--color-surface-container-low)] hover:shadow-sm'
+                        ? 'border-0 md:border-2 border-[var(--color-primary)] bg-[var(--color-primary)]/10 shadow-[0_8px_24px_rgba(17,94,59,0.15)] md:shadow-[0_8px_20px_0_rgba(17,94,59,0.15)] scale-[1.01]' 
+                        : 'border-0 md:border-2 border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-inverse-on-surface)] dark:bg-[var(--color-surface)] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] md:shadow-none md:hover:border-[color-mix(in_srgb,var(--color-outline-variant)_80%,transparent)] hover:bg-[var(--color-surface-container-low)] md:hover:shadow-sm'
                       }
                     `}
                   >
@@ -187,7 +198,7 @@ export function OnboardingForm() {
                       <Check className="w-4 h-4" strokeWidth={3} />
                     </div>
 
-                    <div className="flex items-center w-full">
+                    <div className="flex-shrink-0">
                       <div className="w-12 h-12 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)] transition-transform duration-300 group-hover:scale-105">
                         <Icon className="w-6 h-6" />
                       </div>
@@ -215,7 +226,7 @@ export function OnboardingForm() {
               <button 
                 onClick={() => changeStep(1)}
                 disabled={loading}
-                className="inline-flex items-center justify-center gap-1.5 text-[0.875rem] font-medium text-[var(--color-on-surface-variant)] opacity-70 hover:opacity-100 hover:text-[var(--color-on-surface)] transition-all mx-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] rounded-md px-2 py-1"
+                className="hidden md:inline-flex items-center justify-center gap-1.5 text-[0.875rem] font-medium text-[var(--color-on-surface-variant)] opacity-70 hover:opacity-100 hover:text-[var(--color-on-surface)] transition-all mx-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] rounded-md px-2 py-1"
               >
                 <ArrowLeft className="w-4 h-4" /> Back
               </button>
@@ -253,14 +264,15 @@ export function OnboardingForm() {
                     You're Ready to Start Planning
                   </h2>
                   <p className="text-[1rem] text-[var(--color-on-surface-variant)] opacity-70 leading-relaxed max-w-sm mx-auto">
-                    We'll now generate personalized Nigerian meal plans tailored to your household.
+                    <span className="hidden md:inline">We'll now generate personalized Nigerian meal plans tailored to your household.</span>
+                    <span className="inline md:hidden">Generating your personalized Nigerian meal plans.</span>
                   </p>
                 </div>
               </div>
 
               {/* Compact Summary Section */}
               <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto w-full">
-                <div className="flex-1 w-full p-4 rounded-xl border border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-surface)] shadow-sm flex flex-col items-center justify-center text-center">
+                <div className="flex-1 w-full p-4 rounded-xl border-0 md:border md:border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-inverse-on-surface)] dark:bg-[var(--color-surface)] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] md:shadow-sm flex flex-col items-center justify-center text-center">
                   <span className="text-[0.8125rem] font-medium text-[var(--color-on-surface-variant)] mb-1 flex items-center gap-1.5">
                     🏠 Household Size
                   </span>
@@ -268,7 +280,7 @@ export function OnboardingForm() {
                     {householdSizes.find(s => s.value === householdSize)?.label}
                   </span>
                 </div>
-                <div className="flex-1 w-full p-4 rounded-xl border border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-surface)] shadow-sm flex flex-col items-center justify-center text-center">
+                <div className="flex-1 w-full p-4 rounded-xl border-0 md:border md:border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-inverse-on-surface)] dark:bg-[var(--color-surface)] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] md:shadow-sm flex flex-col items-center justify-center text-center">
                   <span className="text-[0.8125rem] font-medium text-[var(--color-on-surface-variant)] mb-1 flex items-center gap-1.5">
                     🎯 Primary Goal
                   </span>
@@ -305,7 +317,7 @@ export function OnboardingForm() {
                   disabled={loading}
                   className="w-full min-h-[60px] text-[1.125rem] font-semibold rounded-xl bg-[var(--color-primary)] text-white shadow-[0_8px_20px_0_rgba(17,94,59,0.25)] hover:shadow-[0_8px_25px_rgba(17,94,59,0.35)] hover:-translate-y-0.5 transition-all"
                 >
-                  {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <>Generate My First Meal Plan <ArrowRight className="w-5 h-5 ml-2.5" /></>}
+                  {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <>Generate My First Meal Plan <ArrowRight className="hidden md:block w-5 h-5 ml-2.5" /></>}
                 </Button>
               </div>
             </div>

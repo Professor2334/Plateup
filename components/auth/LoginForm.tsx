@@ -99,13 +99,15 @@ export function LoginForm() {
         </div>
       </div>
       {error && <p className="text-[var(--color-error)] text-sm">{error}</p>}
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
-        ) : (
-          'Sign In'
-        )}
-      </Button>
+      <div className="pt-2 md:pt-0">
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            'Sign In'
+          )}
+        </Button>
+      </div>
     </form>
   );
 }

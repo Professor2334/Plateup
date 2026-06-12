@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { registerUser } from '@/app/actions/auth/actions';
@@ -184,10 +184,10 @@ export function RegisterForm() {
           />
           {emailError && <p className="mt-[var(--space-2)] p-2 px-3 rounded-md bg-[color-mix(in_srgb,var(--color-error-container)_35%,transparent)] text-xs font-normal text-[var(--color-on-error-container)]">{emailError}</p>}
         </div>
-        <div className="pt-2">
+        <div className="pt-2 md:pt-0">
           <Button type="submit" className="w-full cursor-pointer group flex items-center justify-center gap-2">
             <span>Continue</span>
-            <ArrowRight size={20} className="transition-transform group-hover:translate-x-1 mt-0.5" />
+            <ArrowRight size={20} className="hidden md:block transition-transform group-hover:translate-x-1 mt-0.5" />
           </Button>
         </div>
       </form>
@@ -196,6 +196,16 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      {/* Mobile Back Button */}
+      <button
+        type="button"
+        onClick={() => setStep(1)}
+        disabled={loading}
+        className="lg:hidden absolute top-12 left-8 md:top-10 md:left-6 p-2 rounded-full bg-[var(--color-surface-container-lowest)] shadow-sm border border-[var(--color-outline-variant)]/30 text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-low)] transition-all focus:outline-none z-50"
+        aria-label="Go back"
+      >
+        <ArrowLeft size={20} />
+      </button>
       <div className="space-y-1">
         <label htmlFor="password" className="text-sm font-medium">Password</label>
         <div className="relative">
@@ -278,7 +288,7 @@ export function RegisterForm() {
       </div>
 
       {error && <p className="text-[var(--color-error)] text-sm">{error}</p>}
-      <div className="space-y-4 pt-2">
+      <div className="space-y-4 pt-4 md:pt-2">
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -289,7 +299,7 @@ export function RegisterForm() {
         <p className="text-center text-[0.8125rem] text-[var(--color-on-surface-variant)] px-2">
           By creating an account, you agree to our <Link href="/terms" className="font-bold text-[var(--color-primary)] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="font-bold text-[var(--color-primary)] hover:underline">Privacy Policy</Link>.
         </p>
-        <div className="text-center">
+        <div className="text-center hidden lg:block">
           <button 
             type="button" 
             onClick={() => setStep(1)} 

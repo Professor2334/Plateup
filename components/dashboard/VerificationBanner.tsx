@@ -32,9 +32,9 @@ export function VerificationBanner({ email, onDismiss }: VerificationBannerProps
   return (
     <div
       role="alert"
-      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 md:px-5 md:py-4 gap-4 rounded-2xl bg-[color-mix(in_srgb,var(--color-accent)_8%,var(--color-surface))] shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-shadow duration-300"
+      className="flex flex-col sm:flex-row items-center sm:items-center justify-between p-5 md:px-5 md:py-4 gap-4 sm:gap-4 text-center sm:text-left rounded-2xl bg-[color-mix(in_srgb,var(--color-accent)_8%,var(--color-surface))] shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-shadow duration-300 relative"
     >
-      <div className="flex items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 w-full sm:w-auto">
         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[color-mix(in_srgb,var(--color-accent)_15%,transparent)] text-[var(--color-accent)] flex-shrink-0">
           <Shield className="w-5 h-5" />
         </div>
@@ -46,7 +46,7 @@ export function VerificationBanner({ email, onDismiss }: VerificationBannerProps
         </div>
       </div>
 
-      <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+      <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto flex-shrink-0 mt-2 sm:mt-0">
         {resendState === 'success' ? (
           <span className="flex items-center gap-1.5 text-[0.8125rem] font-semibold text-[var(--color-primary)]">
             <CheckCircle className="w-4 h-4" />
@@ -60,7 +60,7 @@ export function VerificationBanner({ email, onDismiss }: VerificationBannerProps
           id="verification-banner-resend-btn"
           onClick={handleResend}
           disabled={isResending || resendState === 'success'}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] shadow-sm rounded-lg text-[0.8125rem] font-semibold text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-lowest)] disabled:opacity-50 transition-colors"
+          className="w-full sm:w-auto flex justify-center items-center gap-2 px-4 py-3 sm:py-2 bg-[var(--color-surface)] shadow-sm rounded-xl sm:rounded-lg text-[0.875rem] sm:text-[0.8125rem] font-semibold text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-lowest)] disabled:opacity-50 transition-colors"
         >
           {isResending ? (
             <Loader2 className="w-4 h-4 animate-spin text-[var(--color-on-surface-variant)]" />
@@ -78,10 +78,10 @@ export function VerificationBanner({ email, onDismiss }: VerificationBannerProps
             setDismissed(true);
             onDismiss?.();
           }}
-          className="p-1.5 rounded-md hover:bg-[color-mix(in_srgb,var(--color-on-surface)_8%,transparent)] text-[var(--color-on-surface-variant)] transition-colors"
+          className="absolute top-3 right-3 sm:relative sm:top-0 sm:right-0 p-1.5 rounded-full hover:bg-[color-mix(in_srgb,var(--color-on-surface)_8%,transparent)] text-[var(--color-on-surface-variant)] transition-colors"
           aria-label="Dismiss banner"
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5 sm:w-4 sm:h-4" />
         </button>
       </div>
     </div>

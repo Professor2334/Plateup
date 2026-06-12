@@ -95,7 +95,7 @@ export function ContactForm({ defaultEmail }: { defaultEmail: string | null }) {
       {error && <p className="text-sm font-medium text-[var(--color-error)] bg-[var(--color-error)]/10 p-3 rounded-lg">{error}</p>}
 
       <div className="pt-2">
-        <Button type="submit" disabled={loading} className="h-12 px-8 rounded-xl font-bold bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 gap-2 shadow-sm text-[0.9375rem]">
+        <Button type="submit" disabled={loading} className="w-full sm:w-auto h-12 px-8 rounded-xl font-bold bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 gap-2 shadow-sm text-[0.9375rem]">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           <span>Send Message</span>
         </Button>

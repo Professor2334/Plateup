@@ -444,7 +444,7 @@ export default function LandingPage() {
             <div className="md:col-span-2 md:row-span-2 bg-[var(--color-surface)] rounded-[32px] p-8 md:p-12 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-500 flex flex-col overflow-hidden relative group">
               <div className="absolute inset-0 bg-[var(--color-primary)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
               
-              <div className="z-10 relative max-w-sm mb-32 md:mb-0">
+              <div className="z-10 relative max-w-sm mb-8 md:mb-0">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-[0.75rem] font-bold shadow-sm mb-6">
                   <Sparkles className="w-3.5 h-3.5" /> AI Engine
                 </div>
@@ -453,7 +453,7 @@ export default function LandingPage() {
               </div>
               
               {/* Fake UI Graphic */}
-              <div className="absolute right-0 bottom-0 w-[90%] md:w-[65%] bg-[var(--color-surface-container-lowest)] rounded-tl-[32px] shadow-[-20px_-20px_40px_rgba(0,0,0,0.03)] p-6 md:p-8 transform group-hover:-translate-y-3 group-hover:-translate-x-3 transition-transform duration-700 ease-out flex flex-col gap-5 border-t border-l border-[var(--color-outline-variant)]/30">
+              <div className="relative md:absolute right-0 bottom-0 mt-8 md:mt-0 -mb-8 md:mb-0 -mr-8 md:mr-0 ml-auto md:ml-0 w-[calc(100%+2rem)] md:w-[65%] bg-[var(--color-surface-container-lowest)] rounded-tl-[32px] shadow-[-20px_-20px_40px_rgba(0,0,0,0.03)] p-6 md:p-8 transform group-hover:-translate-y-3 md:group-hover:-translate-x-3 transition-transform duration-700 ease-out flex flex-col gap-5 border-t border-l border-[var(--color-outline-variant)]/30">
                 
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-[0.75rem] uppercase font-bold text-[var(--color-on-surface-variant)] tracking-widest">Monday</div>
@@ -484,7 +484,7 @@ export default function LandingPage() {
 
             {/* Medium Card 1: Smart Shopping Lists */}
             <div className="bg-[var(--color-surface)] rounded-[32px] p-8 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-500 flex flex-col overflow-hidden relative group">
-              <div className="z-10 relative mb-24">
+              <div className="z-10 relative mb-40 md:mb-24">
                 <h3 className="text-[1.25rem] font-semibold text-[var(--color-on-surface)] tracking-tight mb-3">Smart Shopping Lists</h3>
                 <p className="text-[0.875rem] font-normal text-[var(--color-on-surface-variant)] opacity-[0.85] leading-relaxed">Automatically extracted ingredients structured for easy market runs.</p>
               </div>
