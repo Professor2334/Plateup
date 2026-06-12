@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { SupportTab } from '@/components/dashboard/SupportTab';
+import { PrivacyTab } from '@/components/dashboard/PrivacyTab';
+import { TermsTab } from '@/components/dashboard/TermsTab';
 import { GenerateMealForm } from '@/components/meal-plans/GenerateMealForm';
 import { MealPlanSkeleton } from '@/components/meal-plans/MealPlanSkeleton';
 import type { MealPlanResponse } from '@/lib/deepseek';
@@ -29,7 +32,7 @@ interface DashboardClientProps {
   };
 }
 
-type Tab = 'generate' | 'history' | 'saved' | 'settings' | 'view-plan';
+type Tab = 'generate' | 'history' | 'saved' | 'settings' | 'view-plan' | 'support' | 'privacy' | 'terms';
 
 export function DashboardClient({ initialHistory, userName, userData }: DashboardClientProps) {
   const router = useRouter();
@@ -48,7 +51,10 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
         'meal-history': 'history',
         'saved-plans': 'saved',
         'settings': 'settings',
-        'view-plan': 'view-plan'
+        'view-plan': 'view-plan',
+        'support': 'support',
+        'privacy': 'privacy',
+        'terms': 'terms'
       };
       if (paramToTabMap[viewParam]) {
         setActiveTab(paramToTabMap[viewParam]);
@@ -66,7 +72,10 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       'history': 'meal-history',
       'saved': 'saved-plans',
       'settings': 'settings',
-      'view-plan': 'view-plan'
+      'view-plan': 'view-plan',
+      'support': 'support',
+      'privacy': 'privacy',
+      'terms': 'terms'
     };
     const newUrl = `${pathname}?view=${tabToParamMap[tab]}`;
     window.history.pushState(null, '', newUrl);
@@ -945,7 +954,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
               </h3>
               
               <div className="space-y-2">
-                <Link href="/contact" className="flex items-center justify-between p-3 rounded-xl hover:bg-[#f9fafb] transition-colors group">
+                <button onClick={() => handleTabChange('support')} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-[#f9fafb] transition-colors group">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] flex items-center justify-center text-[var(--color-primary)]">
                       <LifeBuoy className="w-4 h-4" />
@@ -953,9 +962,9 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                     <span className="text-[14px] font-semibold text-[var(--color-on-surface)] group-hover:text-[var(--color-primary)] transition-colors">Contact Support</span>
                   </div>
                   <span className="text-[var(--color-on-surface-variant)] opacity-50">&rarr;</span>
-                </Link>
+                </button>
 
-                <Link href="/terms" className="flex items-center justify-between p-3 rounded-xl hover:bg-[#f9fafb] transition-colors group">
+                <button onClick={() => handleTabChange('terms')} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-[#f9fafb] transition-colors group">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 flex items-center justify-center text-[var(--color-secondary)]">
                       <FileText className="w-4 h-4" />
@@ -963,9 +972,9 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                     <span className="text-[14px] font-semibold text-[var(--color-on-surface)]">Terms of Service</span>
                   </div>
                   <span className="text-[var(--color-on-surface-variant)] opacity-50">&rarr;</span>
-                </Link>
+                </button>
 
-                <Link href="/privacy" className="flex items-center justify-between p-3 rounded-xl hover:bg-[#f9fafb] transition-colors group">
+                <button onClick={() => handleTabChange('privacy')} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-[#f9fafb] transition-colors group">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 flex items-center justify-center text-[var(--color-secondary)]">
                       <Shield className="w-4 h-4" />
@@ -973,7 +982,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                     <span className="text-[14px] font-semibold text-[var(--color-on-surface)]">Privacy Policy</span>
                   </div>
                   <span className="text-[var(--color-on-surface-variant)] opacity-50">&rarr;</span>
-                </Link>
+                </button>
               </div>
             </div>
 
@@ -1035,9 +1044,9 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           </button>
 
           <div className="flex items-center justify-between gap-1 px-3">
-            <Link href="/contact" className="text-[12px] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Contact</Link>
-            <Link href="/terms" className="text-[12px] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Terms</Link>
-            <Link href="/privacy" className="text-[12px] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Privacy</Link>
+            <button onClick={() => handleTabChange('support')} className="text-[12px] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Contact</button>
+            <button onClick={() => handleTabChange('terms')} className="text-[12px] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Terms</button>
+            <button onClick={() => handleTabChange('privacy')} className="text-[12px] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Privacy</button>
           </div>
         </div>
       </aside>
@@ -1084,6 +1093,9 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
         {activeTab === 'history' && renderHistoryTab()}
         {activeTab === 'saved' && renderSavedTab('Saved Plans')}
         {activeTab === 'settings' && renderSettingsTab()}
+        {activeTab === 'support' && <SupportTab email={userData.email} />}
+        {activeTab === 'privacy' && <PrivacyTab />}
+        {activeTab === 'terms' && <TermsTab />}
       </main>
     </div>
 

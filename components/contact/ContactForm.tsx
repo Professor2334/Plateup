@@ -63,7 +63,7 @@ export function ContactForm({ defaultEmail }: { defaultEmail: string | null }) {
             type="email" 
             placeholder="you@example.com" 
             required 
-            className="h-12 bg-[var(--color-surface)] border-[var(--color-outline-variant)]/50 focus-visible:ring-[var(--color-primary)] rounded-xl"
+            className="h-12 bg-white border-[var(--color-outline-variant)]/50 focus-visible:ring-[var(--color-primary)] rounded-xl"
           />
         </div>
       )}
@@ -76,7 +76,7 @@ export function ContactForm({ defaultEmail }: { defaultEmail: string | null }) {
           type="text" 
           placeholder="Title your message" 
           required 
-          className="h-12 bg-[var(--color-surface)] border-[var(--color-outline-variant)]/50 focus-visible:ring-[var(--color-primary)] rounded-xl"
+          className="h-12 bg-white border-[var(--color-outline-variant)]/50 focus-visible:ring-[var(--color-primary)] rounded-xl"
         />
       </div>
 
@@ -88,7 +88,7 @@ export function ContactForm({ defaultEmail }: { defaultEmail: string | null }) {
           placeholder="What do you need help with?" 
           required 
           rows={6}
-          className="w-full rounded-xl border border-[var(--color-outline-variant)]/50 bg-[var(--color-surface)] px-4 py-3 text-[14px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] resize-y placeholder:opacity-60 placeholder:font-normal"
+          className="w-full rounded-xl border border-[var(--color-outline-variant)]/50 bg-white px-4 py-3 text-[14px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] resize-y placeholder:opacity-60 placeholder:font-normal"
         />
       </div>
 
