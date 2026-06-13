@@ -154,7 +154,7 @@ export async function generateMealPlan(formData: FormData) {
       const budgetUtilization = Math.round((finalMinCost / budget) * 100);
       const isUnderUtilized = budgetFriendly && budgetUtilization < 70;
       
-      const budgetTolerance = budgetFriendly ? budget * 1.15 : budget;
+      const budgetTolerance = budget; // Strict adherence to the budget limit
       const isOverUtilized = budgetFriendly && finalMinCost > budgetTolerance;
 
       if (attempts < maxAttempts && (hasDay1Leftover || isUnderUtilized || isOverUtilized)) {
@@ -171,10 +171,8 @@ export async function generateMealPlan(formData: FormData) {
       
       let correctedBudgetStatus = mealPlan.budgetStatus;
       
-      // Give the Budget-Friendly mode a 15% grace period. 
-      // It's doing its best to feed 4 people on a tight budget using real quantities.
-      
-      if (finalMinCost > budgetTolerance) {
+      // Strict budget adherence
+      if (finalMinCost > budget) {
         correctedBudgetStatus = 'EXCEEDS_BUDGET';
       } else if (finalMinCost > budget * 0.8) {
         correctedBudgetStatus = 'APPROACHING_BUDGET';

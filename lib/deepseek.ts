@@ -81,7 +81,7 @@ CRITICAL RULES FOR ALL GENERATIONS:
     
     prompt += `\n\nURGENT BUDGET OVERRIDE: ${budgetContext}
 Rules:
-1. Target an 80%-100% budget utilization. Do not generate the cheapest possible plan; generate the BEST value plan within the NGN ${budget} limit.
+1. Target an 80%-90% budget utilization. Do not generate the cheapest possible plan; generate the BEST value plan within the NGN ${budget * 0.9} limit.
 2. To reach the 80%-100% budget utilization target, you MUST include affordable proteins (e.g., Eggs, Fish, Crayfish) and vegetables to ensure a balanced diet. Only avoid luxury proteins (Beef, Chicken, Turkey) if the budget is tight.
 3. Meal repetition is allowed to save money, but do not repeat the exact same meal every single day.
 4. Maximize the use of the user's available ingredients first.
