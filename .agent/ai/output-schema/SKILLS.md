@@ -4,48 +4,56 @@ All PlateUp AI responses must strictly follow this structure.
 
 ```json
 {
+  "ingredientUtilization": "Used 100% of user ingredients (Rice, Bread). Added eggs and tomatoes to complete meals.",
   "mealPlan": [
     {
       "day": "Monday",
       "breakfast": "",
       "lunch": "",
-      "dinner": ""
+      "dinner": "",
+      "primaryIngredientsUsed": ["", ""]
     },
     {
       "day": "Tuesday",
       "breakfast": "",
       "lunch": "",
-      "dinner": ""
+      "dinner": "",
+      "primaryIngredientsUsed": ["", ""]
     },
     {
       "day": "Wednesday",
       "breakfast": "",
       "lunch": "",
-      "dinner": ""
+      "dinner": "",
+      "primaryIngredientsUsed": ["", ""]
     },
     {
       "day": "Thursday",
       "breakfast": "",
       "lunch": "",
-      "dinner": ""
+      "dinner": "",
+      "primaryIngredientsUsed": ["", ""]
     },
     {
       "day": "Friday",
       "breakfast": "",
       "lunch": "",
-      "dinner": ""
+      "dinner": "",
+      "primaryIngredientsUsed": ["", ""]
     },
     {
       "day": "Saturday",
       "breakfast": "",
       "lunch": "",
-      "dinner": ""
+      "dinner": "",
+      "primaryIngredientsUsed": ["", ""]
     },
     {
       "day": "Sunday",
       "breakfast": "",
       "lunch": "",
-      "dinner": ""
+      "dinner": "",
+      "primaryIngredientsUsed": ["", ""]
     }
   ],
   "shoppingList": [
@@ -62,6 +70,17 @@ All PlateUp AI responses must strictly follow this structure.
 ---
 
 # Field Definitions
+
+## ingredientUtilization
+
+A brief explanation of how you utilized the user's available ingredients. If you added new ingredients, briefly justify why.
+
+Type:
+```json
+string
+```
+
+---
 
 ## mealPlan
 
@@ -82,6 +101,7 @@ Each day must contain:
 - Breakfast
 - Lunch
 - Dinner
+- primaryIngredientsUsed (An array of the main ingredients required for that day's meals)
 
 ---
 
@@ -136,7 +156,9 @@ No other values are permitted.
 
 The response is invalid if:
 
+- ingredientUtilization is missing
 - mealPlan is missing
+- primaryIngredientsUsed is missing from any meal day
 - shoppingList is missing
 - estimatedCost is missing
 - budgetStatus is missing

@@ -10,12 +10,15 @@ import { X, CheckCircle2, Sparkles, Plus } from 'lucide-react';
 interface GenerateMealFormProps {
   onPlanGenerated: (plan: MealPlanResponse, formData: FormData, id: string) => void;
   onLoadingChange: (isLoading: boolean) => void;
+  budgetFriendly?: boolean;
+  initialBudget?: string;
+  initialIngredients?: string[];
 }
 
-export function GenerateMealForm({ onPlanGenerated, onLoadingChange }: GenerateMealFormProps) {
+export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFriendly, initialBudget, initialIngredients }: GenerateMealFormProps) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [ingredients, setIngredients] = useState<string[]>([]);
+  const [ingredients, setIngredients] = useState<string[]>(initialIngredients || []);
   const [inputValue, setInputValue] = useState('');
 
   const suggestedIngredients = ['Rice', 'Beans', 'Garri', 'Chicken', 'Plantain', 'Eggs', 'Tomatoes'];
@@ -52,6 +55,9 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange }: GenerateM
 
     const formData = new FormData(e.currentTarget);
     formData.set('ingredients', ingredients.join(', '));
+    if (budgetFriendly) {
+      formData.set('budgetFriendly', 'true');
+    }
 
     const result = await generateMealPlan(formData);
 

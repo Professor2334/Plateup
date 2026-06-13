@@ -205,7 +205,8 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       mealPlan: plan.generatedPlan,
       shoppingList: plan.shoppingList,
       estimatedCost: plan.budget,
-      budgetStatus: 'WITHIN_BUDGET'
+      budgetStatus: 'WITHIN_BUDGET',
+      ingredientUtilization: 'Loaded from saved history.'
     });
     setActiveBudget(plan.budget);
     setActiveIngredients(plan.ingredients);
@@ -218,7 +219,8 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       mealPlan: plan.generatedPlan,
       shoppingList: plan.shoppingList,
       estimatedCost: plan.budget,
-      budgetStatus: 'WITHIN_BUDGET'
+      budgetStatus: 'WITHIN_BUDGET',
+      ingredientUtilization: 'Loaded from saved history.'
     });
     setActiveBudget(plan.budget);
     setActiveIngredients(plan.ingredients);
@@ -308,6 +310,32 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     window.open(`https://wa.me/?text=${encodedText}`, '_blank');
   };
 
+  const handleRegenerateBudgetFriendly = async () => {
+    setLoading(true);
+    setGeneratedPlan(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const formData = new FormData();
+    formData.set('budget', activeBudget.toString());
+    formData.set('ingredients', activeIngredients);
+    formData.set('budgetFriendly', 'true');
+
+    try {
+      const { generateMealPlan } = await import('@/app/actions/meal-plans/actions');
+      const result = await generateMealPlan(formData);
+      
+      if (result && result.success && result.data && result.id) {
+        handlePlanGenerated(result.data, activeBudget, activeIngredients, result.id);
+      } else {
+        alert(result?.error || 'Failed to generate budget-friendly plan.');
+      }
+    } catch (error) {
+      alert('An error occurred while generating the plan.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderGenerateTab = () => (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-7xl relative">
       {/* Left Form */}
@@ -344,6 +372,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
               setGeneratedPlan(null);
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
+            onRegenerateBudgetFriendly={handleRegenerateBudgetFriendly}
             isSaved={history.some(p => p.id === activePlanId && p.isSaved)}
           />
         ) : (

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import type { MealPlanResponse } from '@/lib/deepseek';
-import { Sparkles, Coffee, Sun, Utensils, Save, Share2, RefreshCcw, ShoppingBag, CheckCircle2, TrendingDown, PiggyBank, CalendarDays, Check } from 'lucide-react';
+import { Sparkles, Coffee, Sun, Utensils, Save, Share2, RefreshCcw, ShoppingBag, CheckCircle2, TrendingDown, PiggyBank, CalendarDays, Check, AlertTriangle, XCircle } from 'lucide-react';
 
 interface MealPlanResultsProps {
   plan: MealPlanResponse;
@@ -13,6 +13,7 @@ interface MealPlanResultsProps {
   isSaving: boolean;
   onShare: (selectedItems?: Set<number>) => void;
   onRegenerate: () => void;
+  onRegenerateBudgetFriendly?: () => void;
   isSaved: boolean;
 }
 
@@ -24,6 +25,7 @@ export function MealPlanResults({
   isSaving, 
   onShare, 
   onRegenerate,
+  onRegenerateBudgetFriendly,
   isSaved 
 }: MealPlanResultsProps) {
   
@@ -139,7 +141,10 @@ export function MealPlanResults({
                 <span className="text-xs font-semibold uppercase tracking-wider">Estimated</span>
               </div>
               <p className="text-[clamp(1.125rem,2vw,1.25rem)] font-bold text-[var(--color-on-surface)] tracking-tight">
-                ₦{plan.estimatedCost.toLocaleString()}
+                {plan.estimatedCostRange 
+                  ? `₦${plan.estimatedCostRange.min.toLocaleString()} - ₦${plan.estimatedCostRange.max.toLocaleString()}`
+                  : `₦${plan.estimatedCost.toLocaleString()}`
+                }
               </p>
             </div>
             
@@ -153,6 +158,57 @@ export function MealPlanResults({
               </p>
             </div>
           </div>
+
+          {/* Budget Assessment Banner */}
+          {plan.budgetStatus === 'WITHIN_BUDGET' && (
+            <div className="flex items-start sm:items-center gap-3 p-5 rounded-2xl bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)] border border-[color-mix(in_srgb,var(--color-primary)_15%,transparent)]">
+              <CheckCircle2 className="w-6 h-6 text-[var(--color-primary)] flex-shrink-0 mt-0.5 sm:mt-0" />
+              <div className="flex-1">
+                <p className="text-[0.9375rem] font-bold text-[var(--color-primary)] mb-1">Budget Assessment</p>
+                <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-2">Your budget appears sufficient for this meal plan based on current market estimates.</p>
+                <div className="flex flex-col sm:flex-row sm:gap-6 gap-2">
+                  <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Estimated Cost Range:</span> <span className="font-bold text-[var(--color-on-surface)]">{plan.estimatedCostRange ? `₦${plan.estimatedCostRange.min.toLocaleString()} - ₦${plan.estimatedCostRange.max.toLocaleString()}` : `₦${plan.estimatedCost.toLocaleString()}`}</span></p>
+                  <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Budget Status:</span> <span className="font-bold text-[var(--color-primary)]">Comfortable</span></p>
+                </div>
+              </div>
+            </div>
+          )}
+          {plan.budgetStatus === 'APPROACHING_BUDGET' && (
+            <div className="flex items-start sm:items-center gap-3 p-5 rounded-2xl bg-[color-mix(in_srgb,var(--color-accent)_10%,transparent)] border border-[color-mix(in_srgb,var(--color-accent)_20%,transparent)]">
+              <AlertTriangle className="w-6 h-6 text-[var(--color-accent)] flex-shrink-0 mt-0.5 sm:mt-0" />
+              <div className="flex-1">
+                <p className="text-[0.9375rem] font-bold text-[var(--color-accent)] mb-1">Budget Assessment</p>
+                <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-2">Your budget may be sufficient, but ingredient substitutions and reduced variety may be required.</p>
+                <div className="flex flex-col sm:flex-row sm:gap-6 gap-2">
+                  <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Estimated Cost Range:</span> <span className="font-bold text-[var(--color-on-surface)]">{plan.estimatedCostRange ? `₦${plan.estimatedCostRange.min.toLocaleString()} - ₦${plan.estimatedCostRange.max.toLocaleString()}` : `₦${plan.estimatedCost.toLocaleString()}`}</span></p>
+                  <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Budget Status:</span> <span className="font-bold text-[var(--color-accent)]">Tight</span></p>
+                </div>
+              </div>
+            </div>
+          )}
+          {plan.budgetStatus === 'EXCEEDS_BUDGET' && (
+            <div className="flex flex-col gap-4 p-5 rounded-2xl bg-[color-mix(in_srgb,var(--color-error)_8%,transparent)] border border-[color-mix(in_srgb,var(--color-error)_20%,transparent)]">
+              <div className="flex items-start gap-3">
+                <XCircle className="w-6 h-6 text-[var(--color-error)] flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-[0.9375rem] font-bold text-[var(--color-error)] mb-1">Budget Assessment</p>
+                  <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-2">Your budget is unlikely to cover the recommended shopping list.</p>
+                  <div className="flex flex-col sm:flex-row sm:gap-6 gap-2 mb-4">
+                    <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Estimated Cost Range:</span> <span className="font-bold text-[var(--color-on-surface)]">{plan.estimatedCostRange ? `₦${plan.estimatedCostRange.min.toLocaleString()} - ₦${plan.estimatedCostRange.max.toLocaleString()}` : `₦${plan.estimatedCost.toLocaleString()}`}</span></p>
+                    <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Budget Status:</span> <span className="font-bold text-[var(--color-error)]">Likely Insufficient</span></p>
+                  </div>
+                  {onRegenerateBudgetFriendly && (
+                    <Button onClick={onRegenerateBudgetFriendly} variant="outline" className="w-full sm:w-auto text-sm border-[var(--color-error)] text-[var(--color-error)] hover:bg-[var(--color-error)] hover:text-white h-9">
+                      Generate Budget-Friendly Alternative
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          <p className="text-[0.75rem] text-[var(--color-on-surface-variant)] opacity-70 px-1 mt-[-1rem] mb-2 font-medium">
+            AI-generated budget guidance only. Actual food prices may vary by location, market conditions, and inflation.
+          </p>
 
           {/* Daily Meal Cards */}
           <div className="space-y-4 sm:space-y-5">
@@ -312,7 +368,10 @@ export function MealPlanResults({
                   <span className="text-sm font-bold uppercase tracking-wider">Estimated Cost</span>
                 </div>
                 <p className="text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] font-extrabold text-[var(--color-primary)] tracking-tight">
-                  ₦{plan.estimatedCost.toLocaleString()}
+                  {plan.estimatedCostRange 
+                    ? `₦${plan.estimatedCostRange.min.toLocaleString()} - ₦${plan.estimatedCostRange.max.toLocaleString()}`
+                    : `₦${plan.estimatedCost.toLocaleString()}`
+                  }
                 </p>
                 <p className="text-xs text-[var(--color-primary)] opacity-80 mt-2 font-medium">
                   Based on local market averages
@@ -334,6 +393,11 @@ export function MealPlanResults({
           </div>
         </div>
         
+        <div className="pt-6 pb-2">
+          <p className="text-[0.75rem] text-[var(--color-on-surface-variant)] opacity-60 text-center font-medium">
+            Meal plans, shopping lists, and budget assessments are AI-generated estimates.
+          </p>
+        </div>
       </div>
     </div>
   );
