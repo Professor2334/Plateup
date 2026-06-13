@@ -6,6 +6,7 @@ import type { MealPlanResponse } from '@/lib/deepseek';
 import { Sparkles, Coffee, Sun, Utensils, Save, Share2, RefreshCcw, ShoppingBag, CheckCircle2, TrendingDown, PiggyBank, CalendarDays, Check, AlertTriangle, XCircle } from 'lucide-react';
 
 interface MealPlanResultsProps {
+  title?: string;
   plan: MealPlanResponse;
   budget: number;
   ingredients: string;
@@ -18,6 +19,7 @@ interface MealPlanResultsProps {
 }
 
 export function MealPlanResults({ 
+  title,
   plan, 
   budget, 
   ingredients, 
@@ -32,6 +34,8 @@ export function MealPlanResults({
   const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set());
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
   const estimatedSavings = Math.max(0, budget - plan.estimatedCost);
+  const budgetUtilization = plan.budgetUtilization || Math.round((plan.estimatedCost / budget) * 100);
+  const isAlternative = title === 'Budget-Friendly Alternative';
 
   const toggleItem = (idx: number) => {
     const newSet = new Set(checkedItems);
@@ -54,7 +58,7 @@ export function MealPlanResults({
       <div className="flex flex-col items-center sm:flex-row sm:items-center justify-between gap-5 sm:gap-4 text-center sm:text-left">
         <div className="flex flex-col items-center sm:items-start">
           <h1 className="text-[clamp(1.25rem,2vw+0.5rem,1.5rem)] sm:text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] font-extrabold text-[var(--color-on-surface)] tracking-tight flex items-center justify-center sm:justify-start gap-2">
-            AI Meal Plan
+            {title || 'AI Meal Plan'}
             <Sparkles className="w-6 h-6 text-[var(--color-primary)]" />
           </h1>
           <p className="text-[var(--color-on-surface-variant)] text-sm mt-1">Generated based on your ingredients and budget.</p>
@@ -168,7 +172,8 @@ export function MealPlanResults({
                 <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-2">Your budget appears sufficient for this meal plan based on current market estimates.</p>
                 <div className="flex flex-col sm:flex-row sm:gap-6 gap-2">
                   <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Estimated Cost Range:</span> <span className="font-bold text-[var(--color-on-surface)]">{plan.estimatedCostRange ? `₦${plan.estimatedCostRange.min.toLocaleString()} - ₦${plan.estimatedCostRange.max.toLocaleString()}` : `₦${plan.estimatedCost.toLocaleString()}`}</span></p>
-                  <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Budget Status:</span> <span className="font-bold text-[var(--color-primary)]">Comfortable</span></p>
+                  <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Budget Status:</span> <span className="font-bold text-[var(--color-primary)]">{isAlternative ? 'Optimized' : 'Comfortable'}</span></p>
+                  {isAlternative && <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Utilization:</span> <span className="font-bold text-[var(--color-primary)]">{budgetUtilization}%</span></p>}
                 </div>
               </div>
             </div>
@@ -181,7 +186,8 @@ export function MealPlanResults({
                 <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-2">Your budget may be sufficient, but ingredient substitutions and reduced variety may be required.</p>
                 <div className="flex flex-col sm:flex-row sm:gap-6 gap-2">
                   <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Estimated Cost Range:</span> <span className="font-bold text-[var(--color-on-surface)]">{plan.estimatedCostRange ? `₦${plan.estimatedCostRange.min.toLocaleString()} - ₦${plan.estimatedCostRange.max.toLocaleString()}` : `₦${plan.estimatedCost.toLocaleString()}`}</span></p>
-                  <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Budget Status:</span> <span className="font-bold text-[var(--color-accent)]">Tight</span></p>
+                  <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Budget Status:</span> <span className={`font-bold ${isAlternative ? 'text-[var(--color-primary)]' : 'text-[var(--color-accent)]'}`}>{isAlternative ? 'Optimized' : 'Tight'}</span></p>
+                  {isAlternative && <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Utilization:</span> <span className="font-bold text-[var(--color-on-surface)]">{budgetUtilization}%</span></p>}
                 </div>
               </div>
             </div>
@@ -257,7 +263,7 @@ export function MealPlanResults({
                   <div className="mt-5 pt-4 border-t border-dashed border-[var(--color-outline-variant)]/40 flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-[var(--color-primary)] opacity-70" />
                     <p className="text-[0.75rem] font-medium text-[var(--color-on-surface-variant)] opacity-80">
-                      Budget optimized • Incorporates available ingredients
+                      {plan.shoppingList.length === 0 ? "Uses only your available ingredients" : "Maximizes your available ingredients while adding affordable complementary ingredients"}
                     </p>
                   </div>
                 </div>

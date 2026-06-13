@@ -100,6 +100,9 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<MealPlanResponse | null>(null);
+  const [alternativePlan, setAlternativePlan] = useState<MealPlanResponse | null>(null);
+  const [activePlanView, setActivePlanView] = useState<'recommended' | 'budget-friendly'>('recommended');
+  const [activeAlternativePlanId, setActiveAlternativePlanId] = useState<string | null>(null);
   const [activeBudget, setActiveBudget] = useState(0);
   const [activeIngredients, setActiveIngredients] = useState('');
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
@@ -153,6 +156,9 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
 
   const handlePlanGenerated = (plan: MealPlanResponse, budget: number, ingredients: string, id: string) => {
     setGeneratedPlan(plan);
+    setAlternativePlan(null);
+    setActivePlanView('recommended');
+    setActiveAlternativePlanId(null);
     setActiveBudget(budget);
     setActiveIngredients(ingredients);
     setActivePlanId(id);
@@ -181,9 +187,10 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
   };
 
   const handleSavePlan = async () => {
-    if (!activePlanId) return;
+    const idToSave = activePlanView === 'recommended' ? activePlanId : activeAlternativePlanId;
+    if (!idToSave) return;
     setSaving(true);
-    const success = await handleSavePlanById(activePlanId);
+    const success = await handleSavePlanById(idToSave);
     setSaving(false);
     if (success) {
       alert('Meal plan saved successfully!');
@@ -208,6 +215,9 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       budgetStatus: 'WITHIN_BUDGET',
       ingredientUtilization: 'Loaded from saved history.'
     });
+    setAlternativePlan(null);
+    setActivePlanView('recommended');
+    setActiveAlternativePlanId(null);
     setActiveBudget(plan.budget);
     setActiveIngredients(plan.ingredients);
     setActivePlanId(plan.id);
@@ -242,8 +252,17 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     // Add Subtitle
     doc.setFontSize(11);
     doc.setTextColor(100);
-    doc.text(`Budget: NGN ${activeBudget}`, 14, 30);
-    doc.text(`Ingredients: ${activeIngredients}`, 14, 36);
+    doc.text(`Budget: NGN ${activeBudget.toLocaleString()}`, 14, 30);
+    
+    if (generatedPlan.estimatedCostRange) {
+      doc.text(`Estimated Cost Range: NGN ${generatedPlan.estimatedCostRange.min.toLocaleString()} - NGN ${generatedPlan.estimatedCostRange.max.toLocaleString()}`, 14, 36);
+    } else {
+      const minCost = Math.round(generatedPlan.estimatedCost * 0.9);
+      const maxCost = Math.round(generatedPlan.estimatedCost * 1.1);
+      doc.text(`Estimated Cost Range: NGN ${minCost.toLocaleString()} - NGN ${maxCost.toLocaleString()}`, 14, 36);
+    }
+    
+    doc.text(`Ingredients: ${activeIngredients}`, 14, 42);
 
     // Add Meal Plan Table
     const mealData = generatedPlan.mealPlan.map(day => [
@@ -254,7 +273,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     ]);
 
     autoTable(doc, {
-      startY: 44,
+      startY: 50,
       head: [['Day', 'Breakfast', 'Lunch', 'Dinner']],
       body: mealData,
       theme: 'grid',
@@ -263,7 +282,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     });
 
     // Add Shopping List Title
-    const finalY = (doc as any).lastAutoTable.finalY || 44;
+    const finalY = (doc as any).lastAutoTable.finalY || 50;
     doc.setFontSize(16);
     doc.setTextColor(20, 128, 60);
     doc.text('Shopping List', 14, finalY + 15);
@@ -286,6 +305,19 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       headStyles: { fillColor: [20, 128, 60] },
       styles: { fontSize: 9 },
     });
+
+    // Add AI Disclaimer Section
+    const disclaimerY = (doc as any).lastAutoTable.finalY + 15;
+    
+    doc.setFontSize(10);
+    doc.setTextColor(20, 128, 60);
+    doc.text('AI-Generated Guidance', 14, disclaimerY);
+    
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    const disclaimerText = "This meal plan, shopping list, and budget assessment were generated using artificial intelligence and are intended for planning purposes only. Actual food prices may vary based on location, market conditions, inflation, availability, vendor pricing, and seasonal fluctuations. Please verify ingredient prices and availability before making purchasing decisions. PlateUp does not guarantee the accuracy of AI-generated cost estimates.";
+    const splitDisclaimer = doc.splitTextToSize(disclaimerText, 180);
+    doc.text(splitDisclaimer, 14, disclaimerY + 6);
 
     // 2. Try Web Share API (Mobile native sharing)
     const pdfBlob = doc.output('blob');
@@ -312,20 +344,36 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
 
   const handleRegenerateBudgetFriendly = async () => {
     setLoading(true);
-    setGeneratedPlan(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const formData = new FormData();
     formData.set('budget', activeBudget.toString());
     formData.set('ingredients', activeIngredients);
     formData.set('budgetFriendly', 'true');
+    if (generatedPlan) {
+      formData.set('originalEstimatedCost', generatedPlan.estimatedCost.toString());
+    }
 
     try {
       const { generateMealPlan } = await import('@/app/actions/meal-plans/actions');
       const result = await generateMealPlan(formData);
       
       if (result && result.success && result.data && result.id) {
-        handlePlanGenerated(result.data, activeBudget, activeIngredients, result.id);
+        setAlternativePlan(result.data);
+        setActiveAlternativePlanId(result.id);
+        setActivePlanView('budget-friendly');
+        
+        // Add the alternative plan to history so it shows in the timeline
+        const newPlan = {
+          id: result.id,
+          budget: activeBudget,
+          ingredients: activeIngredients,
+          generatedPlan: result.data.mealPlan,
+          shoppingList: result.data.shoppingList,
+          isSaved: false,
+          createdAt: new Date().toISOString(),
+        };
+        setHistory(prev => [newPlan, ...prev]);
       } else {
         alert(result?.error || 'Failed to generate budget-friendly plan.');
       }
@@ -361,20 +409,40 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             <MealPlanSkeleton />
           </div>
         ) : generatedPlan ? (
-          <MealPlanResults
-            plan={generatedPlan}
-            budget={activeBudget}
-            ingredients={activeIngredients}
-            onSave={handleSavePlan}
-            isSaving={saving}
-            onShare={shareViaWhatsApp}
-            onRegenerate={() => {
-              setGeneratedPlan(null);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onRegenerateBudgetFriendly={handleRegenerateBudgetFriendly}
-            isSaved={history.some(p => p.id === activePlanId && p.isSaved)}
-          />
+          <div className="space-y-6">
+            {alternativePlan && (
+              <div className="flex bg-[#f9fafb] p-1 rounded-full border border-[var(--color-outline-variant)]/30 self-start inline-flex mb-2">
+                <button
+                  onClick={() => setActivePlanView('recommended')}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${activePlanView === 'recommended' ? 'bg-white text-[var(--color-primary)] shadow-sm border border-[var(--color-outline-variant)]/20' : 'text-[var(--color-secondary)] hover:text-[var(--color-on-surface)]'}`}
+                >
+                  Recommended Plan
+                </button>
+                <button
+                  onClick={() => setActivePlanView('budget-friendly')}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${activePlanView === 'budget-friendly' ? 'bg-white text-[var(--color-primary)] shadow-sm border border-[var(--color-outline-variant)]/20' : 'text-[var(--color-secondary)] hover:text-[var(--color-on-surface)]'}`}
+                >
+                  Budget-Friendly Alternative
+                </button>
+              </div>
+            )}
+            <MealPlanResults
+              title={activePlanView === 'recommended' ? "Recommended Meal Plan" : "Budget-Friendly Alternative"}
+              plan={activePlanView === 'recommended' ? generatedPlan : alternativePlan}
+              budget={activeBudget}
+              ingredients={activeIngredients}
+              onSave={handleSavePlan}
+              isSaving={saving}
+              onShare={shareViaWhatsApp}
+              onRegenerate={() => {
+                setGeneratedPlan(null);
+                setAlternativePlan(null);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onRegenerateBudgetFriendly={!alternativePlan && activePlanView === 'recommended' ? handleRegenerateBudgetFriendly : undefined}
+              isSaved={history.some(p => p.id === (activePlanView === 'recommended' ? activePlanId : activeAlternativePlanId) && p.isSaved)}
+            />
+          </div>
         ) : (
           <div className="rounded-[18px] bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.02)] p-12 text-center h-full flex flex-col items-center justify-center min-h-[400px]">
             <div className="w-16 h-16 rounded-full bg-[color-mix(in_srgb,var(--color-surface-container-low)_50%,transparent)] flex items-center justify-center mb-6">

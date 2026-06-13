@@ -21,9 +21,12 @@ List every ingredient the user provided under "Available Ingredients".
 These are ingredients already at home. The user does NOT need to buy these.
 
 **Step 2 — Analyze the Budget**
+Before generating the meal plan, calculate the user's spending power:
+- Multiply the Household Size by 21 meals to get Total Portions.
+- Divide the Budget by Total Portions to get Cost Per Portion.
 Classify the budget as Comfortable, Tight, or Unrealistic using current 2024–2026 Nigerian market pricing.
 - Comfortable: Budget comfortably covers a full 7-day plan with some variety.
-- Tight: Budget is limited. Prioritize heavy ingredient reuse and minimal new purchases.
+- Tight: Budget is limited. If you are in VALUE-OPTIMIZATION MODE, actively avoid expensive items. If NOT in value-optimization mode, state that the budget is tight but build a high-quality recommended plan regardless.
 - Unrealistic: Budget cannot realistically cover any plan. Generate the cheapest possible plan and explain the limitation.
 
 Nigerian Market Price Reference Table (2024–2026, MINIMUM conservative estimates):
@@ -103,16 +106,26 @@ If the total is WITHIN budget:
 - Confirm each item genuinely improves the meal plan.
 - Do not add more items just to spend the budget.
 
-**Step 6 — Build the Final Shopping List**
-Apply this rule: `Shopping List = (Ingredients needed for a great meal plan) - (User's Available Ingredients)`
+**Step 6 — Compute Shopping List Math (Chain of Thought)**
+You must use the \`shoppingListCalculations\` field to show your math before outputting the final shopping list.
+1. Scan the 7-day meal plan you just created.
+2. Count exactly how many times each non-pantry ingredient is used.
+3. Multiply the frequency by the Household Size.
+4. Convert that into a realistic real-world shopping quantity.
+Example: "Eggs: Used in 3 meals * 4 people = 12 eggs. Buy 1 dozen. Bread: Used in 4 meals * 4 people = 16 slices. Buy 1 large loaf."
+This guarantees your shopping list quantities are completely sufficient for the meal plan.
+
+**Step 7 — Build the Final Shopping List**
+Apply this rule: \`Shopping List = (Ingredients needed for a great meal plan) - (User's Available Ingredients)\`
 
 Every item on the shopping list MUST:
 - NOT already exist in the user's pantry
 - Be directly linked to at least one specific meal in the plan
+- Have been calculated in Step 6
 - Have been cost-validated in Step 5
 - Fit within the remaining budget after summing all items
 
-**Step 7 — Quality Check Before Responding**
+**Step 8 — Quality Check Before Responding**
 Before generating the final output, ask yourself:
 - Are any pantry ingredients in the shopping list? (If yes, REMOVE them immediately.)
 - Does the summed shopping list total fit within the user's budget? (If not, remove items until it does.)

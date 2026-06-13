@@ -56,6 +56,7 @@ All PlateUp AI responses must strictly follow this structure.
       "primaryIngredientsUsed": ["", ""]
     }
   ],
+  "shoppingListCalculations": "Bread is used 4 times for breakfast. Household size is 4. 4 meals * 4 people = 16 slices required. Therefore, 1 large loaf is needed.",
   "shoppingList": [
     {
       "item": "",
@@ -102,6 +103,21 @@ Each day must contain:
 - Lunch
 - Dinner
 - primaryIngredientsUsed (An array of the main ingredients required for that day's meals)
+
+---
+
+## shoppingListCalculations
+
+A mandatory chain-of-thought calculation block before outputting the shopping list.
+You must:
+1. Scan your generated 7-day meal plan.
+2. Calculate the frequency of every non-pantry ingredient used.
+3. Multiply by Household Size to determine the total required quantity.
+
+Type:
+```json
+string
+```
 
 ---
 

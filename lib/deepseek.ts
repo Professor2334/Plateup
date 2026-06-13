@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 export const DeepSeekResponseSchema = z.object({
+  budgetStrategy: z.string().optional(),
   ingredientUtilization: z.string(),
   mealPlan: z.array(
     z.object({
@@ -13,6 +14,7 @@ export const DeepSeekResponseSchema = z.object({
       primaryIngredientsUsed: z.array(z.string()),
     })
   ).length(7),
+  shoppingListCalculations: z.string(),
   shoppingList: z.array(
     z.object({
       item: z.string(),
@@ -28,6 +30,7 @@ export type MealPlanResponse = z.infer<typeof DeepSeekResponseSchema> & {
     min: number;
     max: number;
   };
+  budgetUtilization?: number;
 };
 
 export async function generateMealPlan(
@@ -35,7 +38,8 @@ export async function generateMealPlan(
   ingredients: string,
   householdSize: string,
   primaryGoal: string,
-  budgetFriendly: boolean = false
+  budgetFriendly: boolean = false,
+  originalEstimatedCost?: number
 ): Promise<MealPlanResponse> {
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) {
@@ -63,14 +67,31 @@ export async function generateMealPlan(
 Household Size: ${householdSize}
 Goal: ${primaryGoal}
 Budget: NGN ${budget}
-Available Ingredients: ${ingredients}`;
+Available Ingredients: ${ingredients}
+
+CRITICAL RULES FOR ALL GENERATIONS:
+1. Day 1 (Monday) is the first day. You CANNOT have leftovers on Monday. NEVER use words like "leftover", "remaining", or "from previous" on Day 1.
+2. If you suggest a leftover on Days 2-7, the EXACT original meal must have been cooked on an earlier day.`;
 
   if (budgetFriendly) {
-    prompt += `\n\nURGENT BUDGET OVERRIDE: The user has requested a budget-friendly alternative. 
-You MUST reduce the shopping list size aggressively. 
-Reuse pantry ingredients for almost every meal. 
-Remove expensive proteins or swap them for affordable alternatives (e.g., eggs, beans, or small fish).
-Focus heavily on low-cost Nigerian staples.`;
+    let budgetContext = `You MUST enter VALUE-OPTIMIZATION MODE.`;
+    if (originalEstimatedCost) {
+      budgetContext = `Your previous standard recommendation cost NGN ${originalEstimatedCost}, but the user only has NGN ${budget}. You MUST enter VALUE-OPTIMIZATION MODE to fit this budget.`;
+    }
+    
+    prompt += `\n\nURGENT BUDGET OVERRIDE: ${budgetContext}
+Rules:
+1. Target an 80%-100% budget utilization. Do not generate the cheapest possible plan; generate the BEST value plan within the NGN ${budget} limit.
+2. To reach the 80%-100% budget utilization target, you MUST include affordable proteins (e.g., Eggs, Fish, Crayfish) and vegetables to ensure a balanced diet. Only avoid luxury proteins (Beef, Chicken, Turkey) if the budget is tight.
+3. Meal repetition is allowed to save money, but do not repeat the exact same meal every single day.
+4. Maximize the use of the user's available ingredients first.
+5. YOU MUST INCLUDE a \`budgetStrategy\` field at the very top of your JSON. In it, explicitly declare which expensive items (Bread, Yam, large proteins) you will avoid to stay within budget. If you do not avoid them, the quantities will multiply and fail the budget constraint.
+6. CRITICAL RULE REGARDING LEFTOVERS: Never create leftovers before a meal exists! Do NOT suggest 'leftovers' on Day 1. Only suggest leftovers if that EXACT meal was cooked on a previous day.`;
+  } else {
+    prompt += `\n\nRECOMMENDED PLAN MODE:
+You are NOT in Value-Optimization mode. Your goal is to generate the highest quality, most realistic Nigerian meal plan possible using the pantry as a base.
+CRITICAL RULE: Do NOT artificially cheapen the meal plan or avoid standard ingredients (like Bread, Eggs, Yam) just because the budget is tight. It is completely acceptable for this recommended plan to exceed the user's budget. Focus purely on meal quality and variety.
+DO NOT include a \`budgetStrategy\` field in your JSON.`;
   }
 
   // Use AbortController for a 45-second timeout
