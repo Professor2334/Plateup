@@ -3,6 +3,7 @@ import { DashboardClient } from './DashboardClient';
 import { redirect } from 'next/navigation';
 import { getMealHistory } from '@/app/actions/meal-plans/actions';
 import db from '@/lib/db';
+import { Suspense } from 'react';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -22,16 +23,18 @@ export default async function DashboardPage() {
   const mealHistory = await getMealHistory();
 
   return (
-    <DashboardClient 
-      initialHistory={mealHistory} 
-      userName={user.name || 'User'} 
-      userData={{
-        name: user.name || '',
-        email: user.email || '',
-        emailVerified: user.emailVerified !== null,
-        householdSize: user.householdSize || '',
-        primaryGoal: user.primaryGoal || ''
-      }}
-    />
+    <Suspense fallback={<div>Loading dashboard...</div>}>
+      <DashboardClient 
+        initialHistory={mealHistory} 
+        userName={user.name || 'User'} 
+        userData={{
+          name: user.name || '',
+          email: user.email || '',
+          emailVerified: user.emailVerified !== null,
+          householdSize: user.householdSize || '',
+          primaryGoal: user.primaryGoal || ''
+        }}
+      />
+    </Suspense>
   );
 }

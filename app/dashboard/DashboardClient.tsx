@@ -15,8 +15,6 @@ import { History, Bookmark, Settings, LogOut, Calendar, LayoutDashboard, Utensil
 import { VerificationBanner } from '@/components/dashboard/VerificationBanner';
 import { PlateUpLogo } from '@/components/shared/PlateUpLogo';
 import { logoutUser } from '@/app/actions/auth/actions';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { updatePreferences, changePassword, updateProfile } from '@/app/actions/settings/actions';
 import { MealPlanResults } from '@/components/meal-plans/MealPlanResults';
 
@@ -202,6 +200,9 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
 
   const handleRegeneratePlan = async () => {
     setIsRegenerating(true);
+    setLoading(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
     try {
       const formData = new FormData();
       formData.set('budget', activeBudget.toString());
@@ -243,6 +244,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       alert('Unable to generate a new meal plan. Please try again.');
     } finally {
       setIsRegenerating(false);
+      setLoading(false);
     }
   };
 
@@ -260,8 +262,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       shoppingList: plan.shoppingList,
       estimatedCost: plan.budget,
       budgetStatus: 'WITHIN_BUDGET',
-      ingredientUtilization: 'Loaded from saved history.',
-      shoppingListCalculations: ''
+      ingredientUtilization: 'Loaded from saved history.'
     });
     setAlternativePlan(null);
     setActivePlanView('recommended');
@@ -278,8 +279,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       shoppingList: plan.shoppingList,
       estimatedCost: plan.budget,
       budgetStatus: 'WITHIN_BUDGET',
-      ingredientUtilization: 'Loaded from saved history.',
-      shoppingListCalculations: ''
+      ingredientUtilization: 'Loaded from saved history.'
     });
     setActiveBudget(plan.budget);
     setActiveIngredients(plan.ingredients);
@@ -289,6 +289,10 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
 
   const shareViaWhatsApp = async (selectedItems?: Set<number>) => {
     if (!generatedPlan) return;
+    
+    // Dynamically import jspdf to avoid SSR issues
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
     
     // 1. Generate PDF
     const doc = new jsPDF();

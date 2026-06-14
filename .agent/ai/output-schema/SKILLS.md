@@ -4,46 +4,34 @@ All PlateUp AI responses must strictly follow this structure.
 
 ```json
 {
+  "budgetStrategy": "Optional string explaining cost optimization...",
   "ingredientUtilization": "Used 100% of user ingredients (Rice, Bread). Added eggs and tomatoes to complete meals.",
   "mealPlan": [
     {
       "day": "Monday",
-      "breakfast": {
-        "mealName": "Yam and Egg Sauce",
-        "ingredients": ["Yam", "Eggs", "Tomatoes", "Pepper", "Onions", "Vegetable Oil"],
-        "quantities": ["500g", "4 pieces", "2 medium", "1 tablespoon", "1 medium", "2 tablespoons"]
-      },
-      "lunch": {
-        "mealName": "White Rice and Stew",
-        "ingredients": ["Rice", "Tomatoes", "Pepper", "Onions", "Chicken"],
-        "quantities": ["2 cups", "4 medium", "2 tablespoons", "1 medium", "2 pieces"]
-      },
-      "dinner": {
-        "mealName": "Beans Porridge",
-        "ingredients": ["Beans", "Palm Oil", "Onions", "Pepper", "Crayfish"],
-        "quantities": ["1.5 cups", "3 tablespoons", "1 medium", "1 tablespoon", "1 tablespoon"]
-      }
+      "breakfast": "Yam and Egg Sauce",
+      "lunch": "White Rice and Stew",
+      "dinner": "Beans Porridge"
     },
     {
       "day": "Tuesday",
-      "breakfast": {
-        "mealName": "...",
-        "ingredients": ["..."],
-        "quantities": ["..."]
-      },
-      "lunch": {
-        "mealName": "...",
-        "ingredients": ["..."],
-        "quantities": ["..."]
-      },
-      "dinner": {
-        "mealName": "...",
-        "ingredients": ["..."],
-        "quantities": ["..."]
-      }
+      "breakfast": "...",
+      "lunch": "...",
+      "dinner": "..."
     }
-    // ... continue for Wednesday, Thursday, Friday, Saturday, Sunday
-  ]
+  ],
+  "shoppingList": [
+    {
+      "item": "Tomatoes",
+      "quantity": "₦500 worth"
+    },
+    {
+      "item": "Eggs",
+      "quantity": "4 pieces"
+    }
+  ],
+  "estimatedCost": 1200,
+  "budgetStatus": "WITHIN_BUDGET"
 }
 ```
 
@@ -51,69 +39,40 @@ All PlateUp AI responses must strictly follow this structure.
 
 # Field Definitions
 
+## budgetStrategy
+(Optional) Explicit declaration of which expensive items were avoided to stay within budget during Value-Optimization mode.
+Type: `string`
+
 ## ingredientUtilization
-
 A brief explanation of how you utilized the user's available ingredients. If you added new ingredients, briefly justify why.
-
-Type:
-```json
-string
-```
-
----
+Type: `string`
 
 ## mealPlan
+Seven-day meal plan. Each day must contain `day`, `breakfast`, `lunch`, and `dinner` (all strings).
 
-Seven-day meal plan.
+## shoppingList
+Array of objects containing `item` (string) and `quantity` (string) for all ingredients the user MUST purchase. Ensure quantities strictly match the requested household size using practical Nigerian market measurements.
 
-Required:
+## estimatedCost
+The total realistic estimated cost (in NGN) of ONLY the items on the shopping list. Do not include the value of items the user already owns.
+Type: `number`
 
-- Monday
-- Tuesday
-- Wednesday
-- Thursday
-- Friday
-- Saturday
-- Sunday
-
-Each day must contain:
-
-- Breakfast
-- Lunch
-- Dinner
-
-Each meal (breakfast, lunch, dinner) must be an object containing:
-- mealName: The name of the meal being prepared. (string)
-- ingredients: An array of strings listing ALL ingredients required to make this meal. (string[])
-- quantities: An array of strings listing the exact quantity of each corresponding ingredient required to feed the specific household size. (string[])
-
-Note: The `ingredients` array and `quantities` array must have the exact same length.
+## budgetStatus
+Must be exactly one of: `"WITHIN_BUDGET"`, `"APPROACHING_BUDGET"`, or `"EXCEEDS_BUDGET"`.
+Type: `string`
 
 ---
 
 # Validation Rules
 
 The response is invalid if:
-
-- ingredientUtilization is missing
-- mealPlan is missing
-- Any day is missing
-- Any meal (breakfast, lunch, dinner) is missing
-- Any meal is missing mealName, ingredients, or quantities
-- The ingredients and quantities arrays for a meal do not have the same number of elements
+- ingredientUtilization, mealPlan, shoppingList, estimatedCost, or budgetStatus are missing.
+- Any day or meal is missing.
+- Any shopping list item is missing an item or quantity.
+- estimatedCost is not a number.
 
 ---
 
 # Response Rules
 
-Return JSON only.
-
-Do not return:
-
-- Markdown
-- Explanations
-- Notes
-- Commentary
-- Additional fields
-
-The output must match this schema exactly.
+Return JSON only. Do not return Markdown, Explanations, Notes, or Commentary.

@@ -9,11 +9,9 @@ import { revalidatePath } from 'next/cache';
 import { generationRateLimit } from '@/lib/rate-limit';
 import { validateAndSanitizeLeftovers } from '@/lib/leftover-validator';
 import { enforceMealVariety } from '@/lib/variety-validator';
-import { enrichShoppingList } from '@/lib/shopping-validator';
-import { validateShoppingQuantities } from '@/lib/quantity-validator';
+import { pruneShoppingList } from '@/lib/shopping-validator';
 import { ValidationReporter } from '@/lib/validation-reporter';
 import { validateAndSanitizeOutput } from '@/lib/sanitization-validator';
-import { calculatePantryScore } from '@/lib/pantry-scorer';
 
 export async function generateMealPlan(formData: FormData) {
   const session = await auth();
@@ -80,128 +78,70 @@ export async function generateMealPlan(formData: FormData) {
       attempts++;
       const mealPlan = await deepSeekGenerate(budget, ingredients, householdSize, primaryGoal, budgetFriendly, originalEstimatedCost);
 
-      // --- BACKEND SHOPPING LIST ENGINE ---
-      const backendShoppingList: Array<{ item: string; quantity: string }> = [];
-      const userPantry = ingredients.split(',').map(i => i.trim().toLowerCase()).filter(i => i.length > 0);
+      // --- LIGHTWEIGHT BACKEND VALIDATION LAYER ---
+      let finalShoppingList = mealPlan.shoppingList || [];
+
+      // 1. Remove pantry items
+      pruneShoppingList(ingredients, finalShoppingList);
+      reporter.logPass('Pantry Pruning Validation');
+
+      // 2. Remove leftovers and trivial non-purchasables
+      finalShoppingList = finalShoppingList.filter((entry: any) => {
+        const lower = entry.item.toLowerCase();
+        if (/(leftover|remaining|extra|previous meal)/.test(lower)) return false;
+        if (['water', 'salt', 'maggi', 'seasoning cube', 'curry', 'thyme', 'garlic', 'ginger', 'knorr', 'bouillon'].some(i => lower.includes(i))) return false;
+        return true;
+      });
+      reporter.logPass('Leftover & Trivial Item Validation');
+
+      // 3. Remove duplicate items (Fuzzy Matching)
+      const deduplicated = new Map<string, string>();
       
-      if (mealPlan._rawIngredients) {
-        const itemMap = new Map<string, string[]>();
-        
-        for (const { item, quantity } of mealPlan._rawIngredients) {
-          const itemLower = item.toLowerCase().trim();
-          if (itemLower.length === 0) continue;
-          
-          // Filter out trivial/free items that shouldn't bloat the shopping list
-          // Also violently filter out AI hallucinations like "leftover rice" as an ingredient
-          const trivialItems = ['water', 'salt', 'maggi', 'seasoning cube', 'seasoning cubes', 'curry', 'thyme', 'garlic', 'ginger', 'knorr', 'bouillon', 'leftover', 'leftovers', 'remaining'];
-          if (trivialItems.some(i => itemLower.includes(i))) continue;
-          
-          let normalizedItem = itemLower;
-          if (normalizedItem.includes('pounded yam')) {
-             normalizedItem = 'yam'; // Fallback to yam tuber pricing and validation
-          }
-
-          // Basic match: if the pantry item is a substring of the required item or vice versa
-          const inPantry = userPantry.some(p => normalizedItem.includes(p) || p.includes(normalizedItem));
-          if (!inPantry) {
-            if (!itemMap.has(normalizedItem)) {
-              itemMap.set(normalizedItem, []);
-            }
-            if (quantity && quantity.trim().length > 0) {
-              itemMap.get(normalizedItem)!.push(quantity.trim());
-            }
-          }
-        }
-
-        for (const [itemName, quantities] of Array.from(itemMap.entries())) {
-          const capitalizedItem = itemName.charAt(0).toUpperCase() + itemName.slice(1);
-          
-          // Better fallback aggregation for items that might bypass quantity-validator
-          // Instead of collapsing duplicates completely with a Set, we count their frequency
-          const qtyCounts = quantities.reduce((acc, q) => {
-            acc[q] = (acc[q] || 0) + 1;
-            return acc;
-          }, {} as Record<string, number>);
-          
-          const combinedQtys = Object.entries(qtyCounts).map(([qty, count]) => {
-            if (count > 1) return `${count}x (${qty})`;
-            return qty;
-          });
-          
-          let finalQuantity = combinedQtys.length > 0 ? combinedQtys.join(' + ') : '1 portion';
-          
-          backendShoppingList.push({ item: capitalizedItem, quantity: finalQuantity });
-        }
-      }
-      
-      mealPlan.shoppingList = backendShoppingList;
-      // ------------------------------------
-
-      // Server-side Budget Intelligence Layer (Inflation-adjusted for 2024+)
-      const getEstimatedItemCost = (item: string, quantity: string): number => {
-        const lowerItem = item.toLowerCase();
-        const lowerQty = quantity.toLowerCase();
-        
-        // Ignore free or negligible items
-        if (['water', 'salt', 'maggi', 'seasoning cube', 'seasoning cubes', 'curry', 'thyme', 'garlic', 'ginger', 'knorr', 'bouillon'].some(i => lowerItem.includes(i))) return 0;
-
-        // If the quantity explicitly states "₦X worth", use that exactly.
-        if (lowerQty.includes('worth')) {
-           const match = lowerQty.match(/₦?\s*(\d+,?\d*)/);
-           if (match) return parseInt(match[1].replace(',', ''), 10);
-        }
-
-        let multiplier = 1;
-        const numMatch = lowerQty.match(/(\d+(\.\d+)?)/);
-        if (numMatch) {
-           multiplier = parseFloat(numMatch[1]);
-        }
-
-        // Handle metric conversions to base units (kg / Liters) to prevent massive price inflation
-        // e.g. "500g" -> multiplier becomes 0.5 (kg)
-        if (/\d+\s*g\b/.test(lowerQty) || /\d+\s*grams?\b/.test(lowerQty)) {
-            multiplier = multiplier / 1000;
-        } else if (/\d+\s*ml\b/.test(lowerQty)) {
-            multiplier = multiplier / 1000;
-        } else if (/\d+\s*cl\b/.test(lowerQty)) {
-            multiplier = multiplier / 100;
-        }
-
-        // Adjust multiplier for bulk units
-        if (lowerQty.includes('crate')) multiplier *= 30; // 30 eggs
-        else if (lowerQty.includes('paint rubber')) multiplier *= 6; // 6 dericas
-        else if (lowerQty.includes('roll')) multiplier *= 10; // 10 sachets
-
-        const UNIT_PRICES: Record<string, number> = {
-          rice: 1500, beans: 1200, garri: 800, yam: 2500, plantain: 1000,
-          bread: 1200, semolina: 1500, potato: 1500,
-          chicken: 3500, beef: 3500, meat: 3500, liver: 4000,
-          egg: 250, fish: 2000, stockfish: 3000, mackerel: 1800, sardines: 1000,
-          tomato: 1000, onion: 500, pepper: 500, habanero: 500, atarodo: 500,
-          vegetable: 500, okra: 500, coconut: 500, ugu: 500, spinach: 500,
-          egusi: 1500, ogbono: 1500, crayfish: 1000,
-          'palm oil': 1500, 'groundnut oil': 2000, 'vegetable oil': 2000,
-          milk: 200, milo: 200, cocoa: 200, tea: 100, coffee: 200, sugar: 500,
-          pap: 200, ogi: 200, akamu: 200,
-        };
-
-        for (const [key, price] of Object.entries(UNIT_PRICES)) {
-          if (lowerItem.includes(key) || lowerItem === key) {
-            return price * multiplier;
-          }
-        }
-        
-        // Semantic fallback for completely random / unknown items
-        if (['leaf', 'leaves', 'veg'].some(w => lowerItem.includes(w))) return 300 * multiplier;
-        if (['spice', 'powder', 'paste', 'sauce'].some(w => lowerItem.includes(w))) return 400 * multiplier;
-        if (['protein', 'pork', 'goat'].some(w => lowerItem.includes(w))) return 2500 * multiplier;
-        if (['oil', 'liquid', 'drink'].some(w => lowerItem.includes(w))) return 1000 * multiplier;
-
-        return 600 * multiplier; // Default floor for completely unknown items
+      const normalizeItem = (item: string) => {
+        return item.toLowerCase()
+          .replace(/\b(fresh|raw|dry|dried|tin|canned|frozen|bunch|pieces|medium|large|small)\b/g, '')
+          .replace(/ies\b/, 'y')
+          .replace(/s\b/, '')
+          .trim();
       };
 
-      const shoppingList = mealPlan.shoppingList as Array<{ item: string; quantity: string }>;
+      for (const entry of finalShoppingList) {
+          const originalLower = entry.item.toLowerCase().trim();
+          if (originalLower.length === 0) continue;
+          
+          const normalized = normalizeItem(originalLower);
+          
+          // Substring matching to catch "Tomato" vs "Fresh Tomatoes"
+          let matchedKey = null;
+          for (const key of Array.from(deduplicated.keys())) {
+            if (key.includes(normalized) || normalized.includes(key)) {
+              matchedKey = key;
+              // Keep the shorter/broader key as the root
+              if (normalized.length < key.length && normalized.length > 2) {
+                matchedKey = normalized;
+                const oldVal = deduplicated.get(key)!;
+                deduplicated.delete(key);
+                deduplicated.set(matchedKey, oldVal);
+              }
+              break;
+            }
+          }
+
+          if (matchedKey) {
+            deduplicated.set(matchedKey, `${deduplicated.get(matchedKey)} + ${entry.quantity}`);
+          } else {
+            deduplicated.set(normalized, entry.quantity);
+          }
+      }
       
+      finalShoppingList = Array.from(deduplicated.entries()).map(([item, quantity]) => ({
+          item: item.charAt(0).toUpperCase() + item.slice(1), 
+          quantity
+      }));
+      reporter.logPass('Fuzzy Shopping List Deduplication');
+
+      mealPlan.shoppingList = finalShoppingList;
+
       // 0. Output Sanitization Validation
       try {
         validateAndSanitizeOutput(mealPlan.mealPlan);
@@ -225,92 +165,48 @@ export async function generateMealPlan(formData: FormData) {
       enforceMealVariety(mealPlan.mealPlan, ingredients);
       reporter.logPass('Meal Variety Validation');
 
-      // 3. Dynamic Shopping List Consistency Validation & Enrichment
-      enrichShoppingList(mealPlan.mealPlan, ingredients, shoppingList);
-      reporter.logPass('Shopping List Validation');
+      // The AI's native 'ingredientUtilization' text now replaces the obsolete numeric score logging.
+      reporter.logPass('AI Ingredient Utilization', mealPlan.ingredientUtilization);
 
-      // 4. Programmatic Quantity Scaling
-      validateShoppingQuantities(shoppingList, mealPlan.mealPlan, householdMultiplier);
-      reporter.logPass('Quantity Validation');
+      // Server-side Budget Intelligence Layer (Safety Net)
+      const PRICE_FLOORS: Record<string, number> = {
+        rice: 1200, beans: 1000, garri: 500, yam: 2000, plantain: 700,
+        bread: 1000, semolina: 1200, potato: 1000,
+        chicken: 2500, beef: 2500, eggs: 1000, fish: 1500, stockfish: 1500,
+        mackerel: 1200, sardines: 800,
+        tomatoes: 1000, onions: 500, pepper: 500, habanero: 500,
+        vegetables: 400, okra: 400, coconut: 400,
+        egusi: 1000, ogbono: 1000, crayfish: 800,
+        'palm oil': 1000, 'groundnut oil': 1000, seasoning: 300,
+      };
 
-      // 5. Pantry Utilization Validation
-      const pantryResult = calculatePantryScore(ingredients, mealPlan.mealPlan, shoppingList);
+      const getFloorPrice = (item: string): number => {
+        const lower = item.toLowerCase();
+        if (['water', 'salt', 'maggi', 'seasoning cube', 'curry', 'thyme', 'garlic', 'ginger', 'knorr', 'bouillon'].some(i => lower.includes(i))) return 0;
+        
+        for (const [key, price] of Object.entries(PRICE_FLOORS)) {
+          if (lower.includes(key)) return price;
+        }
+        return 300; // default floor for unrecognized small items
+      };
 
-      // The AI often underestimates. We enforce a strict floor based on our server-side market logic.
-      const minRealisticCost = shoppingList.reduce((total, entry) => {
-        return total + getEstimatedItemCost(entry.item, entry.quantity);
-      }, 0);
-      const finalMinCost = Math.max(minRealisticCost, mealPlan.estimatedCost);
-
-      const isPantryStocked = pantryResult.availableItemsCount >= 4;
-      const isShoppingListLarge = shoppingList.length >= 15;
-      const isUtilizationLow = pantryResult.score < 50; 
-
-      let pantryValidationFailed = false;
-      let pantryFailReason = "";
-
-      // Standard Optimization Failure
-      if (isPantryStocked && isShoppingListLarge && isUtilizationLow) {
-         pantryValidationFailed = true;
-         pantryFailReason = `Pantry is well-stocked (${pantryResult.availableItemsCount} items) but utilization is low (${pantryResult.score}%). Shopping list is too large (${shoppingList.length} items).`;
-      }
-
-      // Cost Optimization Failure (New)
-      if (pantryResult.score >= 80 && shoppingList.length > 18) {
-         pantryValidationFailed = true;
-         pantryFailReason = `Cost Optimization Failure: High pantry utilization (${pantryResult.score}%) but too many new items introduced (${shoppingList.length}).`;
-      }
-
-      // Pantry Optimization Ineffective (New)
-      if (pantryResult.score >= 80 && finalMinCost > (budget * 0.8)) {
-         pantryValidationFailed = true;
-         pantryFailReason = `Pantry Optimization Ineffective: Despite ${pantryResult.score}% pantry usage, the plan cost (₦${finalMinCost}) did not yield at least a 20% budget reduction against max limit (₦${budget}).`;
-      }
-
-      if (budgetFriendly && isPantryStocked && pantryResult.score < 60 && shoppingList.length > 10) {
-         pantryValidationFailed = true;
-         pantryFailReason = `Budget-Friendly Mode: Utilization too low (${pantryResult.score}%) for a stocked pantry. Shopping list (${shoppingList.length} items) must be reduced.`;
-      }
-
-      const pantryLogDetails = `Pantry Utilization:\n${pantryResult.score}%\n\nPantry Items Used:\n${pantryResult.usedItemsCount}/${pantryResult.availableItemsCount}\n\nNew Items Required:\n${pantryResult.newItemsCount}\n\nStatus:\n${pantryResult.status}`;
-
-      // TEMPORARILY DISABLED
-      // Pantry Utilization Validation removed from active
-      // generation pipeline during backend shopping-list refactor.
-      // Re-evaluate and re-enable in V2.
-      /*
-      if (pantryValidationFailed) {
-         const actionMessage = attempts < maxAttempts ? 'Regenerate meal plan.' : 'Max attempts reached. Plan rejected.';
-         reporter.logFail('Pantry Utilization Validation', pantryFailReason, actionMessage);
-         reporter.printFinal('REJECTED');
-         if (attempts < maxAttempts) {
-             continue;
-         } else {
-             throw new Error('Failed to generate a plan that properly utilizes your pantry after multiple attempts. Please try again.');
-         }
-      } else {
-         reporter.logPass('Pantry Utilization Validation', pantryLogDetails);
-      }
-      */
-
-      // Force passing to prevent generation failures
-      reporter.logPass('Pantry Utilization Validation (TEMPORARILY DISABLED)', pantryLogDetails);
-
-
+      // Ensure the estimated cost is realistic and not drastically underestimated by AI
+      const minRealisticCost = mealPlan.shoppingList.reduce((total: number, entry: any) => total + getFloorPrice(entry.item), 0);
+      const safeEstimatedCost = Math.max(minRealisticCost, mealPlan.estimatedCost);
 
       // Validate Budget Utilization (enforce strict retry in Budget-Friendly mode if < 70% or > 100%)
-      const budgetUtilization = Math.round((finalMinCost / budget) * 100);
+      const budgetUtilization = Math.round((safeEstimatedCost / budget) * 100);
       const isUnderUtilized = budgetFriendly && budgetUtilization < 70;
       
       const budgetTolerance = budget; // Strict adherence to the budget limit
-      const isOverUtilized = budgetFriendly && finalMinCost > budgetTolerance;
+      const isOverUtilized = budgetFriendly && safeEstimatedCost > budgetTolerance;
 
       // BUDGET FRIENDLY OPTIMIZATION VALIDATION
-      const isMoreExpensiveThanOriginal = budgetFriendly && originalEstimatedCost !== undefined && finalMinCost >= originalEstimatedCost;
+      const isMoreExpensiveThanOriginal = budgetFriendly && originalEstimatedCost !== undefined && safeEstimatedCost >= originalEstimatedCost;
 
       if (isUnderUtilized || isOverUtilized || isMoreExpensiveThanOriginal) {
         let failReason = `Budget utilization was ${budgetUtilization}%`;
-        if (isMoreExpensiveThanOriginal) failReason = `Alternative cost (₦${finalMinCost}) was higher or equal to original cost (₦${originalEstimatedCost}).`;
+        if (isMoreExpensiveThanOriginal) failReason = `Alternative cost (₦${safeEstimatedCost}) was higher or equal to original cost (₦${originalEstimatedCost}).`;
         
         const actionMessage = attempts < maxAttempts ? 'Regenerate meal plan.' : 'Max attempts reached. Plan rejected.';
         reporter.logFail('Budget-Friendly Validation', failReason, actionMessage);
@@ -329,28 +225,15 @@ export async function generateMealPlan(formData: FormData) {
 
       reporter.printFinal('APPROVED');
       
-      let correctedBudgetStatus = mealPlan.budgetStatus;
-      
-      // Strict budget adherence based on new logic
-      if (budget < finalMinCost) {
-        correctedBudgetStatus = 'EXCEEDS_BUDGET';
-      } else if (budget < finalMinCost * 1.10) {
-        correctedBudgetStatus = 'APPROACHING_BUDGET';
-      } else {
-        correctedBudgetStatus = 'WITHIN_BUDGET';
-      }
-
-      // Build an estimated cost range: floor is our server-calculated minimum,
-      // ceiling adds a realistic 35% market variance (haggling, season, location).
+      // Calculate variance for UI realism
       const estimatedCostRange = {
-        min: finalMinCost,
-        max: Math.round(finalMinCost * 1.35),
+        min: safeEstimatedCost,
+        max: Math.round(safeEstimatedCost * 1.35),
       };
 
       finalMealPlan = { 
         ...mealPlan, 
-        estimatedCost: finalMinCost, // Ensure the base cost reflects our realistic floor for savings calculations
-        budgetStatus: correctedBudgetStatus,
+        estimatedCost: safeEstimatedCost,
         estimatedCostRange,
         budgetUtilization,
       };
