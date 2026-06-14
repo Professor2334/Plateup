@@ -13,9 +13,10 @@ interface GenerateMealFormProps {
   budgetFriendly?: boolean;
   initialBudget?: string;
   initialIngredients?: string[];
+  isRegenerating?: boolean;
 }
 
-export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFriendly, initialBudget, initialIngredients }: GenerateMealFormProps) {
+export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFriendly, initialBudget, initialIngredients, isRegenerating = false }: GenerateMealFormProps) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [ingredients, setIngredients] = useState<string[]>(initialIngredients || []);
@@ -76,6 +77,8 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFrien
     }
   };
 
+  const isFormDisabled = loading || isRegenerating;
+
   return (
     <div className="rounded-[24px] bg-white p-5 sm:p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all duration-300 relative">
       <div className="mb-5">
@@ -99,7 +102,7 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFrien
               min="1000" 
               placeholder="15000" 
               required 
-              disabled={loading} 
+              disabled={isFormDisabled} 
               className="w-full h-12 pl-10 pr-4 rounded-xl bg-[#f9fafb] border border-transparent focus:bg-white focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-opacity-20 transition-all text-base font-medium outline-none disabled:opacity-50 shadow-inner hover:bg-gray-50"
             />
           </div>
@@ -116,9 +119,10 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFrien
                     type="button" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      removeIngredient(ing);
+                      if (!isFormDisabled) removeIngredient(ing);
                     }}
-                    className="text-[var(--color-on-surface-variant)] hover:text-[var(--color-error)] transition-colors focus:outline-none rounded-full p-0.5 hover:bg-[var(--color-error-container)]"
+                    disabled={isFormDisabled}
+                    className="text-[var(--color-on-surface-variant)] hover:text-[var(--color-error)] transition-colors focus:outline-none rounded-full p-0.5 hover:bg-[var(--color-error-container)] disabled:opacity-50"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -131,10 +135,10 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFrien
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={ingredients.length === 0 ? "e.g. Rice, Beans (Press Enter)" : "Add more..."}
-                disabled={loading}
+                disabled={isFormDisabled}
                 className="flex-1 min-w-[140px] bg-transparent border-none focus:outline-none focus:ring-0 text-[0.875rem] font-medium py-1.5 px-2 outline-none h-auto placeholder-[var(--color-outline-variant)]"
                 onBlur={() => {
-                  if (inputValue.trim()) {
+                  if (inputValue.trim() && !isFormDisabled) {
                     handleAddIngredient(inputValue);
                   }
                 }}
@@ -151,8 +155,8 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFrien
         )}
         
         <div className="pt-1">
-          <Button type="submit" className="w-full h-12 text-[0.9375rem] font-bold shadow-[0_4px_14px_rgba(17,94,59,0.25)] hover:shadow-[0_6px_20px_rgba(17,94,59,0.3)] transition-all rounded-xl" disabled={loading}>
-            {loading ? 'Generating...' : 'Generate My Meal Plan'}
+          <Button type="submit" className="w-full h-12 text-[0.9375rem] font-bold shadow-[0_4px_14px_rgba(17,94,59,0.25)] hover:shadow-[0_6px_20px_rgba(17,94,59,0.3)] transition-all rounded-xl" disabled={isFormDisabled}>
+            {loading ? 'Generating...' : isRegenerating ? 'Generating...' : 'Generate My Meal Plan'}
           </Button>
         </div>
       </form>

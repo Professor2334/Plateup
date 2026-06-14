@@ -98,6 +98,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
   }, [isBannerDismissed, userData.emailVerified]);
 
   const [loading, setLoading] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<MealPlanResponse | null>(null);
   const [alternativePlan, setAlternativePlan] = useState<MealPlanResponse | null>(null);
@@ -199,6 +200,52 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     }
   };
 
+  const handleRegeneratePlan = async () => {
+    setIsRegenerating(true);
+    try {
+      const formData = new FormData();
+      formData.set('budget', activeBudget.toString());
+      formData.set('ingredients', activeIngredients);
+      
+      const isBudgetFriendly = activePlanView === 'budget-friendly';
+      if (isBudgetFriendly) {
+        formData.set('budgetFriendly', 'true');
+        if (generatedPlan) {
+          formData.set('originalEstimatedCost', generatedPlan.estimatedCost.toString());
+        }
+      }
+
+      const { generateMealPlan } = await import('@/app/actions/meal-plans/actions');
+      const result = await generateMealPlan(formData);
+      
+      if (result && result.success && result.data && result.id) {
+        if (isBudgetFriendly) {
+          setAlternativePlan(result.data);
+          setActiveAlternativePlanId(result.id);
+          
+          const newPlan = {
+            id: result.id,
+            budget: activeBudget,
+            ingredients: activeIngredients,
+            generatedPlan: result.data.mealPlan,
+            shoppingList: result.data.shoppingList,
+            isSaved: false,
+            createdAt: new Date().toISOString(),
+          };
+          setHistory(prev => [newPlan, ...prev]);
+        } else {
+          handlePlanGenerated(result.data, activeBudget, activeIngredients, result.id);
+        }
+      } else {
+        alert(result?.error || 'Unable to generate a new meal plan. Please try again.');
+      }
+    } catch (error) {
+      alert('Unable to generate a new meal plan. Please try again.');
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   const handleDeletePlan = async (id: string) => {
     if (confirm('Are you sure you want to delete this saved plan?')) {
       setHistory(prev => prev.filter(plan => plan.id !== id));
@@ -213,7 +260,8 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       shoppingList: plan.shoppingList,
       estimatedCost: plan.budget,
       budgetStatus: 'WITHIN_BUDGET',
-      ingredientUtilization: 'Loaded from saved history.'
+      ingredientUtilization: 'Loaded from saved history.',
+      shoppingListCalculations: ''
     });
     setAlternativePlan(null);
     setActivePlanView('recommended');
@@ -230,7 +278,8 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       shoppingList: plan.shoppingList,
       estimatedCost: plan.budget,
       budgetStatus: 'WITHIN_BUDGET',
-      ingredientUtilization: 'Loaded from saved history.'
+      ingredientUtilization: 'Loaded from saved history.',
+      shoppingListCalculations: ''
     });
     setActiveBudget(plan.budget);
     setActiveIngredients(plan.ingredients);
@@ -396,6 +445,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             handlePlanGenerated(plan, b, i, id);
           }}
           onLoadingChange={setLoading}
+          isRegenerating={isRegenerating}
         />
         </div>
       </div>
@@ -428,17 +478,14 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             )}
             <MealPlanResults
               title={activePlanView === 'recommended' ? "Recommended Meal Plan" : "Budget-Friendly Alternative"}
-              plan={activePlanView === 'recommended' ? generatedPlan : alternativePlan}
+              plan={(activePlanView === 'recommended' ? generatedPlan : alternativePlan) as MealPlanResponse}
               budget={activeBudget}
               ingredients={activeIngredients}
               onSave={handleSavePlan}
               isSaving={saving}
               onShare={shareViaWhatsApp}
-              onRegenerate={() => {
-                setGeneratedPlan(null);
-                setAlternativePlan(null);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onRegenerate={handleRegeneratePlan}
+              isRegenerating={isRegenerating}
               onRegenerateBudgetFriendly={!alternativePlan && activePlanView === 'recommended' ? handleRegenerateBudgetFriendly : undefined}
               isSaved={history.some(p => p.id === (activePlanView === 'recommended' ? activePlanId : activeAlternativePlanId) && p.isSaved)}
             />

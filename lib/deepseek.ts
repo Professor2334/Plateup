@@ -71,26 +71,43 @@ Available Ingredients: ${ingredients}
 
 CRITICAL RULES FOR ALL GENERATIONS:
 1. Day 1 (Monday) is the first day. You CANNOT have leftovers on Monday. NEVER use words like "leftover", "remaining", or "from previous" on Day 1.
-2. If you suggest a leftover on Days 2-7, the EXACT original meal must have been cooked on an earlier day.`;
+2. If you suggest a leftover on Days 2-7, the EXACT original meal must have been cooked on an earlier day.
+3. QUANTITY REALISM: Your shopping list must logically support the meals you generate for the household size.
+4. SHOPPING LIST CONSISTENCY: Every primary ingredient mentioned in your meal plan MUST appear in your shopping list unless it was listed in the user's available pantry ingredients.
+5. MEAL REALISM: Do not suggest meals that Nigerians do not eat (e.g., Garri + Palm Oil + Salt). Ensure combinations are practical and culturally accurate.
+6. MEAL VARIETY: Ensure reasonable weekly variety. No exact meal should dominate the week. Rotate among Rice, Beans, Yam, Garri, Plantain, Pap, and local soups. Do not repeat the exact same meal more than 3 times in the entire week.
+7. QUANTITY SCALING: You must scale your shopping list quantities strictly for a household size of ${householdSize}. Do NOT suggest bulk/family-size items (e.g., "3kg tomatoes", "2.5L palm oil", "1 crate of eggs") for a household of 1. Suggest small, affordable market measurements (e.g., "1 small paint rubber", "1 sachet", "₦200 worth", "2 pieces").
+8. NO REASONING: DO NOT include internal thoughts, questions, or reasoning in the meal fields (e.g., do not write "leftover from Tuesday? No"). The meal text must be clean and final.
+9. BALANCED PANTRY OPTIMIZATION: Maximize pantry utilization without creating a repetitive or unrealistic weekly menu.
+10. BREAKFAST VARIETY: Do not repeat the exact same breakfast more than TWICE per week.
+11. PROTEIN ROTATION: Rotate between Eggs, Beans, Stockfish, Crayfish, Sardines, and Chicken (if budget allows). Avoid using the same protein repeatedly.
+12. CARBOHYDRATE ROTATION: Rotate between Rice, Yam, Garri, Spaghetti, Amala, and Semo. Avoid excessive repetition.
+13. LEFTOVER REUSE: Reuse leftovers only when it improves cost efficiency. Do not force leftovers unnecessarily.
+14. NUTRITION BALANCE: Ensure every day includes a carbohydrate, a protein, and vegetables where possible.
+15. COST-FIRST OPTIMIZATION: When using a well-stocked pantry, Cost Minimization becomes your HIGHEST priority. Avoid introducing premium ingredients when pantry alternatives exist. Every newly introduced ingredient must justify its cost impact.
+16. PROTEIN PRIORITY HIERARCHY: You MUST prefer pantry proteins before introducing new proteins. Follow this exact priority order: 1. Stockfish -> 2. Crayfish -> 3. Beans -> 4. Eggs -> 5. Sardines -> 6. Chicken -> 7. Beef. Avoid Chicken and Beef unless required for nutritional balance or explicitly requested.`;
 
   if (budgetFriendly) {
     let budgetContext = `You MUST enter VALUE-OPTIMIZATION MODE.`;
     if (originalEstimatedCost) {
-      budgetContext = `Your previous standard recommendation cost NGN ${originalEstimatedCost}, but the user only has NGN ${budget}. You MUST enter VALUE-OPTIMIZATION MODE to fit this budget.`;
+      budgetContext = `Your previous standard recommendation cost NGN ${originalEstimatedCost}, but the user wants a BUDGET-FRIENDLY ALTERNATIVE. You MUST enter VALUE-OPTIMIZATION MODE to fit this budget.`;
     }
     
     prompt += `\n\nURGENT BUDGET OVERRIDE: ${budgetContext}
-Rules:
-1. Target an 80%-90% budget utilization. Do not generate the cheapest possible plan; generate the BEST value plan within the NGN ${budget * 0.9} limit.
-2. To reach the 80%-100% budget utilization target, you MUST include affordable proteins (e.g., Eggs, Fish, Crayfish) and vegetables to ensure a balanced diet. Only avoid luxury proteins (Beef, Chicken, Turkey) if the budget is tight.
-3. Meal repetition is allowed to save money, but do not repeat the exact same meal every single day.
-4. Maximize the use of the user's available ingredients first.
-5. YOU MUST INCLUDE a \`budgetStrategy\` field at the very top of your JSON. In it, explicitly declare which expensive items (Bread, Yam, large proteins) you will avoid to stay within budget. If you do not avoid them, the quantities will multiply and fail the budget constraint.
-6. CRITICAL RULE REGARDING LEFTOVERS: Never create leftovers before a meal exists! Do NOT suggest 'leftovers' on Day 1. Only suggest leftovers if that EXACT meal was cooked on a previous day.`;
+Optimization Strategy Rules:
+1. MAXIMIZE AVAILABLE INGREDIENTS: Rely heavily on what the user already has in their pantry.
+2. REDUCE SHOPPING LIST SIZE: Minimize the number of items that need to be purchased.
+3. REMOVE UNNECESSARY INGREDIENTS: Strip out any ingredient that isn't strictly necessary for the core meal.
+4. PREFER AFFORDABLE STAPLES: Lean towards cheap, locally available Nigerian staples (Garri, Beans, etc).
+5. REDUCE EXPENSIVE PROTEINS: Avoid Beef, Chicken, and Turkey. Swap them for affordable proteins like Eggs, Crayfish, or Dried Fish.
+6. PREFER INGREDIENT REUSE: If you must buy an ingredient, use it across multiple meals to get maximum value.
+7. Target an 80%-90% budget utilization. Do not generate the cheapest possible plan; generate the BEST value plan within the limit.
+8. YOU MUST INCLUDE a \`budgetStrategy\` field at the very top of your JSON. In it, explicitly declare which expensive items you avoided to stay within budget.
+9. If the budget is extremely tight, it is completely acceptable to reduce meal variety. Repeating affordable staple meals is required if it keeps the estimatedCost below the limit.`;
   } else {
     prompt += `\n\nRECOMMENDED PLAN MODE:
 You are NOT in Value-Optimization mode. Your goal is to generate the highest quality, most realistic Nigerian meal plan possible using the pantry as a base.
-CRITICAL RULE: Do NOT artificially cheapen the meal plan or avoid standard ingredients (like Bread, Eggs, Yam) just because the budget is tight. It is completely acceptable for this recommended plan to exceed the user's budget. Focus purely on meal quality and variety.
+CRITICAL RULE: Aim for high meal quality and variety, but STILL respect the user's budget constraint as a firm limit. You can spend closer to 100% of the budget to maximize variety, but DO NOT exceed the user's budget. Variety is important, but Affordability and Pantry Utilization remain the top priorities.
 DO NOT include a \`budgetStrategy\` field in your JSON.`;
   }
 

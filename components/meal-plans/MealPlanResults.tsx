@@ -16,6 +16,7 @@ interface MealPlanResultsProps {
   onRegenerate: () => void;
   onRegenerateBudgetFriendly?: () => void;
   isSaved: boolean;
+  isRegenerating?: boolean;
 }
 
 export function MealPlanResults({ 
@@ -28,7 +29,8 @@ export function MealPlanResults({
   onShare, 
   onRegenerate,
   onRegenerateBudgetFriendly,
-  isSaved 
+  isSaved,
+  isRegenerating = false
 }: MealPlanResultsProps) {
   
   const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set());
@@ -53,49 +55,63 @@ export function MealPlanResults({
     .filter(i => i.length > 0);
 
   return (
-    <div className="w-full space-y-8 animate-in fade-in duration-500">
+    <div className="w-full space-y-8 animate-in fade-in duration-500 relative">
+      {isRegenerating && (
+        <div className="w-full bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--color-primary)_20%,transparent)] rounded-2xl p-4 flex items-center justify-between shadow-sm animate-pulse mb-6">
+          <div className="flex items-center gap-3">
+            <RefreshCcw className="w-5 h-5 text-[var(--color-primary)] animate-spin" />
+            <div>
+              <p className="text-sm font-bold text-[var(--color-primary)]">Generating a new meal plan...</p>
+              <p className="text-xs text-[var(--color-primary)]/70">Your current meal plan will remain visible until the new one is ready.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Header & Actions */}
-      <div className="flex flex-col items-center sm:flex-row sm:items-center justify-between gap-5 sm:gap-4 text-center sm:text-left">
-        <div className="flex flex-col items-center sm:items-start">
-          <h1 className="text-[clamp(1.25rem,2vw+0.5rem,1.5rem)] sm:text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] font-extrabold text-[var(--color-on-surface)] tracking-tight flex items-center justify-center sm:justify-start gap-2">
+      <div className={`flex flex-col lg:flex-row lg:items-center justify-between gap-5 text-center lg:text-left transition-opacity duration-300 ${isRegenerating ? 'opacity-50 pointer-events-none' : ''}`}>
+        <div className="flex flex-col items-center lg:items-start">
+          <h1 className="text-[clamp(1.25rem,2vw+0.5rem,1.5rem)] sm:text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] font-extrabold text-[var(--color-on-surface)] tracking-tight flex items-center justify-center lg:justify-start gap-2">
             {title || 'AI Meal Plan'}
             <Sparkles className="w-6 h-6 text-[var(--color-primary)]" />
           </h1>
           <p className="text-[var(--color-on-surface-variant)] text-sm mt-1">Generated based on your ingredients and budget.</p>
         </div>
         
-        <div className="flex flex-wrap justify-center sm:justify-end items-center gap-2 w-full sm:w-auto">
-          <Button variant="outline" onClick={() => onShare(checkedItems)} className="gap-2 h-10 border-0 bg-[var(--color-surface-container-lowest)] shadow-sm hover:bg-[#f9fafb]">
-            <Share2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Share</span>
-          </Button>
-          <div className="relative">
-            <Button variant="outline" onClick={() => setShowRegenerateConfirm(true)} className="gap-2 h-10 border-0 bg-[var(--color-surface-container-lowest)] shadow-sm hover:bg-[#f9fafb]">
-              <RefreshCcw className="w-4 h-4" />
-              <span className="hidden sm:inline">Regenerate</span>
+        <div className="w-full lg:w-auto overflow-x-auto hide-scrollbar pb-2 sm:pb-0">
+          <div className="flex flex-nowrap justify-start sm:justify-center lg:justify-end items-center gap-2 min-w-max px-1">
+            <Button variant="outline" onClick={() => onShare(checkedItems)} disabled={isRegenerating} className="gap-2 h-10 border-0 bg-[var(--color-surface-container-lowest)] shadow-sm hover:bg-[#f9fafb] flex-shrink-0">
+              <Share2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Share</span>
             </Button>
-            
-            {showRegenerateConfirm && (
-              <>
-                {/* Invisible overlay to catch outside clicks */}
-                <div className="fixed inset-0 z-40" onClick={() => setShowRegenerateConfirm(false)} />
-                <div className="absolute bottom-full mb-2 right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 w-64 bg-white rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-[var(--color-outline-variant)]/30 p-4 z-50 animate-in fade-in zoom-in-95 duration-200">
-                  <p className="text-[0.875rem] font-bold text-[var(--color-on-surface)] mb-1">Regenerate Plan?</p>
-                  <p className="text-[0.75rem] text-[var(--color-on-surface-variant)] mb-3 leading-tight">This will overwrite your current plan.</p>
-                  <div className="flex gap-2">
-                    <Button variant="outline" className="flex-1 h-8 text-xs" onClick={() => setShowRegenerateConfirm(false)}>Cancel</Button>
-                    <Button className="flex-1 h-8 text-xs bg-[var(--color-primary)] text-white hover:bg-[color-mix(in_srgb,var(--color-primary)_85%,black)]" onClick={() => { setShowRegenerateConfirm(false); onRegenerate(); }}>Yes, regenerate</Button>
+            <div className="relative flex-shrink-0">
+              <Button variant="outline" onClick={() => setShowRegenerateConfirm(true)} disabled={isRegenerating} className="gap-2 h-10 border-0 bg-[var(--color-surface-container-lowest)] shadow-sm hover:bg-[#f9fafb]">
+                <RefreshCcw className="w-4 h-4" />
+                <span className="hidden sm:inline">Regenerate</span>
+              </Button>
+              
+              {showRegenerateConfirm && (
+                <>
+                  {/* Invisible overlay to catch outside clicks */}
+                  <div className="fixed inset-0 z-40" onClick={() => setShowRegenerateConfirm(false)} />
+                  <div className="absolute bottom-full mb-2 right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 w-64 bg-white rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-[var(--color-outline-variant)]/30 p-4 z-50 animate-in fade-in zoom-in-95 duration-200">
+                    <p className="text-[0.875rem] font-bold text-[var(--color-on-surface)] mb-1">Regenerate Plan?</p>
+                    <p className="text-[0.75rem] text-[var(--color-on-surface-variant)] mb-3 leading-tight">This will replace your current plan.</p>
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="flex-1 h-8 text-xs" onClick={() => setShowRegenerateConfirm(false)}>Cancel</Button>
+                      <Button className="flex-1 h-8 text-xs bg-[var(--color-primary)] text-white hover:bg-[color-mix(in_srgb,var(--color-primary)_85%,black)]" onClick={() => { setShowRegenerateConfirm(false); onRegenerate(); }}>Yes, regenerate</Button>
+                    </div>
                   </div>
-                </div>
-              </>
+                </>
+              )}
+            </div>
+            {!isSaved && (
+              <Button onClick={onSave} disabled={isSaving || isRegenerating} className="gap-2 h-10 shadow-sm flex-shrink-0">
+                <Save className="w-4 h-4" />
+                {isSaving ? 'Saving...' : 'Save Plan'}
+              </Button>
             )}
           </div>
-          {!isSaved && (
-            <Button onClick={onSave} disabled={isSaving} className="gap-2 h-10 shadow-sm">
-              <Save className="w-4 h-4" />
-              {isSaving ? 'Saving...' : 'Save Plan'}
-            </Button>
-          )}
         </div>
       </div>
 
@@ -169,7 +185,7 @@ export function MealPlanResults({
               <CheckCircle2 className="w-6 h-6 text-[var(--color-primary)] flex-shrink-0 mt-0.5 sm:mt-0" />
               <div className="flex-1">
                 <p className="text-[0.9375rem] font-bold text-[var(--color-primary)] mb-1">Budget Assessment</p>
-                <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-2">Your budget appears sufficient for this meal plan based on current market estimates.</p>
+                <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-2">Your budget appears sufficient for this meal plan. Minor market price fluctuations should be manageable.</p>
                 <div className="flex flex-col sm:flex-row sm:gap-6 gap-2">
                   <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Estimated Cost Range:</span> <span className="font-bold text-[var(--color-on-surface)]">{plan.estimatedCostRange ? `₦${plan.estimatedCostRange.min.toLocaleString()} - ₦${plan.estimatedCostRange.max.toLocaleString()}` : `₦${plan.estimatedCost.toLocaleString()}`}</span></p>
                   <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Budget Status:</span> <span className="font-bold text-[var(--color-primary)]">{isAlternative ? 'Optimized' : 'Comfortable'}</span></p>
@@ -183,7 +199,7 @@ export function MealPlanResults({
               <AlertTriangle className="w-6 h-6 text-[var(--color-accent)] flex-shrink-0 mt-0.5 sm:mt-0" />
               <div className="flex-1">
                 <p className="text-[0.9375rem] font-bold text-[var(--color-accent)] mb-1">Budget Assessment</p>
-                <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-2">Your budget may be sufficient, but ingredient substitutions and reduced variety may be required.</p>
+                <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-2">Your budget may be sufficient, but ingredient substitutions or reduced variety may be required.</p>
                 <div className="flex flex-col sm:flex-row sm:gap-6 gap-2">
                   <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Estimated Cost Range:</span> <span className="font-bold text-[var(--color-on-surface)]">{plan.estimatedCostRange ? `₦${plan.estimatedCostRange.min.toLocaleString()} - ₦${plan.estimatedCostRange.max.toLocaleString()}` : `₦${plan.estimatedCost.toLocaleString()}`}</span></p>
                   <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Budget Status:</span> <span className={`font-bold ${isAlternative ? 'text-[var(--color-primary)]' : 'text-[var(--color-accent)]'}`}>{isAlternative ? 'Optimized' : 'Tight'}</span></p>
