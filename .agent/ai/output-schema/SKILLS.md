@@ -8,63 +8,42 @@ All PlateUp AI responses must strictly follow this structure.
   "mealPlan": [
     {
       "day": "Monday",
-      "breakfast": "",
-      "lunch": "",
-      "dinner": "",
-      "primaryIngredientsUsed": ["", ""]
+      "breakfast": {
+        "mealName": "Yam and Egg Sauce",
+        "ingredients": ["Yam", "Eggs", "Tomatoes", "Pepper", "Onions", "Vegetable Oil"],
+        "quantities": ["500g", "4 pieces", "2 medium", "1 tablespoon", "1 medium", "2 tablespoons"]
+      },
+      "lunch": {
+        "mealName": "White Rice and Stew",
+        "ingredients": ["Rice", "Tomatoes", "Pepper", "Onions", "Chicken"],
+        "quantities": ["2 cups", "4 medium", "2 tablespoons", "1 medium", "2 pieces"]
+      },
+      "dinner": {
+        "mealName": "Beans Porridge",
+        "ingredients": ["Beans", "Palm Oil", "Onions", "Pepper", "Crayfish"],
+        "quantities": ["1.5 cups", "3 tablespoons", "1 medium", "1 tablespoon", "1 tablespoon"]
+      }
     },
     {
       "day": "Tuesday",
-      "breakfast": "",
-      "lunch": "",
-      "dinner": "",
-      "primaryIngredientsUsed": ["", ""]
-    },
-    {
-      "day": "Wednesday",
-      "breakfast": "",
-      "lunch": "",
-      "dinner": "",
-      "primaryIngredientsUsed": ["", ""]
-    },
-    {
-      "day": "Thursday",
-      "breakfast": "",
-      "lunch": "",
-      "dinner": "",
-      "primaryIngredientsUsed": ["", ""]
-    },
-    {
-      "day": "Friday",
-      "breakfast": "",
-      "lunch": "",
-      "dinner": "",
-      "primaryIngredientsUsed": ["", ""]
-    },
-    {
-      "day": "Saturday",
-      "breakfast": "",
-      "lunch": "",
-      "dinner": "",
-      "primaryIngredientsUsed": ["", ""]
-    },
-    {
-      "day": "Sunday",
-      "breakfast": "",
-      "lunch": "",
-      "dinner": "",
-      "primaryIngredientsUsed": ["", ""]
+      "breakfast": {
+        "mealName": "...",
+        "ingredients": ["..."],
+        "quantities": ["..."]
+      },
+      "lunch": {
+        "mealName": "...",
+        "ingredients": ["..."],
+        "quantities": ["..."]
+      },
+      "dinner": {
+        "mealName": "...",
+        "ingredients": ["..."],
+        "quantities": ["..."]
+      }
     }
-  ],
-  "shoppingListCalculations": "Bread is used 4 times for breakfast. Household size is 4. 4 meals * 4 people = 16 slices required. Therefore, 1 large loaf is needed.",
-  "shoppingList": [
-    {
-      "item": "",
-      "quantity": ""
-    }
-  ],
-  "estimatedCost": 0,
-  "budgetStatus": "WITHIN_BUDGET"
+    // ... continue for Wednesday, Thursday, Friday, Saturday, Sunday
+  ]
 }
 ```
 
@@ -102,69 +81,13 @@ Each day must contain:
 - Breakfast
 - Lunch
 - Dinner
-- primaryIngredientsUsed (An array of the main ingredients required for that day's meals)
 
----
+Each meal (breakfast, lunch, dinner) must be an object containing:
+- mealName: The name of the meal being prepared. (string)
+- ingredients: An array of strings listing ALL ingredients required to make this meal. (string[])
+- quantities: An array of strings listing the exact quantity of each corresponding ingredient required to feed the specific household size. (string[])
 
-## shoppingListCalculations
-
-A mandatory chain-of-thought calculation block before outputting the shopping list.
-You must:
-1. Scan your generated 7-day meal plan.
-2. Calculate the frequency of every non-pantry ingredient used.
-3. Multiply by Household Size to determine the total required quantity.
-
-Type:
-```json
-string
-```
-
----
-
-## shoppingList
-
-Combined ingredient list required to prepare the meal plan.
-
-Each item should contain:
-
-```json
-{
-  "item": "",
-  "quantity": ""
-}
-```
-
----
-
-## estimatedCost
-
-Estimated total weekly cost.
-
-Type:
-
-```json
-number
-```
-
-Example:
-
-```json
-25000
-```
-
----
-
-## budgetStatus
-
-Allowed values only:
-
-```text
-WITHIN_BUDGET
-APPROACHING_BUDGET
-EXCEEDS_BUDGET
-```
-
-No other values are permitted.
+Note: The `ingredients` array and `quantities` array must have the exact same length.
 
 ---
 
@@ -174,13 +97,10 @@ The response is invalid if:
 
 - ingredientUtilization is missing
 - mealPlan is missing
-- primaryIngredientsUsed is missing from any meal day
-- shoppingList is missing
-- estimatedCost is missing
-- budgetStatus is missing
 - Any day is missing
-- Any meal is missing
-- Invalid budget status is returned
+- Any meal (breakfast, lunch, dinner) is missing
+- Any meal is missing mealName, ingredients, or quantities
+- The ingredients and quantities arrays for a meal do not have the same number of elements
 
 ---
 

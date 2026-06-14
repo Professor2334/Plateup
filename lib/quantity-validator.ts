@@ -23,8 +23,8 @@ const CONSUMPTION_RULES: ConsumptionRule[] = [
     keywords: ['bread'],
     portionSize: 4, // 4 slices per person
     conversion: (totalSlices) => {
-      // 1 standard Nigerian sliced loaf = ~18 slices
-      const loaves = Math.ceil(totalSlices / 18);
+      // 1 standard Nigerian sliced loaf = ~14-16 usable slices
+      const loaves = Math.ceil(totalSlices / 14);
       return `${loaves} ${loaves === 1 ? 'loaf' : 'loaves'}`;
     }
   },
@@ -80,11 +80,19 @@ const CONSUMPTION_RULES: ConsumptionRule[] = [
     }
   },
   {
-    keywords: ['chicken', 'turkey', 'beef', 'meat'],
+    keywords: ['chicken', 'turkey', 'beef', 'meat', 'minced meat'],
     portionSize: 2, // 2 pieces per person
     conversion: (totalPieces) => {
       // roughly 10-12 pieces per kg depending on cut
       const kg = Math.max(1, Math.ceil(totalPieces / 10));
+      return `${kg}kg`;
+    }
+  },
+  {
+    keywords: ['liver'],
+    portionSize: 0.1, // 100g per person per meal
+    conversion: (totalKg) => {
+      const kg = Math.max(0.2, Math.ceil(totalKg * 10) / 10);
       return `${kg}kg`;
     }
   },
@@ -96,13 +104,32 @@ const CONSUMPTION_RULES: ConsumptionRule[] = [
     }
   },
   {
-    keywords: ['tomato', 'pepper', 'onion', 'tatashe', 'habanero'],
-    portionSize: 0.1, // 0.1kg (10% of a standard bowl) per person per meal
+    keywords: ['tomato', 'tomatoes'],
+    portionSize: 0.1, // 100g per person per meal
     conversion: (totalKg) => {
       const kg = Math.ceil(totalKg * 10) / 10;
       if (kg <= 0.5) return `₦500 worth`;
       if (kg <= 1) return `₦1,000 worth (small bowl)`;
       return `${Math.ceil(kg)}kg`;
+    }
+  },
+  {
+    keywords: ['onion', 'onions'],
+    portionSize: 0.05, // 50g per person per meal
+    conversion: (totalKg) => {
+      const kg = Math.ceil(totalKg * 10) / 10;
+      if (kg <= 0.5) return `₦500 worth`;
+      return `₦1,000 worth (small bowl)`;
+    }
+  },
+  {
+    keywords: ['pepper', 'tatashe', 'habanero', 'atarodo'],
+    portionSize: 0.015, // 15g per person per meal (very spicy)
+    conversion: (totalKg) => {
+      const kg = Math.ceil(totalKg * 100) / 100; // Round to 2 decimals
+      if (kg <= 0.2) return `₦200 worth`;
+      if (kg <= 0.5) return `₦500 worth`;
+      return `₦1,000 worth (small bowl)`;
     }
   },
   {
@@ -112,6 +139,41 @@ const CONSUMPTION_RULES: ConsumptionRule[] = [
       if (totalLiters <= 0.5) return `50cl bottle`;
       if (totalLiters <= 1) return `1L bottle`;
       return `${Math.ceil(totalLiters)}L`;
+    }
+  },
+  {
+    keywords: ['milk'],
+    portionSize: 1, // 1 sachet per person per meal
+    conversion: (totalSachets) => {
+      if (totalSachets <= 5) return `${Math.ceil(totalSachets)} small sachets`;
+      if (totalSachets <= 10) return `1 roll of small sachets`;
+      return `1 medium tin/pack (e.g. 380g)`;
+    }
+  },
+  {
+    keywords: ['milo', 'cocoa', 'tea', 'coffee'],
+    portionSize: 1, // 1 sachet/bag per person per meal
+    conversion: (totalUnits) => {
+      if (totalUnits <= 5) return `${Math.ceil(totalUnits)} sachets/bags`;
+      if (totalUnits <= 10) return `1 small box/pack`;
+      return `1 medium tin/pack (e.g. 400g)`;
+    }
+  },
+  {
+    keywords: ['sugar'],
+    portionSize: 2, // 2 teaspoons per person per meal
+    conversion: (totalTeaspoons) => {
+      if (totalTeaspoons <= 20) return `1 small sachet (e.g. 50g)`;
+      return `1 small pack (e.g. 250g)`;
+    }
+  },
+  {
+    keywords: ['pap', 'ogi', 'akamu'],
+    portionSize: 1, // 1 wrap per person per meal
+    conversion: (totalWraps) => {
+      if (totalWraps <= 4) return `₦200 worth (wet wraps)`;
+      if (totalWraps <= 10) return `₦500 worth (wet wraps)`;
+      return `1 small paint rubber (wet)`;
     }
   }
 ];

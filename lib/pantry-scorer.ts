@@ -67,9 +67,10 @@ export function calculatePantryScore(
   let score = Math.round(rawScore * 100);
 
   // Apply a steep penalty if the shopping list balloons unnecessarily while the pantry is stocked
-  if (availableItemsCount >= 4 && newItemsCount > 8) {
-      const excessItems = newItemsCount - 8;
-      score -= (excessItems * 2); // -2% penalty for every item over 8
+  // Adjusted threshold from 8 to 15 because the backend deterministic generator creates exhaustive lists
+  if (availableItemsCount >= 4 && newItemsCount > 15) {
+      const excessItems = newItemsCount - 15;
+      score -= (excessItems * 2); // -2% penalty for every item over 15
   }
 
   score = Math.max(0, Math.min(100, score));

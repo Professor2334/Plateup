@@ -43,14 +43,16 @@ export function enrichShoppingList(
     day.primaryIngredientsUsed.forEach(ing => allRequiredIngredients.add(ing.toLowerCase().trim()));
   });
 
+  const userPantryList = availableItemsLower.split(',').map(i => i.trim()).filter(i => i.length > 0);
+
   // --- PASS 1: RUTHLESS PRUNING ---
   // Iterate backwards so we can safely splice/remove items from the array
   for (let i = shoppingList.length - 1; i >= 0; i--) {
     const itemEntry = shoppingList[i];
     const itemLower = itemEntry.item.toLowerCase();
 
-    // 1A. Direct Match: Does the user already have this exact item?
-    let shouldPrune = availableItemsLower.includes(itemLower);
+    // 1A. Direct Match: Does the user already have this exact item or a close variant?
+    let shouldPrune = userPantryList.some(p => itemLower.includes(p) || p.includes(itemLower));
 
     // 1B. Substitution Match: Does the user have a valid substitute?
     if (!shouldPrune) {
@@ -58,7 +60,7 @@ export function enrichShoppingList(
         // If the shopping item is the key or related to the key
         if (itemLower.includes(key) || key.includes(itemLower)) {
           // If the user has one of the substitutes in their pantry
-          const hasSubstitute = substitutes.some(sub => availableItemsLower.includes(sub));
+          const hasSubstitute = substitutes.some(sub => userPantryList.some(p => sub.includes(p) || p.includes(sub)));
           if (hasSubstitute) {
             shouldPrune = true;
             break;
@@ -80,8 +82,8 @@ export function enrichShoppingList(
       continue;
     }
 
-    // 2. Check if exactly present in available ingredients
-    if (availableItemsLower.includes(reqIng)) {
+    // 2. Check if present in available ingredients (using robust substring matching)
+    if (userPantryList.some(p => reqIng.includes(p) || p.includes(reqIng))) {
       continue;
     }
 
@@ -102,7 +104,7 @@ export function enrichShoppingList(
     for (const [key, substitutes] of Object.entries(SUBSTITUTIONS)) {
       if (reqIng.includes(key) || key.includes(reqIng)) {
         // Check if any of its substitutes exist in the pantry
-        const hasSubstitute = substitutes.some(sub => availableItemsLower.includes(sub));
+        const hasSubstitute = substitutes.some(sub => userPantryList.some(p => sub.includes(p) || p.includes(sub)));
         if (hasSubstitute) {
           validSubstituteFound = true;
           break;

@@ -2,36 +2,42 @@ import { z } from 'zod';
 import fs from 'fs';
 import path from 'path';
 
+const MealSchema = z.object({
+  mealName: z.string(),
+  ingredients: z.array(z.string()),
+  quantities: z.array(z.string()),
+});
+
 export const DeepSeekResponseSchema = z.object({
   budgetStrategy: z.string().optional(),
   ingredientUtilization: z.string(),
   mealPlan: z.array(
     z.object({
       day: z.string(),
-      breakfast: z.string(),
-      lunch: z.string(),
-      dinner: z.string(),
-      primaryIngredientsUsed: z.array(z.string()),
+      breakfast: MealSchema,
+      lunch: MealSchema,
+      dinner: MealSchema,
     })
   ).length(7),
-  shoppingListCalculations: z.string(),
-  shoppingList: z.array(
-    z.object({
-      item: z.string(),
-      quantity: z.string(),
-    })
-  ),
-  estimatedCost: z.number(),
-  budgetStatus: z.enum(['WITHIN_BUDGET', 'APPROACHING_BUDGET', 'EXCEEDS_BUDGET']),
 });
 
-export type MealPlanResponse = z.infer<typeof DeepSeekResponseSchema> & {
-  estimatedCostRange?: {
-    min: number;
-    max: number;
-  };
+export interface MealPlanResponse {
+  budgetStrategy?: string;
+  ingredientUtilization: string;
+  mealPlan: {
+    day: string;
+    breakfast: string;
+    lunch: string;
+    dinner: string;
+    primaryIngredientsUsed: string[];
+  }[];
+  shoppingList: { item: string; quantity: string }[];
+  estimatedCost: number;
+  budgetStatus: 'WITHIN_BUDGET' | 'APPROACHING_BUDGET' | 'EXCEEDS_BUDGET';
+  estimatedCostRange?: { min: number; max: number };
   budgetUtilization?: number;
-};
+  _rawIngredients?: { item: string; quantity: string }[];
+}
 
 export async function generateMealPlan(
   budget: number,
@@ -68,6 +74,7 @@ Household Size: ${householdSize}
 Goal: ${primaryGoal}
 Budget: NGN ${budget}
 Available Ingredients: ${ingredients}
+(CRITICAL INSTRUCTION: You MUST incorporate these specific available ingredients into your meals. Do not suggest buying new proteins like Chicken or Beef if the user already has proteins like Stockfish or Eggs.)
 
 CRITICAL RULES FOR ALL GENERATIONS:
 1. Day 1 (Monday) is the first day. You CANNOT have leftovers on Monday. NEVER use words like "leftover", "remaining", or "from previous" on Day 1.
@@ -77,15 +84,16 @@ CRITICAL RULES FOR ALL GENERATIONS:
 5. MEAL REALISM: Do not suggest meals that Nigerians do not eat (e.g., Garri + Palm Oil + Salt). Ensure combinations are practical and culturally accurate.
 6. MEAL VARIETY: Ensure reasonable weekly variety. No exact meal should dominate the week. Rotate among Rice, Beans, Yam, Garri, Plantain, Pap, and local soups. Do not repeat the exact same meal more than 3 times in the entire week.
 7. QUANTITY SCALING: You must scale your shopping list quantities strictly for a household size of ${householdSize}. Do NOT suggest bulk/family-size items (e.g., "3kg tomatoes", "2.5L palm oil", "1 crate of eggs") for a household of 1. Suggest small, affordable market measurements (e.g., "1 small paint rubber", "1 sachet", "₦200 worth", "2 pieces").
-8. NO REASONING: DO NOT include internal thoughts, questions, or reasoning in the meal fields (e.g., do not write "leftover from Tuesday? No"). The meal text must be clean and final.
+8. NO REASONING: DO NOT include internal thoughts, questions, or reasoning in the meal fields. The meal text must be clean and final.
 9. BALANCED PANTRY OPTIMIZATION: Maximize pantry utilization without creating a repetitive or unrealistic weekly menu.
 10. BREAKFAST VARIETY: Do not repeat the exact same breakfast more than TWICE per week.
 11. PROTEIN ROTATION: Rotate between Eggs, Beans, Stockfish, Crayfish, Sardines, and Chicken (if budget allows). Avoid using the same protein repeatedly.
 12. CARBOHYDRATE ROTATION: Rotate between Rice, Yam, Garri, Spaghetti, Amala, and Semo. Avoid excessive repetition.
-13. LEFTOVER REUSE: Reuse leftovers only when it improves cost efficiency. Do not force leftovers unnecessarily.
+13. LEFTOVER REUSE & FRESHNESS: Reuse leftovers only when it improves cost efficiency. A leftover MUST be eaten within 1 or 2 days of the original meal. NEVER suggest a leftover from 3 or more days ago (e.g., Wednesday meal eaten on Saturday).
 14. NUTRITION BALANCE: Ensure every day includes a carbohydrate, a protein, and vegetables where possible.
 15. COST-FIRST OPTIMIZATION: When using a well-stocked pantry, Cost Minimization becomes your HIGHEST priority. Avoid introducing premium ingredients when pantry alternatives exist. Every newly introduced ingredient must justify its cost impact.
-16. PROTEIN PRIORITY HIERARCHY: You MUST prefer pantry proteins before introducing new proteins. Follow this exact priority order: 1. Stockfish -> 2. Crayfish -> 3. Beans -> 4. Eggs -> 5. Sardines -> 6. Chicken -> 7. Beef. Avoid Chicken and Beef unless required for nutritional balance or explicitly requested.`;
+16. PROTEIN PRIORITY HIERARCHY: You MUST prefer pantry proteins before introducing new proteins. Follow this exact priority order: 1. Stockfish -> 2. Crayfish -> 3. Beans -> 4. Eggs -> 5. Sardines -> 6. Chicken -> 7. Beef. Avoid Chicken and Beef unless required for nutritional balance or explicitly requested.
+17. INGREDIENT REALISM: In the \`ingredients\` array, only list RAW market ingredients. Do NOT list "Leftover [Meal]" as an ingredient. Do NOT list "Pounded Yam" as an ingredient (list "Yam" or "Poundo Flour" instead).`;
 
   if (budgetFriendly) {
     let budgetContext = `You MUST enter VALUE-OPTIMIZATION MODE.`;
@@ -153,7 +161,6 @@ DO NOT include a \`budgetStrategy\` field in your JSON.`;
       throw new Error('DeepSeek API returned empty content');
     }
 
-    // Parse and safely return validated schema
     let parsed;
     try {
       parsed = JSON.parse(content);
@@ -162,12 +169,50 @@ DO NOT include a \`budgetStrategy\` field in your JSON.`;
       throw new Error('AI returned malformed JSON');
     }
 
+    let validatedData;
     try {
-      return DeepSeekResponseSchema.parse(parsed);
+      validatedData = DeepSeekResponseSchema.parse(parsed);
     } catch (validationError) {
       console.error('Zod Validation Error on DeepSeek response:', validationError);
       throw new Error('AI response did not match the required schema');
     }
+
+    const legacyMealPlan: MealPlanResponse["mealPlan"] = [];
+    const rawIngredients: { item: string; quantity: string }[] = [];
+
+    for (const day of validatedData.mealPlan) {
+      const primaryIngredientsUsed: string[] = [];
+      const meals = [day.breakfast, day.lunch, day.dinner];
+      
+      for (const meal of meals) {
+        for (let i = 0; i < meal.ingredients.length; i++) {
+          const ing = meal.ingredients[i];
+          const qty = meal.quantities[i] || "";
+          if (!primaryIngredientsUsed.includes(ing)) {
+            primaryIngredientsUsed.push(ing);
+          }
+          rawIngredients.push({ item: ing, quantity: qty });
+        }
+      }
+
+      legacyMealPlan.push({
+        day: day.day,
+        breakfast: day.breakfast.mealName,
+        lunch: day.lunch.mealName,
+        dinner: day.dinner.mealName,
+        primaryIngredientsUsed
+      });
+    }
+
+    return {
+      budgetStrategy: validatedData.budgetStrategy,
+      ingredientUtilization: validatedData.ingredientUtilization,
+      mealPlan: legacyMealPlan,
+      shoppingList: [],
+      estimatedCost: 0,
+      budgetStatus: 'WITHIN_BUDGET',
+      _rawIngredients: rawIngredients
+    };
 
   } catch (error: any) {
     clearTimeout(timeoutId);

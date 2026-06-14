@@ -21,7 +21,7 @@ export async function requestPasswordReset(formData: FormData) {
     const validatedData = requestSchema.safeParse({ email: rawEmail });
     
     if (!validatedData.success) {
-      return { success: false, error: validatedData.error.errors[0].message };
+      return { success: false, error: validatedData.error.issues[0].message };
     }
 
     const email = validatedData.data.email.toLowerCase();
@@ -71,7 +71,7 @@ export async function resetPassword(formData: FormData) {
     const validatedData = resetSchema.safeParse({ token, password });
 
     if (!validatedData.success) {
-      return { success: false, error: validatedData.error.errors[0].message };
+      return { success: false, error: validatedData.error.issues[0].message };
     }
 
     const { token: validToken, password: validPassword } = validatedData.data;
