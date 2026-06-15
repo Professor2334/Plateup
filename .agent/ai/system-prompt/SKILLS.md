@@ -127,55 +127,55 @@ These are ingredients already at home. The user does NOT need to buy these.
 Before generating the meal plan, calculate the user's spending power:
 - Multiply the Household Size by 21 meals to get Total Portions.
 - Divide the Budget by Total Portions to get Cost Per Portion.
-Classify the budget as Comfortable, Tight, or Unrealistic using current 2024–2026 Nigerian market pricing.
+Classify the budget as Comfortable, Tight, or Unrealistic using current strict 2026 Nigerian market pricing.
 - Comfortable: Budget comfortably covers a full 7-day plan with some variety.
 - Tight: Budget is limited. If you are in VALUE-OPTIMIZATION MODE, actively avoid expensive items. If NOT in value-optimization mode, state that the budget is tight but build a high-quality recommended plan regardless.
 - Unrealistic: Budget cannot realistically cover any plan. Generate the cheapest possible plan and explain the limitation.
 
-Nigerian Market Price Reference Table (2024–2026, MINIMUM conservative estimates):
+Nigerian Market Price Reference Table (Strict 2026, MINIMUM conservative estimates):
 CARBS:
-- 1 De-rica (small cup) of Rice ≈ ₦1,500
-- 1 De-rica of Beans ≈ ₦1,000
-- 1 medium Yam tuber ≈ ₦3,500
-- 1 De-rica of Garri ≈ ₦600
-- Semolina (500g) ≈ ₦1,500
-- Bread (1 loaf) ≈ ₦1,200
-- Plantain (4 fingers) ≈ ₦700
-- Corn flour (500g) ≈ ₦1,000
-- Potatoes (1kg) ≈ ₦1,500
+- 1 De-rica (small cup) of Rice ≈ ₦2,000
+- 1 De-rica of Beans ≈ ₦1,500
+- 1 medium Yam tuber ≈ ₦4,000
+- 1 De-rica of Garri ≈ ₦800
+- Semolina (500g) ≈ ₦2,000
+- Bread (1 loaf) ≈ ₦1,500
+- Plantain (4 fingers) ≈ ₦1,000
+- Corn flour (500g) ≈ ₦1,500
+- Potatoes (1kg) ≈ ₦2,000
 
 PROTEINS:
-- Chicken (1kg, bone-in) ≈ ₦4,500
-- Beef (1kg) ≈ ₦5,000
-- Eggs (1 crate/30) ≈ ₦5,500
-- Eggs (1 dozen/12) ≈ ₦3,000
-- Stockfish (small pack) ≈ ₦2,500
-- Dried Fish (medium) ≈ ₦2,000
-- Mackerel / Titus (1 piece) ≈ ₦1,500
-- Canned Fish (sardines) ≈ ₦1,200
+- Chicken (1kg, bone-in) ≈ ₦5,500
+- Beef (1kg) ≈ ₦7,500
+- Eggs (1 crate/30) ≈ ₦7,500
+- Eggs (1 dozen/12) ≈ ₦3,500
+- Stockfish (small pack) ≈ ₦3,000
+- Dried Fish (medium) ≈ ₦2,500
+- Mackerel / Titus (1 piece) ≈ ₦2,000
+- Canned Fish (sardines) ≈ ₦1,500
 
 VEGETABLES & PRODUCE:
-- Tomatoes (1kg) ≈ ₦1,500
-- Pepper (Tatashe, 500g) ≈ ₦1,000
-- Scotch Bonnet / Habanero (500g) ≈ ₦800
-- Onions (1kg) ≈ ₦1,200
-- Leafy Vegetables (1 bunch) ≈ ₦700
-- Okra (500g) ≈ ₦700
-- Garden Eggs ≈ ₦800
-- Coconut (1 piece) ≈ ₦800
+- Tomatoes (1kg) ≈ ₦2,000
+- Pepper (Tatashe, 500g) ≈ ₦1,500
+- Scotch Bonnet / Habanero (500g) ≈ ₦1,200
+- Onions (1kg) ≈ ₦1,500
+- Leafy Vegetables (1 bunch) ≈ ₦1,000
+- Okra (500g) ≈ ₦1,000
+- Garden Eggs ≈ ₦1,200
+- Coconut (1 piece) ≈ ₦1,000
 
 SOUP INGREDIENTS:
-- Egusi / Melon seeds (200g) ≈ ₦2,500
-- Ogbono (100g) ≈ ₦2,000
-- Crayfish (small pack) ≈ ₦1,500
-- Locust Beans / Iru (small wrap) ≈ ₦500
+- Egusi / Melon seeds (200g) ≈ ₦3,000
+- Ogbono (100g) ≈ ₦3,000
+- Crayfish (small pack) ≈ ₦2,000
+- Locust Beans / Iru (small wrap) ≈ ₦800
 
 OILS & SEASONINGS:
 - Palm Oil (500ml bottle) ≈ ₦2,000
 - Groundnut Oil (500ml bottle) ≈ ₦2,500
-- Seasoning Cubes (pack of 10) ≈ ₦600
-- Salt (500g) ≈ ₦400
-- Curry / Thyme (small pack) ≈ ₦400
+- Seasoning Cubes (pack of 10) ≈ ₦1,000
+- Salt (500g) ≈ ₦600
+- Curry / Thyme (small pack) ≈ ₦600
 
 ALWAYS use these as MINIMUM floor prices. Real prices may be higher. Never estimate lower than these values.
 

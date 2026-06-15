@@ -52,8 +52,8 @@ export async function generateMealPlan(formData: FormData) {
   const totalWeeklyPortions = 21 * householdMultiplier; // 3 meals * 7 days * people
   
   // Hardcoded Budget Reality Check
-  // Determine an absolute minimum realistic cost per individual meal portion (e.g., ₦200)
-  const MIN_COST_PER_PORTION = 200;
+  // Determine an absolute minimum realistic cost per individual meal portion (e.g., ₦450 for 2026)
+  const MIN_COST_PER_PORTION = 450;
   const minimumRealisticBudget = totalWeeklyPortions * MIN_COST_PER_PORTION;
 
   if (budget < minimumRealisticBudget) {
@@ -168,16 +168,16 @@ export async function generateMealPlan(formData: FormData) {
       // The AI's native 'ingredientUtilization' text now replaces the obsolete numeric score logging.
       reporter.logPass('AI Ingredient Utilization', mealPlan.ingredientUtilization);
 
-      // Server-side Budget Intelligence Layer (Safety Net)
+      // Server-side Budget Intelligence Layer (Safety Net - Strict 2026 Pricing)
       const PRICE_FLOORS: Record<string, number> = {
-        rice: 1200, beans: 1000, garri: 500, yam: 2000, plantain: 700,
-        bread: 1000, semolina: 1200, potato: 1000,
-        chicken: 2500, beef: 2500, eggs: 1000, fish: 1500, stockfish: 1500,
-        mackerel: 1200, sardines: 800,
-        tomatoes: 1000, onions: 500, pepper: 500, habanero: 500,
-        vegetables: 400, okra: 400, coconut: 400,
-        egusi: 1000, ogbono: 1000, crayfish: 800,
-        'palm oil': 1000, 'groundnut oil': 1000, seasoning: 300,
+        rice: 2000, beans: 1500, garri: 800, yam: 4000, plantain: 1000,
+        bread: 1500, semolina: 2000, potato: 2000,
+        chicken: 5500, beef: 7500, eggs: 2000, fish: 2500, stockfish: 3000,
+        mackerel: 2000, sardines: 1500,
+        tomatoes: 2000, onions: 1500, pepper: 1500, habanero: 1200,
+        vegetables: 1000, okra: 1000, coconut: 1000,
+        egusi: 3000, ogbono: 3000, crayfish: 2000,
+        'palm oil': 2000, 'groundnut oil': 2500, seasoning: 600,
       };
 
       const getFloorPrice = (item: string): number => {
@@ -187,7 +187,7 @@ export async function generateMealPlan(formData: FormData) {
         for (const [key, price] of Object.entries(PRICE_FLOORS)) {
           if (lower.includes(key)) return price;
         }
-        return 300; // default floor for unrecognized small items
+        return 600; // default floor for unrecognized small items in 2026
       };
 
       // Ensure the estimated cost is realistic and not drastically underestimated by AI
@@ -231,11 +231,22 @@ export async function generateMealPlan(formData: FormData) {
         max: Math.round(safeEstimatedCost * 1.35),
       };
 
+      // Recalculate budgetStatus dynamically based on realistic safeEstimatedCost compared to user budget
+      let budgetStatus = mealPlan.budgetStatus;
+      if (safeEstimatedCost > budget) {
+        budgetStatus = 'EXCEEDS_BUDGET';
+      } else if (safeEstimatedCost >= budget * 0.85) {
+        budgetStatus = 'APPROACHING_BUDGET';
+      } else {
+        budgetStatus = 'WITHIN_BUDGET';
+      }
+
       finalMealPlan = { 
         ...mealPlan, 
         estimatedCost: safeEstimatedCost,
         estimatedCostRange,
         budgetUtilization,
+        budgetStatus,
       };
 
       break;

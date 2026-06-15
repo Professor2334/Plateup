@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import type { MealPlanResponse } from '@/lib/deepseek';
-import { Sparkles, Coffee, Sun, Utensils, Save, Share2, RefreshCcw, ShoppingBag, CheckCircle2, TrendingDown, PiggyBank, CalendarDays, Check, AlertTriangle, XCircle } from 'lucide-react';
+import { Sparkles, Coffee, Sun, Utensils, Save, Share2, RefreshCcw, ShoppingBag, CheckCircle2, TrendingDown, PiggyBank, CalendarDays, Check, AlertTriangle, XCircle, Wallet, TrendingUp } from 'lucide-react';
 
 interface MealPlanResultsProps {
   title?: string;
@@ -34,8 +34,13 @@ export function MealPlanResults({
 }: MealPlanResultsProps) {
   
   const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set());
-  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
-  const estimatedSavings = Math.max(0, budget - plan.estimatedCost);
+
+  const minSpend = plan.estimatedCostRange ? plan.estimatedCostRange.min : plan.estimatedCost;
+  const maxSpend = plan.estimatedCostRange ? plan.estimatedCostRange.max : plan.estimatedCost;
+
+  const minRemainingBudget = Math.max(0, budget - maxSpend);
+  const maxRemainingBudget = Math.max(0, budget - minSpend);
+
   const budgetUtilization = plan.budgetUtilization || Math.round((plan.estimatedCost / budget) * 100);
   const isAlternative = title === 'Budget-Friendly Alternative';
 
@@ -84,27 +89,6 @@ export function MealPlanResults({
               <Share2 className="w-4 h-4" />
               <span className="hidden sm:inline">Share</span>
             </Button>
-            <div className="relative flex-shrink-0">
-              <Button variant="outline" onClick={() => setShowRegenerateConfirm(true)} disabled={isRegenerating} className="gap-2 h-10 border-0 bg-[var(--color-surface-container-lowest)] shadow-sm hover:bg-[#f9fafb]">
-                <RefreshCcw className="w-4 h-4" />
-                <span className="hidden sm:inline">Regenerate</span>
-              </Button>
-              
-              {showRegenerateConfirm && (
-                <>
-                  {/* Invisible overlay to catch outside clicks */}
-                  <div className="fixed inset-0 z-40" onClick={() => setShowRegenerateConfirm(false)} />
-                  <div className="absolute bottom-full mb-2 right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 w-64 bg-white rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-[var(--color-outline-variant)]/30 p-4 z-50 animate-in fade-in zoom-in-95 duration-200">
-                    <p className="text-[0.875rem] font-bold text-[var(--color-on-surface)] mb-1">Regenerate Plan?</p>
-                    <p className="text-[0.75rem] text-[var(--color-on-surface-variant)] mb-3 leading-tight">This will replace your current plan.</p>
-                    <div className="flex gap-2">
-                      <Button variant="outline" className="flex-1 h-8 text-xs" onClick={() => setShowRegenerateConfirm(false)}>Cancel</Button>
-                      <Button className="flex-1 h-8 text-xs bg-[var(--color-primary)] text-white hover:bg-[color-mix(in_srgb,var(--color-primary)_85%,black)]" onClick={() => { setShowRegenerateConfirm(false); onRegenerate(); }}>Yes, regenerate</Button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
             {!isSaved && (
               <Button onClick={onSave} disabled={isSaving || isRegenerating} className="gap-2 h-10 shadow-sm flex-shrink-0">
                 <Save className="w-4 h-4" />
@@ -141,41 +125,46 @@ export function MealPlanResults({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-[var(--color-outline-variant)]/20">
               <div className="flex items-center gap-2 text-[var(--color-secondary)] mb-2">
-                <CalendarDays className="w-4 h-4" />
-                <span className="text-xs font-semibold uppercase tracking-wider">Duration</span>
+                <Wallet className="w-4 h-4" />
+                <span className="text-xs font-semibold uppercase tracking-wider">Budget</span>
               </div>
-              <p className="text-[clamp(1.125rem,2vw,1.25rem)] font-bold text-[var(--color-on-surface)]">7 Days</p>
+              <p className="text-[clamp(1.125rem,2vw,1.25rem)] font-bold text-[var(--color-on-surface)]">
+                ₦{budget.toLocaleString()}
+              </p>
             </div>
             
             <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-[var(--color-outline-variant)]/20">
               <div className="flex items-center gap-2 text-[var(--color-secondary)] mb-2">
-                <Utensils className="w-4 h-4" />
-                <span className="text-xs font-semibold uppercase tracking-wider">Meals</span>
-              </div>
-              <p className="text-[clamp(1.125rem,2vw,1.25rem)] font-bold text-[var(--color-on-surface)]">21</p>
-            </div>
-            
-            <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-[var(--color-outline-variant)]/20">
-              <div className="flex items-center gap-2 text-[var(--color-secondary)] mb-2">
-                <PiggyBank className="w-4 h-4" />
-                <span className="text-xs font-semibold uppercase tracking-wider">Estimated</span>
+                <ShoppingBag className="w-4 h-4" />
+                <span className="text-xs font-semibold uppercase tracking-wider">Estimated Spend</span>
               </div>
               <p className="text-[clamp(1.125rem,2vw,1.25rem)] font-bold text-[var(--color-on-surface)] tracking-tight">
-                {plan.estimatedCostRange 
-                  ? `₦${plan.estimatedCostRange.min.toLocaleString()} - ₦${plan.estimatedCostRange.max.toLocaleString()}`
-                  : `₦${plan.estimatedCost.toLocaleString()}`
+                {minSpend === maxSpend
+                  ? `₦${minSpend.toLocaleString()}`
+                  : `₦${minSpend.toLocaleString()} - ₦${maxSpend.toLocaleString()}`
                 }
               </p>
             </div>
             
             <div className="bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)] rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-[color-mix(in_srgb,var(--color-primary)_15%,transparent)]">
               <div className="flex items-center gap-2 text-[var(--color-primary)] mb-2">
-                <TrendingDown className="w-4 h-4" />
-                <span className="text-xs font-semibold uppercase tracking-wider">Savings</span>
+                <TrendingUp className="w-4 h-4" />
+                <span className="text-xs font-semibold uppercase tracking-wider">Potential Remaining</span>
               </div>
               <p className="text-[clamp(1.125rem,2vw,1.25rem)] font-bold text-[var(--color-primary)] tracking-tight">
-                ₦{estimatedSavings.toLocaleString()}
+                {minRemainingBudget === maxRemainingBudget
+                  ? `₦${minRemainingBudget.toLocaleString()}`
+                  : `₦${minRemainingBudget.toLocaleString()} - ₦${maxRemainingBudget.toLocaleString()}`
+                }
               </p>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-[var(--color-outline-variant)]/20">
+              <div className="flex items-center gap-2 text-[var(--color-secondary)] mb-2">
+                <CalendarDays className="w-4 h-4" />
+                <span className="text-xs font-semibold uppercase tracking-wider">Weekly Menu</span>
+              </div>
+              <p className="text-[clamp(1.125rem,2vw,1.25rem)] font-bold text-[var(--color-on-surface)]">7 Days (21 Meals)</p>
             </div>
           </div>
 
@@ -187,7 +176,7 @@ export function MealPlanResults({
                 <p className="text-[0.9375rem] font-bold text-[var(--color-primary)] mb-1">Budget Assessment</p>
                 <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-2">Your budget appears sufficient for this meal plan. Minor market price fluctuations should be manageable.</p>
                 <div className="flex flex-col sm:flex-row sm:gap-6 gap-2">
-                  <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Estimated Cost Range:</span> <span className="font-bold text-[var(--color-on-surface)]">{plan.estimatedCostRange ? `₦${plan.estimatedCostRange.min.toLocaleString()} - ₦${plan.estimatedCostRange.max.toLocaleString()}` : `₦${plan.estimatedCost.toLocaleString()}`}</span></p>
+                  <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Estimated Shopping Spend:</span> <span className="font-bold text-[var(--color-on-surface)]">{minSpend === maxSpend ? `₦${minSpend.toLocaleString()}` : `₦${minSpend.toLocaleString()} - ₦${maxSpend.toLocaleString()}`}</span></p>
                   <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Budget Status:</span> <span className="font-bold text-[var(--color-primary)]">{isAlternative ? 'Optimized' : 'Comfortable'}</span></p>
                   {isAlternative && <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Utilization:</span> <span className="font-bold text-[var(--color-primary)]">{budgetUtilization}%</span></p>}
                 </div>
@@ -201,7 +190,7 @@ export function MealPlanResults({
                 <p className="text-[0.9375rem] font-bold text-[var(--color-accent)] mb-1">Budget Assessment</p>
                 <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-2">Your budget may be sufficient, but ingredient substitutions or reduced variety may be required.</p>
                 <div className="flex flex-col sm:flex-row sm:gap-6 gap-2">
-                  <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Estimated Cost Range:</span> <span className="font-bold text-[var(--color-on-surface)]">{plan.estimatedCostRange ? `₦${plan.estimatedCostRange.min.toLocaleString()} - ₦${plan.estimatedCostRange.max.toLocaleString()}` : `₦${plan.estimatedCost.toLocaleString()}`}</span></p>
+                  <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Estimated Shopping Spend:</span> <span className="font-bold text-[var(--color-on-surface)]">{minSpend === maxSpend ? `₦${minSpend.toLocaleString()}` : `₦${minSpend.toLocaleString()} - ₦${maxSpend.toLocaleString()}`}</span></p>
                   <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Budget Status:</span> <span className={`font-bold ${isAlternative ? 'text-[var(--color-primary)]' : 'text-[var(--color-accent)]'}`}>{isAlternative ? 'Optimized' : 'Tight'}</span></p>
                   {isAlternative && <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Utilization:</span> <span className="font-bold text-[var(--color-on-surface)]">{budgetUtilization}%</span></p>}
                 </div>
@@ -216,7 +205,7 @@ export function MealPlanResults({
                   <p className="text-[0.9375rem] font-bold text-[var(--color-error)] mb-1">Budget Assessment</p>
                   <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-2">Your budget is unlikely to cover the recommended shopping list.</p>
                   <div className="flex flex-col sm:flex-row sm:gap-6 gap-2 mb-4">
-                    <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Estimated Cost Range:</span> <span className="font-bold text-[var(--color-on-surface)]">{plan.estimatedCostRange ? `₦${plan.estimatedCostRange.min.toLocaleString()} - ₦${plan.estimatedCostRange.max.toLocaleString()}` : `₦${plan.estimatedCost.toLocaleString()}`}</span></p>
+                    <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Estimated Shopping Spend:</span> <span className="font-bold text-[var(--color-on-surface)]">{minSpend === maxSpend ? `₦${minSpend.toLocaleString()}` : `₦${minSpend.toLocaleString()} - ₦${maxSpend.toLocaleString()}`}</span></p>
                     <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Budget Status:</span> <span className="font-bold text-[var(--color-error)]">Likely Insufficient</span></p>
                   </div>
                   {onRegenerateBudgetFriendly && (
@@ -387,12 +376,12 @@ export function MealPlanResults({
               <div className="bg-white rounded-[24px] p-6 shadow-[0_8px_30px_color-mix(in_srgb,var(--color-primary)_15%,transparent)]">
                 <div className="flex items-center gap-2 text-[var(--color-primary)] mb-3">
                   <PiggyBank className="w-5 h-5" />
-                  <span className="text-sm font-bold uppercase tracking-wider">Estimated Cost</span>
+                  <span className="text-sm font-bold uppercase tracking-wider">Estimated Shopping Spend</span>
                 </div>
                 <p className="text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] font-extrabold text-[var(--color-primary)] tracking-tight">
-                  {plan.estimatedCostRange 
-                    ? `₦${plan.estimatedCostRange.min.toLocaleString()} - ₦${plan.estimatedCostRange.max.toLocaleString()}`
-                    : `₦${plan.estimatedCost.toLocaleString()}`
+                  {minSpend === maxSpend
+                    ? `₦${minSpend.toLocaleString()}`
+                    : `₦${minSpend.toLocaleString()} - ₦${maxSpend.toLocaleString()}`
                   }
                 </p>
                 <p className="text-xs text-[var(--color-primary)] opacity-80 mt-2 font-medium">

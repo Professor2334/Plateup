@@ -8,7 +8,7 @@ import { GenerateMealForm } from '@/components/meal-plans/GenerateMealForm';
 import { MealPlanSkeleton } from '@/components/meal-plans/MealPlanSkeleton';
 import type { MealPlanResponse } from '@/lib/deepseek';
 import { Button } from '@/components/ui/button';
-import { saveMealPlan, deleteMealPlan } from '@/app/actions/meal-plans/actions';
+import { saveMealPlan, deleteMealPlan, generateMealPlan } from '@/app/actions/meal-plans/actions';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { History, Bookmark, Settings, LogOut, Calendar, LayoutDashboard, Utensils, Search, User, Lock, Shield, FileText, LifeBuoy, Mail, CheckCircle2, Menu, X } from 'lucide-react';
@@ -216,7 +216,6 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
         }
       }
 
-      const { generateMealPlan } = await import('@/app/actions/meal-plans/actions');
       const result = await generateMealPlan(formData);
       
       if (result && result.success && result.data && result.id) {
@@ -307,15 +306,20 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     doc.setTextColor(100);
     doc.text(`Budget: NGN ${activeBudget.toLocaleString()}`, 14, 30);
     
-    if (generatedPlan.estimatedCostRange) {
-      doc.text(`Estimated Cost Range: NGN ${generatedPlan.estimatedCostRange.min.toLocaleString()} - NGN ${generatedPlan.estimatedCostRange.max.toLocaleString()}`, 14, 36);
+    const minCost = generatedPlan.estimatedCostRange ? generatedPlan.estimatedCostRange.min : generatedPlan.estimatedCost;
+    const maxCost = generatedPlan.estimatedCostRange ? generatedPlan.estimatedCostRange.max : Math.round(generatedPlan.estimatedCost * 1.35);
+    const minRemaining = Math.max(0, activeBudget - maxCost);
+    const maxRemaining = Math.max(0, activeBudget - minCost);
+
+    if (minCost === maxCost) {
+      doc.text(`Estimated Shopping Spend: NGN ${minCost.toLocaleString()}`, 14, 36);
+      doc.text(`Potential Budget Remaining: NGN ${minRemaining.toLocaleString()}`, 14, 42);
     } else {
-      const minCost = Math.round(generatedPlan.estimatedCost * 0.9);
-      const maxCost = Math.round(generatedPlan.estimatedCost * 1.1);
-      doc.text(`Estimated Cost Range: NGN ${minCost.toLocaleString()} - NGN ${maxCost.toLocaleString()}`, 14, 36);
+      doc.text(`Estimated Shopping Spend: NGN ${minCost.toLocaleString()} - NGN ${maxCost.toLocaleString()}`, 14, 36);
+      doc.text(`Potential Budget Remaining: NGN ${minRemaining.toLocaleString()} - NGN ${maxRemaining.toLocaleString()}`, 14, 42);
     }
     
-    doc.text(`Ingredients: ${activeIngredients}`, 14, 42);
+    doc.text(`Ingredients: ${activeIngredients}`, 14, 48);
 
     // Add Meal Plan Table
     const mealData = generatedPlan.mealPlan.map(day => [
@@ -326,7 +330,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     ]);
 
     autoTable(doc, {
-      startY: 50,
+      startY: 56,
       head: [['Day', 'Breakfast', 'Lunch', 'Dinner']],
       body: mealData,
       theme: 'grid',
@@ -408,7 +412,6 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     }
 
     try {
-      const { generateMealPlan } = await import('@/app/actions/meal-plans/actions');
       const result = await generateMealPlan(formData);
       
       if (result && result.success && result.data && result.id) {
