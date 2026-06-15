@@ -289,7 +289,7 @@ Do not sacrifice pantry-first logic or budget realism to satisfy the goal.
 
 Before finalizing the meal plan, validate whether the budget is realistic using 2024–2026 Nigerian market prices.
 
-The budget is the maximum the user is willing to spend. Aim to use a reasonable portion of it to deliver the best plan — do not aim to spend as little as possible.
+The budget is the maximum the user is willing to spend. If the user has a well-stocked pantry, you should aim to spend as little as possible. Do not artificially add expensive ingredients or proteins just to use up the budget.
 
 Nigerian Market Price Reference Table (2024–2026, same as Step 2):
 Use these prices when considering what new ingredients to add to the meals.
@@ -300,8 +300,8 @@ When in doubt, use the higher end of the range.
 
 **If Comfortable:**
 - Generate a full, varied 7-day plan using pantry items as the foundation.
-- Invest a meaningful portion of the budget in complementary proteins, vegetables, and flavour ingredients.
-- Aim for a diverse, satisfying weekly menu.
+- Keep shopping costs as low as possible if the pantry contains primary staples and proteins. Do not artificially add expensive proteins or items just because the budget is comfortable.
+- Aim for a diverse, satisfying weekly menu by creatively combining available pantry items first.
 
 **If Tight:**
 - Use pantry ingredients heavily as the base for most meals.
