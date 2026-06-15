@@ -14,7 +14,7 @@ export default function TestTypographyPage() {
     <div className="p-4 bg-[var(--color-surface-container-lowest)] min-h-screen space-y-10">
       <section className="border border-red-500 p-4 rounded-xl">
         <h1 className="text-2xl font-bold mb-4">Onboarding Form Component</h1>
-        <OnboardingForm userId="test_user" />
+        <OnboardingForm />
       </section>
 
       <section className="border border-blue-500 p-4 rounded-xl">

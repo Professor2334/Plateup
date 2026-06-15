@@ -110,7 +110,7 @@ export function enforceMealVariety(mealPlan: MealPlanDay[], availableIngredients
           
           // Inject new ingredients into the day's primaryIngredientsUsed so the shopping list validator catches them
           bestAlternative.ingredients.forEach(ing => {
-            if (!day.primaryIngredientsUsed.some(existing => existing.toLowerCase().includes(ing.toLowerCase()))) {
+            if (!day.primaryIngredientsUsed.some((existing: string) => existing.toLowerCase().includes(ing.toLowerCase()))) {
               day.primaryIngredientsUsed.push(ing);
             }
           });

@@ -64,21 +64,24 @@ async function runScenario(name: string, budget: number, ingredients: string, ho
 }
 
 async function runAll() {
-  const pantry = "rice, beans, palm oil, salt, maggi, onions";
-  
-  // 1. Insufficient Budget
-  const insufficientCost = await runScenario("Insufficient Budget", 2000, pantry, "4", false);
-  
-  // 1b. Budget Friendly Alternative
-  if (insufficientCost) {
-    await runScenario("Budget Friendly Alternative", 2000, pantry, "4", true, insufficientCost);
-  }
+  // Test 1: Minimal Pantry
+  console.log("RUNNING MINIMAL PANTRY SCENARIO...");
+  const minCost = await runScenario("Minimal Pantry", 30000, "Rice", "2", false);
 
-  // 2. Tight Budget
-  await runScenario("Tight Budget", 12000, pantry, "4", false);
+  // Test 2: Medium Pantry
+  console.log("RUNNING MEDIUM PANTRY SCENARIO...");
+  const medCost = await runScenario("Medium Pantry", 30000, "Rice, Beans, Pepper, Onions", "2", false);
 
-  // 3. Comfortable Budget
-  await runScenario("Comfortable Budget", 45000, pantry, "4", false);
+  // Test 3: Heavy Pantry
+  console.log("RUNNING HEAVY PANTRY SCENARIO...");
+  const heavyCost = await runScenario("Heavy Pantry", 30000, "Rice, Beans, Pepper, Onions, Tomato, Garri, Yam, Eggs, Plantain, Bread, Crayfish, Fish", "2", false);
+
+  console.log(`\n\n======================================================`);
+  console.log(`PANTRY SCALING AUDIT RESULTS:`);
+  console.log(`Minimal Pantry Cost: NGN ${minCost}`);
+  console.log(`Medium Pantry Cost: NGN ${medCost}`);
+  console.log(`Heavy Pantry Cost: NGN ${heavyCost}`);
+  console.log(`======================================================`);
 }
 
 runAll().catch(console.error);

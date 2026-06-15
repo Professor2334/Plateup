@@ -1,17 +1,15 @@
-import { PrismaClient } from '@prisma/client';
-import * as dotenv from 'dotenv';
-dotenv.config();
-
-const prisma = new PrismaClient();
+import { config } from 'dotenv';
+config({ path: '.env' });
+config({ path: '.env.local' });
 
 async function main() {
-  const user = await prisma.user.findFirst();
+  const db = (await import('./lib/db')).default;
+  const user = await db.user.findFirst();
   if (user) {
     console.log(`Found user: ${user.email}`);
-    // Let's just update their password to 'password123' so I can login
     const bcrypt = require('bcrypt');
     const hashedPassword = await bcrypt.hash('password123', 10);
-    await prisma.user.update({
+    await db.user.update({
       where: { id: user.id },
       data: { password: hashedPassword, emailVerified: new Date() }
     });
@@ -19,14 +17,7 @@ async function main() {
   } else {
     console.log("No users found.");
   }
+  await db.$disconnect();
 }
 
-main()
-  .then(async () => {
-    await prisma.$disconnect()
-  })
-  .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  });
+main().catch(console.error);
