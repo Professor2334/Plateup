@@ -66,8 +66,10 @@ export async function changePassword(formData: FormData) {
   }
 
   try {
+    // Only select the fields we need — avoids fetching unused columns including name, email, etc.
     const user = await db.user.findUnique({
-      where: { id: session.user.id }
+      where: { id: session.user.id },
+      select: { id: true, password: true },
     });
 
     if (!user) {

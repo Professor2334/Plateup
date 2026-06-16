@@ -12,18 +12,29 @@ export default async function DashboardPage() {
     redirect('/auth/login');
   }
 
-  const user = await db.user.findUnique({
-    where: { email: session.user.email }
-  });
+  // Run both DB queries in parallel — no sequential blocking
+  const [user, mealHistory] = await Promise.all([
+    db.user.findUnique({
+      where: { email: session.user.email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        emailVerified: true,
+        householdSize: true,
+        primaryGoal: true,
+        // password intentionally excluded
+      },
+    }),
+    getMealHistory(),
+  ]);
 
   if (!user) {
     redirect('/auth/login');
   }
 
-  const mealHistory = await getMealHistory();
-
   return (
-    <Suspense fallback={<div>Loading dashboard...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#f9fafb] animate-pulse" />}>
       <DashboardClient 
         initialHistory={mealHistory} 
         userName={user.name || 'User'} 

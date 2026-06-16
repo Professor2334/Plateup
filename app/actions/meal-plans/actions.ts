@@ -292,6 +292,8 @@ export async function getMealHistory() {
     const history = await db.mealPlan.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: 'desc' },
+      // Limit to 100 plans — prevents unbounded DB reads for heavy users
+      take: 100,
     });
     return history;
   } catch (error) {
@@ -336,3 +338,4 @@ export async function deleteAllMealPlans() {
     return { success: false, error: 'Failed to clear meal history.' };
   }
 }
+

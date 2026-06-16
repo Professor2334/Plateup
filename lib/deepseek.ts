@@ -40,6 +40,23 @@ export interface MealPlanResponse {
   budgetUtilization?: number;
 }
 
+// Read prompt files once at module load — not on every request.
+// These are static config files that never change at runtime.
+function loadPromptFiles(): string {
+  const systemPromptPath = path.join(process.cwd(), '.agent/ai/system-prompt/SKILLS.md');
+  const schemaPath = path.join(process.cwd(), '.agent/ai/output-schema/SKILLS.md');
+  try {
+    const systemPromptContent = fs.readFileSync(systemPromptPath, 'utf8');
+    const schemaContent = fs.readFileSync(schemaPath, 'utf8');
+    return `${systemPromptContent}\n\n${schemaContent}`;
+  } catch (error) {
+    console.error('Failed to read AI configuration files:', error);
+    throw new Error('Internal Configuration Error: AI prompts missing.');
+  }
+}
+
+const COMBINED_SYSTEM_MESSAGE = loadPromptFiles();
+
 export async function generateMealPlan(
   budget: number,
   ingredients: string,
@@ -52,23 +69,6 @@ export async function generateMealPlan(
   if (!apiKey) {
     throw new Error('DEEPSEEK_API_KEY is missing');
   }
-
-  // Read system prompt and schema dynamically to ensure source-of-truth accuracy
-  const systemPromptPath = path.join(process.cwd(), '.agent/ai/system-prompt/SKILLS.md');
-  const schemaPath = path.join(process.cwd(), '.agent/ai/output-schema/SKILLS.md');
-  
-  let systemPromptContent = '';
-  let schemaContent = '';
-
-  try {
-    systemPromptContent = fs.readFileSync(systemPromptPath, 'utf8');
-    schemaContent = fs.readFileSync(schemaPath, 'utf8');
-  } catch (error) {
-    console.error('Failed to read AI configuration files:', error);
-    throw new Error('Internal Configuration Error: AI prompts missing.');
-  }
-
-  const combinedSystemMessage = `${systemPromptContent}\n\n${schemaContent}`;
 
   let prompt = `Generate a 7-day budget-aware Nigerian meal plan.
 Household Size: ${householdSize}
@@ -161,7 +161,7 @@ DO NOT include a \`budgetStrategy\` field in your JSON.`;
       body: JSON.stringify({
         model: 'deepseek-chat',
         messages: [
-          { role: 'system', content: combinedSystemMessage },
+          { role: 'system', content: COMBINED_SYSTEM_MESSAGE },
           { role: 'user', content: prompt },
         ],
         response_format: { type: 'json_object' },
