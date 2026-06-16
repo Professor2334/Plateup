@@ -9,9 +9,13 @@ import { revalidatePath } from 'next/cache';
 import { generationRateLimit } from '@/lib/rate-limit';
 import { validateAndSanitizeLeftovers } from '@/lib/leftover-validator';
 import { enforceMealVariety } from '@/lib/variety-validator';
-import { pruneShoppingList } from '@/lib/shopping-validator';
+import { pruneShoppingList, pruneUnusedShoppingItems } from '@/lib/shopping-validator';
 import { ValidationReporter } from '@/lib/validation-reporter';
 import { validateAndSanitizeOutput } from '@/lib/sanitization-validator';
+import { validateShoppingQuantities } from '@/lib/quantity-validator';
+import { calculatePantryScore } from '@/lib/pantry-scorer';
+import { BASE_PORTION_COST, REDUCTION_PER_ITEM, FLOOR_PORTION_COST } from '@/lib/constants';
+import { fuzzyDeduplicateShoppingList, calculateSafeEstimatedCost, filterTrivialShoppingItems } from '@/lib/meal-pipeline';
 
 export async function generateMealPlan(formData: FormData) {
   const session = await auth();
@@ -51,15 +55,19 @@ export async function generateMealPlan(formData: FormData) {
   const householdMultiplier = getHouseholdMultiplier(householdSize);
   const totalWeeklyPortions = 21 * householdMultiplier; // 3 meals * 7 days * people
   
-  // Hardcoded Budget Reality Check
-  // Determine an absolute minimum realistic cost per individual meal portion (e.g., ₦450 for 2026)
-  const MIN_COST_PER_PORTION = 450;
-  const minimumRealisticBudget = totalWeeklyPortions * MIN_COST_PER_PORTION;
+  // Dynamic Budget Reality Check based on available pantry items
+  const pantryItemsList = ingredients
+    .split(',')
+    .map(i => i.trim())
+    .filter(i => i.length > 0);
+
+  const dynamicPortionCost = Math.max(FLOOR_PORTION_COST, BASE_PORTION_COST - (pantryItemsList.length * REDUCTION_PER_ITEM));
+  const minimumRealisticBudget = totalWeeklyPortions * dynamicPortionCost;
 
   if (budget < minimumRealisticBudget) {
     return { 
       success: false, 
-      error: `₦${budget.toLocaleString()} is insufficient. Your household size (${householdSize}) requires a minimum budget of ₦${minimumRealisticBudget.toLocaleString()} for a 7-day meal plan.` 
+      error: `₦${budget.toLocaleString()} is insufficient. Your household size (${householdSize}) with your current pantry size requires a minimum budget of ₦${minimumRealisticBudget.toLocaleString()} for a 7-day meal plan.` 
     };
   }
 
@@ -85,62 +93,23 @@ export async function generateMealPlan(formData: FormData) {
       pruneShoppingList(ingredients, finalShoppingList);
       reporter.logPass('Pantry Pruning Validation');
 
+      // 1.5 Remove orphaned items (hallucinated items not in the meal plan)
+      pruneUnusedShoppingItems(finalShoppingList, mealPlan.mealPlan);
+      reporter.logPass('Orphaned Items Validation');
+
       // 2. Remove leftovers and trivial non-purchasables
-      finalShoppingList = finalShoppingList.filter((entry: any) => {
-        const lower = entry.item.toLowerCase();
-        if (/(leftover|remaining|extra|previous meal)/.test(lower)) return false;
-        if (['water', 'salt', 'maggi', 'seasoning cube', 'curry', 'thyme', 'garlic', 'ginger', 'knorr', 'bouillon'].some(i => lower.includes(i))) return false;
-        return true;
-      });
+      finalShoppingList = filterTrivialShoppingItems(finalShoppingList);
       reporter.logPass('Leftover & Trivial Item Validation');
 
       // 3. Remove duplicate items (Fuzzy Matching)
-      const deduplicated = new Map<string, string>();
-      
-      const normalizeItem = (item: string) => {
-        return item.toLowerCase()
-          .replace(/\b(fresh|raw|dry|dried|tin|canned|frozen|bunch|pieces|medium|large|small)\b/g, '')
-          .replace(/ies\b/, 'y')
-          .replace(/s\b/, '')
-          .trim();
-      };
-
-      for (const entry of finalShoppingList) {
-          const originalLower = entry.item.toLowerCase().trim();
-          if (originalLower.length === 0) continue;
-          
-          const normalized = normalizeItem(originalLower);
-          
-          // Substring matching to catch "Tomato" vs "Fresh Tomatoes"
-          let matchedKey = null;
-          for (const key of Array.from(deduplicated.keys())) {
-            if (key.includes(normalized) || normalized.includes(key)) {
-              matchedKey = key;
-              // Keep the shorter/broader key as the root
-              if (normalized.length < key.length && normalized.length > 2) {
-                matchedKey = normalized;
-                const oldVal = deduplicated.get(key)!;
-                deduplicated.delete(key);
-                deduplicated.set(matchedKey, oldVal);
-              }
-              break;
-            }
-          }
-
-          if (matchedKey) {
-            deduplicated.set(matchedKey, `${deduplicated.get(matchedKey)} + ${entry.quantity}`);
-          } else {
-            deduplicated.set(normalized, entry.quantity);
-          }
-      }
-      
-      finalShoppingList = Array.from(deduplicated.entries()).map(([item, quantity]) => ({
-          item: item.charAt(0).toUpperCase() + item.slice(1), 
-          quantity
-      }));
+      finalShoppingList = fuzzyDeduplicateShoppingList(finalShoppingList);
       reporter.logPass('Fuzzy Shopping List Deduplication');
 
       mealPlan.shoppingList = finalShoppingList;
+
+      // Scale shopping list quantities (Quantity Validation)
+      validateShoppingQuantities(mealPlan.shoppingList, mealPlan.mealPlan, householdMultiplier);
+      reporter.logPass('Quantity Validation');
 
       // 0. Output Sanitization Validation
       try {
@@ -161,52 +130,59 @@ export async function generateMealPlan(formData: FormData) {
       validateAndSanitizeLeftovers(mealPlan.mealPlan);
       reporter.logPass('Leftover Validation');
 
-      // 2. Strict Meal Variety Enforcement
+      // 2. Meal Variety Enforcement (Soft/Informational check & Mutation fallback)
       enforceMealVariety(mealPlan.mealPlan, ingredients);
-      reporter.logPass('Meal Variety Validation');
+      
+      const uniqueMeals = new Set<string>();
+      mealPlan.mealPlan.forEach((day: any) => {
+        uniqueMeals.add(day.breakfast.toLowerCase().trim());
+        uniqueMeals.add(day.lunch.toLowerCase().trim());
+        uniqueMeals.add(day.dinner.toLowerCase().trim());
+      });
+      const varietyScore = Math.round((uniqueMeals.size / 21) * 100);
+      reporter.logPass('Meal Variety Score', `Meal Variety Score: ${varietyScore}% (${uniqueMeals.size} unique meals out of 21 slots)`);
 
-      // The AI's native 'ingredientUtilization' text now replaces the obsolete numeric score logging.
+      // 3. Pantry Utilization Validation (Soft/Informational)
+      const pantryResult = calculatePantryScore(ingredients, mealPlan.mealPlan, mealPlan.shoppingList);
+      
       reporter.logPass('AI Ingredient Utilization', mealPlan.ingredientUtilization);
-
-      // Server-side Budget Intelligence Layer (Safety Net - Strict 2026 Pricing)
-      const PRICE_FLOORS: Record<string, number> = {
-        rice: 2000, beans: 1500, garri: 800, yam: 4000, plantain: 1000,
-        bread: 1500, semolina: 2000, potato: 2000,
-        chicken: 5500, beef: 7500, eggs: 2000, fish: 2500, stockfish: 3000,
-        mackerel: 2000, sardines: 1500,
-        tomatoes: 2000, onions: 1500, pepper: 1500, habanero: 1200,
-        vegetables: 1000, okra: 1000, coconut: 1000,
-        egusi: 3000, ogbono: 3000, crayfish: 2000,
-        'palm oil': 2000, 'groundnut oil': 2500, seasoning: 600,
-      };
-
-      const getFloorPrice = (item: string): number => {
-        const lower = item.toLowerCase();
-        if (['water', 'salt', 'maggi', 'seasoning cube', 'curry', 'thyme', 'garlic', 'ginger', 'knorr', 'bouillon'].some(i => lower.includes(i))) return 0;
-        
-        for (const [key, price] of Object.entries(PRICE_FLOORS)) {
-          if (lower.includes(key)) return price;
-        }
-        return 600; // default floor for unrecognized small items in 2026
-      };
+      
+      const pantryLogDetails = `Pantry Utilization:\n${pantryResult.score}%\n\nPantry Items Used:\n${pantryResult.usedItemsCount}/${pantryResult.availableItemsCount}\n\nNew Items Required:\n${pantryResult.newItemsCount}\n\nStatus:\n${pantryResult.status}`;
+      reporter.logPass('Pantry Utilization Validation', pantryLogDetails);
 
       // Ensure the estimated cost is realistic and not drastically underestimated by AI
-      const minRealisticCost = mealPlan.shoppingList.reduce((total: number, entry: any) => total + getFloorPrice(entry.item), 0);
-      const safeEstimatedCost = Math.max(minRealisticCost, mealPlan.estimatedCost);
+      const safeEstimatedCost = calculateSafeEstimatedCost(mealPlan.shoppingList, mealPlan.estimatedCost);
 
-      // Validate Budget Utilization (enforce strict retry in Budget-Friendly mode if < 70% or > 100%)
       const budgetUtilization = Math.round((safeEstimatedCost / budget) * 100);
-      const isUnderUtilized = budgetFriendly && budgetUtilization < 70;
-      
-      const budgetTolerance = budget; // Strict adherence to the budget limit
-      const isOverUtilized = budgetFriendly && safeEstimatedCost > budgetTolerance;
 
-      // BUDGET FRIENDLY OPTIMIZATION VALIDATION
+      // Classify Feasibility
+      let budgetStatus: 'WITHIN_BUDGET' | 'APPROACHING_BUDGET' | 'EXCEEDS_BUDGET';
+      if (safeEstimatedCost <= budget * 0.75) {
+        budgetStatus = 'WITHIN_BUDGET'; // Comfortable
+      } else if (safeEstimatedCost <= budget) {
+        budgetStatus = 'APPROACHING_BUDGET'; // Tight
+      } else {
+        budgetStatus = 'EXCEEDS_BUDGET'; // Likely Insufficient
+      }
+
+      // Budget/Cost Optimization Scores (Soft/Informational)
+      const budgetEfficiencyScore = Math.max(0, 100 - budgetUtilization);
+      reporter.logPass('Budget Efficiency Score', `Budget Efficiency Score: ${budgetEfficiencyScore}% (estimated spending utilizes ${budgetUtilization}% of budget)`);
+
+      const costOptimizationScore = pantryResult.score;
+      reporter.logPass('Cost Optimization Score', `Cost Optimization Score: ${costOptimizationScore}% (driven by pantry utilization and budget alignment)`);
+
+      reporter.logPass('Feasibility Validation', `Status: ${budgetStatus}, Estimated Spending: ₦${safeEstimatedCost}`);
+
+      // In budget-friendly mode, the plan must fit within budget (Comfortable or Tight).
+      const isUnderUtilized = budgetFriendly && budgetUtilization < 70;
+      const isOverUtilized = budgetFriendly && budgetStatus === 'EXCEEDS_BUDGET';
       const isMoreExpensiveThanOriginal = budgetFriendly && originalEstimatedCost !== undefined && safeEstimatedCost >= originalEstimatedCost;
 
       if (isUnderUtilized || isOverUtilized || isMoreExpensiveThanOriginal) {
         let failReason = `Budget utilization was ${budgetUtilization}%`;
         if (isMoreExpensiveThanOriginal) failReason = `Alternative cost (₦${safeEstimatedCost}) was higher or equal to original cost (₦${originalEstimatedCost}).`;
+        else if (isOverUtilized) failReason = `Alternative cost (₦${safeEstimatedCost}) exceeded the budget limit (₦${budget}).`;
         
         const actionMessage = attempts < maxAttempts ? 'Regenerate meal plan.' : 'Max attempts reached. Plan rejected.';
         reporter.logFail('Budget-Friendly Validation', failReason, actionMessage);
@@ -230,16 +206,6 @@ export async function generateMealPlan(formData: FormData) {
         min: safeEstimatedCost,
         max: Math.round(safeEstimatedCost * 1.35),
       };
-
-      // Recalculate budgetStatus dynamically based on realistic safeEstimatedCost compared to user budget
-      let budgetStatus = mealPlan.budgetStatus;
-      if (safeEstimatedCost > budget) {
-        budgetStatus = 'EXCEEDS_BUDGET';
-      } else if (safeEstimatedCost >= budget * 0.85) {
-        budgetStatus = 'APPROACHING_BUDGET';
-      } else {
-        budgetStatus = 'WITHIN_BUDGET';
-      }
 
       finalMealPlan = { 
         ...mealPlan, 
@@ -352,5 +318,21 @@ export async function deleteMealPlan(id: string) {
   } catch (error) {
     console.error('Delete Meal Plan Error:', error);
     return { success: false, error: 'Failed to delete meal plan.' };
+  }
+}
+
+export async function deleteAllMealPlans() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  try {
+    await db.mealPlan.deleteMany({ where: { userId: session.user.id } });
+    revalidatePath('/dashboard');
+    return { success: true };
+  } catch (error) {
+    console.error('Delete All Meal Plans Error:', error);
+    return { success: false, error: 'Failed to clear meal history.' };
   }
 }

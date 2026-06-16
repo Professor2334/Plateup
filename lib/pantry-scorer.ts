@@ -20,12 +20,22 @@ export function calculatePantryScore(
 
   const totalRequiredSet: string[] = [];
   mealPlan.forEach(day => {
-    day.primaryIngredientsUsed.forEach((ing: string) => {
-      const cleanIng = ing.toLowerCase().trim();
-      if (!totalRequiredSet.includes(cleanIng)) {
-        totalRequiredSet.push(cleanIng);
-      }
-    });
+    if (day.primaryIngredientsUsed && day.primaryIngredientsUsed.length > 0) {
+      day.primaryIngredientsUsed.forEach((ing: string) => {
+        const cleanIng = ing.toLowerCase().trim();
+        if (!totalRequiredSet.includes(cleanIng)) {
+          totalRequiredSet.push(cleanIng);
+        }
+      });
+    } else {
+      // Fallback: search meal names for available pantry items
+      const combinedMeals = `${day.breakfast || ''} ${day.lunch || ''} ${day.dinner || ''}`.toLowerCase();
+      availableItems.forEach(item => {
+        if (combinedMeals.includes(item) && !totalRequiredSet.includes(item)) {
+          totalRequiredSet.push(item);
+        }
+      });
+    }
   });
 
   const availableItemsCount = availableItems.length;
@@ -76,13 +86,13 @@ export function calculatePantryScore(
   score = Math.max(0, Math.min(100, score));
 
   // Status designation based on user criteria
-  let status = 'Low Pantry Optimization';
+  let status = 'Low Pantry Utilization';
   if (score >= 90) {
-    status = 'Excellent Pantry Optimization';
+    status = 'Excellent Pantry Utilization';
   } else if (score >= 75) {
-    status = 'Moderate Pantry Optimization';
+    status = 'Good Pantry Utilization';
   } else if (score >= 50) {
-    status = 'Partial Pantry Optimization';
+    status = 'Moderate Pantry Utilization';
   }
 
   return {

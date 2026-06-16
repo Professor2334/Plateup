@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react';
 import { SupportTab } from '@/components/dashboard/SupportTab';
 import { PrivacyTab } from '@/components/dashboard/PrivacyTab';
 import { TermsTab } from '@/components/dashboard/TermsTab';
+import { MealHistoryTab } from '@/components/dashboard/MealHistoryTab';
+import { SavedPlansTab } from '@/components/dashboard/SavedPlansTab';
 import { GenerateMealForm } from '@/components/meal-plans/GenerateMealForm';
 import { MealPlanSkeleton } from '@/components/meal-plans/MealPlanSkeleton';
 import type { MealPlanResponse } from '@/lib/deepseek';
 import { Button } from '@/components/ui/button';
-import { saveMealPlan, deleteMealPlan, generateMealPlan } from '@/app/actions/meal-plans/actions';
+import { saveMealPlan, deleteMealPlan, generateMealPlan, deleteAllMealPlans } from '@/app/actions/meal-plans/actions';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { History, Bookmark, Settings, LogOut, Calendar, LayoutDashboard, Utensils, Search, User, Lock, Shield, FileText, LifeBuoy, Mail, CheckCircle2, Menu, X } from 'lucide-react';
@@ -18,8 +20,10 @@ import { logoutUser } from '@/app/actions/auth/actions';
 import { updatePreferences, changePassword, updateProfile } from '@/app/actions/settings/actions';
 import { MealPlanResults } from '@/components/meal-plans/MealPlanResults';
 
+import { MealPlanModel } from '@/types';
+
 interface DashboardClientProps {
-  initialHistory: any[];
+  initialHistory: MealPlanModel[];
   userName: string;
   userData: {
     name: string;
@@ -121,13 +125,6 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
   // Edit Profile Modal State
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
 
-  // History State
-  const [historySearchText, setHistorySearchText] = useState('');
-  const [historyFilter, setHistoryFilter] = useState<'All' | 'Saved' | 'Unsaved'>('All');
-
-  // Saved Plans State
-  const [savedSearchText, setSavedSearchText] = useState('');
-  const [savedFilter, setSavedFilter] = useState<'All' | 'Recent' | 'Budget Friendly'>('All');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
@@ -163,14 +160,18 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     setActivePlanId(id);
     
     // Add the newly created unsaved plan to history state manually so it shows in timeline instantly
-    const newPlan = {
+    const newPlan: MealPlanModel = {
       id,
+      userId: '', // placeholder — real userId is server-side only
       budget,
       ingredients,
       generatedPlan: plan.mealPlan,
       shoppingList: plan.shoppingList,
       isSaved: false,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      estimatedCost: plan.estimatedCost,
+      estimatedCostRange: plan.estimatedCostRange
     };
     setHistory(prev => [newPlan, ...prev]);
   };
@@ -223,14 +224,16 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           setAlternativePlan(result.data);
           setActiveAlternativePlanId(result.id);
           
-          const newPlan = {
+          const newPlan: MealPlanModel = {
             id: result.id,
+            userId: '',
             budget: activeBudget,
             ingredients: activeIngredients,
             generatedPlan: result.data.mealPlan,
             shoppingList: result.data.shoppingList,
             isSaved: false,
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
+            updatedAt: new Date(),
           };
           setHistory(prev => [newPlan, ...prev]);
         } else {
@@ -251,6 +254,15 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     if (confirm('Are you sure you want to delete this saved plan?')) {
       setHistory(prev => prev.filter(plan => plan.id !== id));
       await deleteMealPlan(id);
+      router.refresh();
+    }
+  };
+
+  const handleClearAllHistory = async () => {
+    if (history.length === 0) return;
+    if (confirm('Are you sure you want to delete ALL meal plans from your history? This action cannot be undone.')) {
+      setHistory([]);
+      await deleteAllMealPlans();
       router.refresh();
     }
   };
@@ -420,14 +432,16 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
         setActivePlanView('budget-friendly');
         
         // Add the alternative plan to history so it shows in the timeline
-        const newPlan = {
+        const newPlan: MealPlanModel = {
           id: result.id,
+          userId: '', // placeholder — real userId is server-side only
           budget: activeBudget,
           ingredients: activeIngredients,
           generatedPlan: result.data.mealPlan,
           shoppingList: result.data.shoppingList,
           isSaved: false,
-          createdAt: new Date().toISOString(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         };
         setHistory(prev => [newPlan, ...prev]);
       } else {
@@ -512,395 +526,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     </div>
   );
 
-  const renderHistoryTab = () => {
-    // 1. Filter history
-    const filteredHistory = history.filter((plan: any) => {
-      if (historyFilter === 'Saved' && !plan.isSaved) return false;
-      if (historyFilter === 'Unsaved' && plan.isSaved) return false;
-      if (historySearchText) {
-        const searchLower = historySearchText.toLowerCase();
-        if (
-          !plan.ingredients.toLowerCase().includes(searchLower) &&
-          !plan.budget.toString().includes(searchLower)
-        ) {
-          return false;
-        }
-      }
-      return true;
-    });
 
-    // 2. Group history by date
-    const groups: Record<string, any[]> = {
-      'TODAY': [],
-      'EARLIER THIS WEEK': [],
-      'LAST WEEK': [],
-      'OLDER': []
-    };
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const earlierThisWeek = new Date(today);
-    earlierThisWeek.setDate(earlierThisWeek.getDate() - 3);
-    const lastWeek = new Date(today);
-    lastWeek.setDate(lastWeek.getDate() - 7);
-
-    filteredHistory.forEach((plan: any) => {
-      const d = new Date(plan.createdAt);
-      if (d >= today) {
-        groups['TODAY'].push(plan);
-      } else if (d >= earlierThisWeek && d < today) {
-        groups['EARLIER THIS WEEK'].push(plan);
-      } else if (d >= lastWeek && d < earlierThisWeek) {
-        groups['LAST WEEK'].push(plan);
-      } else {
-        groups['OLDER'].push(plan);
-      }
-    });
-
-    const totalGenerated = history.length;
-    const totalSaved = history.filter(p => p.isSaved).length;
-    const thisWeekGenerated = history.filter((p: any) => new Date(p.createdAt) >= lastWeek).length;
-
-    return (
-      <div className="pb-12 relative w-full">
-        {/* Full-width sticky header container */}
-        <div className={`sticky top-[-24px] lg:top-[-32px] z-40 -mx-4 px-4 lg:-mx-14 lg:px-14 pt-6 lg:pt-8 pb-4 mb-6 transition-all duration-500 ease-in-out ${isScrolled ? 'bg-white/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.02)]' : 'bg-[#f9fafb]'}`}>
-          <div className="max-w-5xl">
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between">
-                <h2 className={`font-bold text-[var(--color-on-surface)] tracking-tight transition-all duration-500 ease-in-out origin-left ${isScrolled ? 'text-[clamp(1.125rem,2vw,1.25rem)] scale-95' : 'text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] scale-100'}`}>Meal History</h2>
-              </div>
-              
-              {/* Perfectly smooth collapse using CSS Grid */}
-              <div className={`grid transition-all duration-500 ease-in-out ${isScrolled ? 'grid-rows-[0fr] opacity-0 mb-0' : 'grid-rows-[1fr] opacity-100 mt-2 mb-6'}`}>
-                <div className="overflow-hidden">
-                  <p className="text-sm text-[var(--color-on-surface-variant)]">A timeline of all your generated meal plans.</p>
-                  <div className="mt-4 flex flex-wrap items-center gap-2 text-sm font-medium text-[var(--color-on-surface-variant)]">
-                    <span>{totalGenerated} Plans Generated</span>
-                    <span className="opacity-50">•</span>
-                    <span>{totalSaved} Saved</span>
-                    <span className="opacity-50">•</span>
-                    <span>{thisWeekGenerated} This Week</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Search & Filter */}
-              {history.length > 0 && (
-                <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-500 ease-in-out ${isScrolled ? 'mt-3' : ''}`}>
-                  <div className="relative flex-1 flex items-center">
-                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                      <Search className="w-4 h-4 text-[var(--color-on-surface-variant)] opacity-50 mt-[1px]" />
-                    </div>
-                    <input 
-                      type="text" 
-                      placeholder="Search meal plans..." 
-                      value={historySearchText}
-                      onChange={(e) => setHistorySearchText(e.target.value)}
-                      className="w-full h-12 pl-12 pr-4 rounded-full bg-white sm:bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 focus:bg-white focus:border-[var(--color-primary)]/50 focus:ring-1 focus:ring-[var(--color-primary)]/20 text-sm transition-all outline-none"
-                    />
-                  </div>
-                  <div className="flex bg-white sm:bg-[#f9fafb] p-1 rounded-full border border-[var(--color-outline-variant)]/30 self-start">
-                    {(['All', 'Saved', 'Unsaved'] as const).map(filter => (
-                      <button
-                        key={filter}
-                        onClick={() => setHistoryFilter(filter)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${historyFilter === filter ? 'bg-white text-[var(--color-primary)] shadow-sm border border-[var(--color-outline-variant)]/20' : 'text-[var(--color-secondary)] hover:text-[var(--color-on-surface)]'}`}
-                      >
-                        {filter}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Timeline Content */}
-        <div className="max-w-5xl">
-        {history.length === 0 ? (
-          <div className="py-20 flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 rounded-full bg-[#f9fafb] flex items-center justify-center mb-4">
-              <span className="text-[clamp(1.5rem,3vw+0.5rem,1.875rem)]">🍲</span>
-            </div>
-            <h3 className="text-lg font-bold text-[var(--color-on-surface)]">No meal plans yet</h3>
-            <p className="text-sm text-[var(--color-on-surface-variant)] mt-2 max-w-sm">Generate your first meal plan to start building your history.</p>
-            <Button className="mt-6 font-bold" onClick={() => handleTabChange('generate')}>Generate Meal Plan</Button>
-          </div>
-        ) : filteredHistory.length === 0 ? (
-          <div className="py-20 text-center text-[var(--color-on-surface-variant)] text-sm">
-            No meal plans match your current filters.
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {Object.entries(groups).map(([groupName, plans]) => {
-              if (plans.length === 0) return null;
-              return (
-                <div key={groupName} className="relative bg-white rounded-[24px] p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                  <h3 className="text-[0.6875rem] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-widest mb-6 ml-6">{groupName}</h3>
-                  <div className="space-y-0 relative">
-                    {/* Vertical Timeline Spine */}
-                    <div className="absolute left-2 top-2 bottom-4 w-px bg-[var(--color-outline-variant)]/30"></div>
-                    
-                    {plans.map((plan: any) => {
-                      const planDate = new Date(plan.createdAt);
-                      const time = planDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-                      const dateString = planDate.toLocaleDateString('en-US', { weekday: 'long' });
-                      
-                      return (
-                        <div key={plan.id} className="group relative flex flex-col md:flex-row py-6 px-6 ml-6 rounded-2xl hover:bg-[#f9fafb] transition-colors gap-6 border border-transparent hover:border-[var(--color-outline-variant)]/10">
-                          {/* Timeline Dot */}
-                          <div className="absolute -left-[27px] top-[30px] w-[12px] h-[12px] rounded-full bg-[var(--color-outline-variant)] border-2 border-white group-hover:bg-[var(--color-primary)] group-hover:scale-125 transition-all duration-300 z-10 shadow-sm"></div>
-                          
-                          {/* Left Section (Content) */}
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-[1rem] font-extrabold text-[var(--color-on-surface)] tracking-tight mb-2">Generated Meal Plan</h4>
-                            
-                            <div className="space-y-1.5 mb-5">
-                              <p className="text-[0.875rem] font-semibold text-[var(--color-on-surface)]">
-                                Budget: NGN {plan.budget.toLocaleString()}
-                              </p>
-                              <p className="text-[0.8125rem] font-medium text-[var(--color-secondary)]">
-                                Ingredients: {plan.ingredients.split(',').map((i: string) => i.trim()).filter((i: string) => i).join(' • ')}
-                              </p>
-                            </div>
-
-                            {/* Actions - visible under entry */}
-                            <div className="flex flex-wrap gap-3 sm:opacity-40 sm:group-hover:opacity-100 transition-opacity">
-                              <button onClick={() => handleViewOnlyPlan(plan)} className="text-[0.75rem] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors px-3 py-1.5 rounded-md bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-primary)]/30 shadow-sm">View Plan</button>
-                              {!plan.isSaved && (
-                                <button onClick={() => handleSavePlanById(plan.id)} className="text-[0.75rem] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors px-3 py-1.5 rounded-md bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-primary)]/30 shadow-sm">Save</button>
-                              )}
-                              <button onClick={() => handleDeletePlan(plan.id)} className="text-[0.75rem] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-error)] transition-colors px-3 py-1.5 rounded-md bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-error)]/30 shadow-sm">Delete</button>
-                            </div>
-                          </div>
-                          
-                          {/* Right Section (Metadata) */}
-                          <div className="md:w-48 flex flex-col items-start md:items-end text-left md:text-right gap-1 pt-1 border-t border-[var(--color-outline-variant)]/10 md:border-t-0 mt-4 md:mt-0 md:pt-0">
-                            {plan.isSaved ? (
-                              <span className="text-[0.75rem] font-bold text-[var(--color-primary)] mb-1 flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]"></span>
-                                Saved
-                              </span>
-                            ) : (
-                              <span className="text-[0.75rem] font-bold text-[var(--color-secondary)] mb-1 flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
-                                Unsaved
-                              </span>
-                            )}
-                            <div className="text-[0.8125rem] font-bold text-[var(--color-on-surface-variant)]">{dateString}</div>
-                            <div className="text-[0.75rem] font-medium text-[var(--color-secondary)]">{time}</div>
-                            
-                            <div className="mt-3 flex flex-wrap md:justify-end gap-1.5">
-                               <div className="text-[0.6875rem] font-bold tracking-wider uppercase text-[var(--color-secondary)] bg-[#f9fafb] px-2 py-0.5 rounded border border-[var(--color-outline-variant)]/20">7 Days</div>
-                               <div className="text-[0.6875rem] font-bold tracking-wider uppercase text-[var(--color-secondary)] bg-[#f9fafb] px-2 py-0.5 rounded border border-[var(--color-outline-variant)]/20">21 Meals</div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-        </div>
-      </div>
-    );
-  };
-
-  const renderSavedTab = (title: string) => {
-    const allSavedPlans = history.filter(p => p.isSaved);
-    // Stats
-    const totalSaved = allSavedPlans.length;
-    const thisMonth = new Date().getMonth();
-    const thisYear = new Date().getFullYear();
-    const savedThisMonth = allSavedPlans.filter(p => {
-      const d = new Date(p.createdAt);
-      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-    }).length;
-    
-    // Calculate last saved today
-    const todayStr = new Date().toDateString();
-    let lastSavedStr = "Never";
-    if (allSavedPlans.length > 0) {
-      // sort by date descending
-      const sorted = [...allSavedPlans].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      const lastDate = new Date(sorted[0].createdAt);
-      if (lastDate.toDateString() === todayStr) {
-        lastSavedStr = "Today";
-      } else {
-        lastSavedStr = lastDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-      }
-    }
-
-    // Filter
-    let filteredPlans = allSavedPlans.filter((plan: any) => {
-      if (savedFilter === 'Budget Friendly' && plan.budget > 15000) return false;
-      if (savedFilter === 'Recent') {
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        if (new Date(plan.createdAt) < oneWeekAgo) return false;
-      }
-      
-      if (savedSearchText) {
-        const searchLower = savedSearchText.toLowerCase();
-        if (
-          !plan.ingredients.toLowerCase().includes(searchLower) &&
-          !plan.budget.toString().includes(searchLower)
-        ) {
-          return false;
-        }
-      }
-      return true;
-    });
-    
-    // sort filtered plans by newest first
-    filteredPlans.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-    return (
-      <div className="pb-12 relative w-full">
-        {/* Full-width sticky header container */}
-        <div className={`sticky top-[-24px] lg:top-[-32px] z-40 -mx-4 px-4 lg:-mx-14 lg:px-14 pt-6 lg:pt-8 pb-4 mb-6 transition-all duration-500 ease-in-out ${isScrolled ? 'bg-white/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.02)]' : 'bg-[#f9fafb]'}`}>
-          {/* Inner content aligned with the list below */}
-          <div className="max-w-5xl">
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between">
-                <h2 className={`font-bold text-[var(--color-on-surface)] tracking-tight transition-all duration-500 ease-in-out origin-left ${isScrolled ? 'text-[clamp(1.125rem,2vw,1.25rem)] scale-95' : 'text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] scale-100'}`}>{title}</h2>
-              </div>
-              
-              {/* Perfectly smooth collapse using CSS Grid */}
-              <div className={`grid transition-all duration-500 ease-in-out ${isScrolled ? 'grid-rows-[0fr] opacity-0 mb-0' : 'grid-rows-[1fr] opacity-100 mt-2 mb-6'}`}>
-                <div className="overflow-hidden">
-                  <p className="text-sm text-[var(--color-on-surface-variant)]">Manage and reuse your previously generated meal plans.</p>
-                  <div className="mt-4 flex flex-wrap items-center gap-2 text-sm font-medium text-[var(--color-on-surface-variant)]">
-                    <span>{totalSaved} Saved Plans</span>
-                    <span className="opacity-50">•</span>
-                    <span>{savedThisMonth} This Month</span>
-                    <span className="opacity-50">•</span>
-                    <span>Last Saved {lastSavedStr}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Search & Filter */}
-              {allSavedPlans.length > 0 && (
-                <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-500 ease-in-out ${isScrolled ? 'mt-3' : ''}`}>
-                  <div className="relative flex-1 flex items-center">
-                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                      <Search className="w-4 h-4 text-[var(--color-on-surface-variant)] opacity-50 mt-[1px]" />
-                    </div>
-                    <input 
-                      type="text" 
-                      placeholder="Search saved plans..." 
-                      value={savedSearchText}
-                      onChange={(e) => setSavedSearchText(e.target.value)}
-                      className="w-full h-12 pl-12 pr-4 rounded-full bg-white sm:bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 focus:bg-white focus:border-[var(--color-primary)]/50 focus:ring-1 focus:ring-[var(--color-primary)]/20 text-sm transition-all outline-none"
-                    />
-                  </div>
-                  <div className="flex bg-white sm:bg-[#f9fafb] p-1 rounded-full border border-[var(--color-outline-variant)]/30 self-start">
-                    {(['All', 'Recent', 'Budget Friendly'] as const).map(filter => (
-                      <button
-                        key={filter}
-                        onClick={() => setSavedFilter(filter)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${savedFilter === filter ? 'bg-white text-[var(--color-primary)] shadow-sm border border-[var(--color-outline-variant)]/20' : 'text-[var(--color-secondary)] hover:text-[var(--color-on-surface)]'}`}
-                      >
-                        {filter}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        {/* Main Content List Container */}
-        <div className="max-w-5xl">
-          {allSavedPlans.length === 0 ? (
-          <div className="rounded-2xl bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 p-20 flex flex-col items-center justify-center text-center mt-8">
-            <Bookmark className="w-12 h-12 text-[var(--color-outline-variant)] mb-4" />
-            <h3 className="text-[clamp(1.125rem,2vw,1.25rem)] font-semibold text-[var(--color-on-surface)]">No saved plans yet</h3>
-            <p className="text-[var(--color-on-surface-variant)] mt-2 max-w-md">Your saved meal plans will appear here. Generate a plan and click save to keep it for later.</p>
-            <Button className="mt-6 font-bold" onClick={() => handleTabChange('generate')}>Generate Meal Plan</Button>
-          </div>
-        ) : filteredPlans.length === 0 ? (
-          <div className="py-20 text-center text-[var(--color-on-surface-variant)] text-sm">
-            No saved plans match your current filters.
-          </div>
-        ) : (
-          <div className="space-y-0 rounded-[24px] bg-white overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.02)]">
-            {filteredPlans.map((plan: any, index: number) => {
-              const date = new Date(plan.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-              const previewMeals = plan.generatedPlan?.slice(0, 3) || [];
-              const isBudgetFriendly = plan.budget <= 15000;
-              const titleTag = isBudgetFriendly ? "Budget-Friendly Student Plan" : "Standard Nigerian Plan";
-              
-              return (
-                <div key={plan.id} className={`group relative p-6 sm:p-8 hover:bg-[#f9fafb] transition-colors ${index !== filteredPlans.length - 1 ? 'border-b border-[var(--color-outline-variant)]/10' : ''}`}>
-                  
-                  {/* Top Row: Title & Tag */}
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-[clamp(1.125rem,2vw,1.25rem)] font-extrabold text-[var(--color-on-surface)] tracking-tight">{titleTag}</h3>
-                    <span className="text-[0.6875rem] font-bold tracking-wider uppercase text-[var(--color-secondary)] bg-[#f9fafb] px-2.5 py-1 rounded border border-[var(--color-outline-variant)]/20">
-                      [7 Days]
-                    </span>
-                  </div>
-
-                  {/* Metadata Row: Budget & Date */}
-                  <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-on-surface)] mb-6">
-                    <span className="text-[var(--color-primary)]">₦{plan.budget.toLocaleString()}</span>
-                    <span className="text-[var(--color-outline-variant)]">•</span>
-                    <span className="text-[var(--color-secondary)]">Saved {date}</span>
-                  </div>
-
-                  {/* Ingredients */}
-                  <div className="mb-6 max-w-3xl">
-                    <h4 className="text-[0.6875rem] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-2">Ingredients</h4>
-                    <p className="text-[0.875rem] text-[var(--color-on-surface)] font-medium leading-relaxed">
-                      {plan.ingredients.split(',').map((i: string) => i.trim()).filter((i: string) => i).join(' • ')}
-                    </p>
-                  </div>
-
-                  {/* Meal Preview */}
-                  <div className="mb-8 max-w-3xl">
-                    <h4 className="text-[0.6875rem] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-3">Preview</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {previewMeals.map((day: any, i: number) => (
-                        <div key={i} className="flex gap-3 text-[0.8125rem]">
-                          <span className="font-bold text-[var(--color-primary)] w-8 flex-shrink-0">{day.day.substring(0, 3)}</span>
-                          <span className="text-[var(--color-on-surface-variant)] truncate font-medium">{day.lunch}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Footer & Actions */}
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-5 border-t border-[var(--color-outline-variant)]/10 gap-4 sm:gap-0">
-                    <div className="flex items-center gap-2 text-[0.75rem] font-bold text-[var(--color-secondary)]">
-                      <span>7 Meals</span>
-                      <span>•</span>
-                      <span>21 Dishes</span>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3">
-                      <button onClick={() => handleViewOnlyPlan(plan)} className="text-[0.8125rem] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors px-4 py-2 rounded-lg bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-primary)]/30 shadow-sm">View Plan</button>
-                      <button onClick={() => handleDeletePlan(plan.id)} className="text-[0.8125rem] font-bold text-[var(--color-on-surface-variant)] hover:text-[var(--color-error)] transition-colors px-4 py-2 rounded-lg bg-white border border-[var(--color-outline-variant)]/30 hover:border-[var(--color-error)]/30 shadow-sm">Delete</button>
-                      <Button onClick={() => handleReusePlan(plan)} className="h-9 px-6 text-[0.8125rem] font-bold shadow-sm">Reuse Plan</Button>
-                    </div>
-                  </div>
-
-                </div>
-              );
-            })}
-          </div>
-        )}
-        </div>
-      </div>
-    );
-  };
 
   const renderSettingsTab = () => {
     // Generate initials for avatar
@@ -1325,8 +951,8 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             />
           </div>
         )}
-        {activeTab === 'history' && renderHistoryTab()}
-        {activeTab === 'saved' && renderSavedTab('Saved Plans')}
+        {activeTab === 'history' && <MealHistoryTab history={history} handleClearAllHistory={handleClearAllHistory} handleViewOnlyPlan={handleViewOnlyPlan} handleSavePlanById={handleSavePlanById} handleDeletePlan={handleDeletePlan} handleTabChange={handleTabChange} isScrolled={isScrolled} />}
+        {activeTab === 'saved' && <SavedPlansTab history={history} title="Saved Plans" handleViewOnlyPlan={handleViewOnlyPlan} handleDeletePlan={handleDeletePlan} handleReusePlan={handleReusePlan} handleTabChange={handleTabChange} isScrolled={isScrolled} />}
         {activeTab === 'settings' && renderSettingsTab()}
         {activeTab === 'support' && <SupportTab email={userData.email} isScrolled={isScrolled} />}
         {activeTab === 'privacy' && <PrivacyTab isScrolled={isScrolled} />}

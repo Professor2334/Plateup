@@ -88,3 +88,59 @@ export function pruneShoppingList(
     }
   }
 }
+
+/**
+ * Removes items from the shopping list that are completely hallucinated by the AI
+ * (i.e., not a base ingredient and not mentioned anywhere in the meal plan text).
+ */
+export function pruneUnusedShoppingItems(
+  shoppingList: ShoppingListEntry[],
+  mealPlan: MealPlanDay[]
+): void {
+  // Combine all meal text into one large string for easy searching
+  const allMealsText = mealPlan
+    .map(day => `${day.breakfast} ${day.lunch} ${day.dinner}`)
+    .join(' ')
+    .toLowerCase();
+
+  // Helper to normalize strings (basic singularization for robust matching)
+  const normalize = (str: string) => str.replace(/(es|s)$/i, '').trim();
+
+  // List of base cooking ingredients that don't need to be explicitly mentioned
+  // in the meal text (e.g. you don't always say "Jollof Rice with Onions")
+  const BASE_INGREDIENTS = [
+    'water', 'salt', 'maggi', 'seasoning', 'oil', 'spice', 'curry', 'thyme', 
+    'garlic', 'ginger', 'knorr', 'bouillon', 'cube', 'onion', 'tomato', 'pepper',
+    'crayfish', 'palm oil', 'groundnut oil', 'vegetable oil', 'habanero', 'tatashe'
+  ];
+
+  for (let i = shoppingList.length - 1; i >= 0; i--) {
+    const itemEntry = shoppingList[i];
+    const itemLower = itemEntry.item.toLowerCase();
+    const itemNorm = normalize(itemLower);
+
+    // 1. Check if it's a base ingredient (we keep these even if not explicitly named)
+    const isBaseIngredient = BASE_INGREDIENTS.some(base => 
+      itemNorm.includes(normalize(base)) || normalize(base).includes(itemNorm)
+    );
+
+    if (isBaseIngredient) {
+      continue; // Keep it
+    }
+
+    // 2. Check if the item is mentioned ANYWHERE in the meal plan text
+    const words = itemNorm.split(' ').filter(w => w.length > 2);
+    let isMentioned = allMealsText.includes(itemNorm);
+    
+    if (!isMentioned && words.length > 0) {
+       // Fuzzy match: if any significant word of the item is in the meal text
+       isMentioned = words.some(word => allMealsText.includes(word));
+    }
+
+    if (!isMentioned) {
+      // The item is an orphan (not a base ingredient, and not mentioned in the meals)
+      // So we prune it from the shopping list
+      shoppingList.splice(i, 1);
+    }
+  }
+}
