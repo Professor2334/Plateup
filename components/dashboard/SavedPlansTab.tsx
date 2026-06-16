@@ -5,7 +5,6 @@ import {
   Search,
   Bookmark,
   Trash2,
-  Eye,
   RefreshCw,
   Calendar,
   Sparkles,
@@ -98,11 +97,11 @@ export function SavedPlansTab({
 
   return (
     <div className="pb-12 relative w-full">
-      {/* ── STICKY HEADER ── */}
+      {/* ── STICKY HEADER — fixed height only, never changes size ── */}
       <div
-        className={`sticky top-[-24px] lg:top-[-32px] z-40 -mx-4 px-4 lg:-mx-14 lg:px-14 pt-6 lg:pt-8 pb-4 mb-6 transition-all duration-500 ease-in-out ${
+        className={`sticky top-0 z-40 -mx-4 px-4 lg:-mx-14 lg:px-14 pt-5 pb-4 mb-2 transition-[background-color,backdrop-filter,box-shadow] duration-300 ${
           isScrolled
-            ? 'bg-white/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.02)]'
+            ? 'bg-white/90 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.06)]'
             : 'bg-[#f9fafb]'
         }`}
       >
@@ -110,60 +109,14 @@ export function SavedPlansTab({
           {/* Title row */}
           <div className="flex items-center justify-between mb-4">
             <h2
-              className={`font-bold text-[var(--color-on-surface)] tracking-tight transition-all duration-500 ease-in-out origin-left ${
+              className={`font-bold text-[var(--color-on-surface)] tracking-tight transition-[font-size] duration-300 ease-out ${
                 isScrolled
-                  ? 'text-[clamp(1.125rem,2vw,1.25rem)] scale-95'
-                  : 'text-[clamp(1.5rem,3vw+0.5rem,1.875rem)] scale-100'
+                  ? 'text-[clamp(1.125rem,2vw,1.25rem)]'
+                  : 'text-[clamp(1.5rem,3vw+0.5rem,1.875rem)]'
               }`}
             >
               {title}
             </h2>
-          </div>
-
-          {/* Stats & description — collapses smoothly on scroll */}
-          <div
-            className={`grid transition-all duration-500 ease-in-out ${
-              isScrolled
-                ? 'grid-rows-[0fr] opacity-0 mb-0'
-                : 'grid-rows-[1fr] opacity-100 mb-5'
-            }`}
-          >
-            <div className="overflow-hidden">
-              <p className="text-sm text-[var(--color-on-surface-variant)] mb-4">
-                Manage and reuse your previously saved meal plans.
-              </p>
-
-              {/* Stat chips — same pattern as MealHistoryTab */}
-              <div className="flex flex-wrap gap-2">
-                <div className="inline-flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-[var(--color-outline-variant)]/30 shadow-sm">
-                  <Bookmark className="w-3.5 h-3.5 text-[var(--color-primary)]" />
-                  <span className="text-xs font-bold text-[var(--color-on-surface)]">
-                    {totalSaved}
-                  </span>
-                  <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">
-                    Saved Plans
-                  </span>
-                </div>
-                <div className="inline-flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-[var(--color-outline-variant)]/30 shadow-sm">
-                  <Calendar className="w-3.5 h-3.5 text-[var(--color-primary)]" />
-                  <span className="text-xs font-bold text-[var(--color-on-surface)]">
-                    {savedThisMonth}
-                  </span>
-                  <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">
-                    This Month
-                  </span>
-                </div>
-                <div className="inline-flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-[var(--color-outline-variant)]/30 shadow-sm">
-                  <Clock className="w-3.5 h-3.5 text-[var(--color-primary)]" />
-                  <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">
-                    Last saved:
-                  </span>
-                  <span className="text-xs font-bold text-[var(--color-on-surface)]">
-                    {lastSavedStr}
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Search + filter — only shown when plans exist */}
@@ -183,7 +136,7 @@ export function SavedPlansTab({
                 />
               </div>
 
-              {/* Filter: horizontally scrollable on very small phones, or grid on normal phones */}
+              {/* Filter buttons */}
               <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
                 {(['All', 'Recent', 'Budget Friendly'] as const).map((filter) => (
                   <button
@@ -203,6 +156,35 @@ export function SavedPlansTab({
           )}
         </div>
       </div>
+
+      {/* ── SUBTITLE & STATS — opacity-only fade (no layout change = no scroll feedback loop) ── */}
+      <div
+        className={`max-w-5xl mb-6 transition-opacity duration-300 ease-out ${
+          isScrolled ? 'opacity-0 pointer-events-none select-none' : 'opacity-100'
+        }`}
+      >
+        <p className="text-sm text-[var(--color-on-surface-variant)] mb-4">
+          Manage and reuse your previously saved meal plans.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <div className="inline-flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-[var(--color-outline-variant)]/30 shadow-sm">
+            <Bookmark className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+            <span className="text-xs font-bold text-[var(--color-on-surface)]">{totalSaved}</span>
+            <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">Saved Plans</span>
+          </div>
+          <div className="inline-flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-[var(--color-outline-variant)]/30 shadow-sm">
+            <Calendar className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+            <span className="text-xs font-bold text-[var(--color-on-surface)]">{savedThisMonth}</span>
+            <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">This Month</span>
+          </div>
+          <div className="inline-flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-[var(--color-outline-variant)]/30 shadow-sm">
+            <Clock className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+            <span className="text-xs font-medium text-[var(--color-on-surface-variant)]">Last saved:</span>
+            <span className="text-xs font-bold text-[var(--color-on-surface)]">{lastSavedStr}</span>
+          </div>
+        </div>
+      </div>
+
 
       {/* ── CONTENT AREA ── */}
       <div className="max-w-5xl">
@@ -335,30 +317,17 @@ export function SavedPlansTab({
                       </p>
                     )}
 
-                    {/* ── Action buttons — always visible, touch-friendly ── */}
-                    <div className="mt-auto pt-4 border-t border-[var(--color-outline-variant)]/15">
-                      {/* Primary row: View + Reuse */}
-                      <div className="flex gap-2 mb-2">
-                        <button
-                          onClick={() => handleViewOnlyPlan(plan)}
-                          className="flex-1 inline-flex items-center justify-center gap-2 h-11 px-3 rounded-xl bg-[var(--color-primary)] text-white text-[0.8125rem] font-bold transition-all hover:opacity-90 active:scale-[0.98]"
-                          aria-label="View this meal plan"
-                        >
-                          <Eye className="w-4 h-4 flex-shrink-0" />
-                          View Plan
-                        </button>
+                    {/* ── Action buttons ── */}
+                    <div className="mt-auto pt-4 border-t border-[var(--color-outline-variant)]/15 flex flex-col gap-2">
+                      <button
+                        onClick={() => handleReusePlan(plan)}
+                        className="w-full inline-flex items-center justify-center gap-2 h-11 px-3 rounded-xl bg-[var(--color-primary)] text-white text-[0.8125rem] font-bold transition-all hover:opacity-90 active:scale-[0.98]"
+                        aria-label="Reuse this meal plan"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5 flex-shrink-0" />
+                        Reuse Plan
+                      </button>
 
-                        <button
-                          onClick={() => handleReusePlan(plan)}
-                          className="flex-1 inline-flex items-center justify-center gap-2 h-11 px-3 rounded-xl bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-[var(--color-primary)] border border-[color-mix(in_srgb,var(--color-primary)_20%,transparent)] text-[0.8125rem] font-bold transition-all hover:bg-[color-mix(in_srgb,var(--color-primary)_15%,transparent)] active:scale-[0.98]"
-                          aria-label="Reuse this meal plan"
-                        >
-                          <RefreshCw className="w-3.5 h-3.5 flex-shrink-0" />
-                          Reuse
-                        </button>
-                      </div>
-
-                      {/* Secondary row: Delete — full width, clearly destructive */}
                       <button
                         onClick={() => handleDeletePlan(plan.id)}
                         className="w-full inline-flex items-center justify-center gap-2 h-10 px-3 rounded-xl bg-[color-mix(in_srgb,var(--color-error)_6%,transparent)] text-[var(--color-error)] border border-[color-mix(in_srgb,var(--color-error)_15%,transparent)] text-[0.8125rem] font-bold transition-all hover:bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)] active:scale-[0.98]"

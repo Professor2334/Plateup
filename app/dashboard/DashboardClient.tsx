@@ -835,7 +835,15 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
   );
 
   const handleMainScroll = (e: React.UIEvent<HTMLElement>) => {
-    setIsScrolled(e.currentTarget.scrollTop > 30);
+    const scrollTop = e.currentTarget.scrollTop;
+    // Hysteresis: activate at 60px scrolled down, deactivate at 20px.
+    // This prevents oscillation near the threshold causing the sticky
+    // header to shake when the user scrolls near the boundary.
+    setIsScrolled(prev => {
+      if (!prev && scrollTop > 60) return true;
+      if (prev && scrollTop < 20) return false;
+      return prev;
+    });
   };
 
   return (
@@ -1001,7 +1009,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             />
           </div>
         )}
-        {activeTab === 'history' && <MealHistoryTab history={history} handleClearAllHistory={handleClearAllHistory} handleViewOnlyPlan={handleViewOnlyPlan} handleSavePlanById={handleSavePlanById} handleDeletePlan={handleDeletePlan} handleTabChange={handleTabChange} isScrolled={isScrolled} />}
+        {activeTab === 'history' && <MealHistoryTab history={history} handleClearAllHistory={handleClearAllHistory} handleSavePlanById={handleSavePlanById} handleDeletePlan={handleDeletePlan} handleTabChange={handleTabChange} isScrolled={isScrolled} />}
         {activeTab === 'saved' && <SavedPlansTab history={history} title="Saved Plans" handleViewOnlyPlan={handleViewOnlyPlan} handleDeletePlan={handleDeletePlan} handleReusePlan={handleReusePlan} handleTabChange={handleTabChange} isScrolled={isScrolled} />}
         {activeTab === 'settings' && renderSettingsTab()}
         {activeTab === 'support' && <SupportTab email={userData.email} isScrolled={isScrolled} />}

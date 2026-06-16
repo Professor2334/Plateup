@@ -87,10 +87,8 @@ export const metadata: Metadata = {
   },
 
   icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/plateup-logo.svg", type: "image/svg+xml" },
-    ],
+    icon: [{ url: "/plateup-logo.svg", type: "image/svg+xml" }],
+    shortcut: "/plateup-logo.svg",
     apple: "/plateup-logo.svg",
   },
 };
