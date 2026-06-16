@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SupportTab } from '@/components/dashboard/SupportTab';
 import { PrivacyTab } from '@/components/dashboard/PrivacyTab';
 import { TermsTab } from '@/components/dashboard/TermsTab';
@@ -117,6 +117,26 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
   const [passSaving, setPassSaving] = useState(false);
   const [passError, setPassError] = useState('');
   const [passSuccess, setPassSuccess] = useState('');
+
+  // Toast notification state
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    // Auto-dismiss after 4 seconds
+    setTimeout(() => setToast(null), 4000);
+  }, []);
+
+  /** Resets all generation result state — called after a successful save. */
+  const clearGeneratedPlan = useCallback(() => {
+    setGeneratedPlan(null);
+    setAlternativePlan(null);
+    setActivePlanId(null);
+    setActiveAlternativePlanId(null);
+    setActivePlanView('recommended');
+    setActiveBudget(0);
+    setActiveIngredients('');
+  }, []);
   
   // Logout Modal State
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -193,9 +213,11 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     const success = await handleSavePlanById(idToSave);
     setSaving(false);
     if (success) {
-      alert('Meal plan saved successfully!');
+      showToast('Meal plan saved! Ready to generate a new one.', 'success');
+      // Clear all generation state so the form returns to its initial empty state
+      clearGeneratedPlan();
     } else {
-      alert('Failed to save meal plan.');
+      showToast('Failed to save meal plan. Please try again.', 'error');
     }
   };
 
@@ -240,10 +262,10 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           handlePlanGenerated(result.data, activeBudget, activeIngredients, result.id);
         }
       } else {
-        alert(result?.error || 'Unable to generate a new meal plan. Please try again.');
+        showToast(result?.error || 'Unable to generate a new meal plan. Please try again.', 'error');
       }
     } catch (error) {
-      alert('Unable to generate a new meal plan. Please try again.');
+      showToast('Unable to generate a new meal plan. Please try again.', 'error');
     } finally {
       setIsRegenerating(false);
       setLoading(false);
@@ -818,6 +840,34 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
 
   return (
     <>
+      {/* ── TOAST NOTIFICATION ── */}
+      {toast && (
+        <div
+          role="alert"
+          aria-live="polite"
+          className={`fixed bottom-6 right-6 z-[9999] flex items-center gap-3 px-5 py-4 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] max-w-sm w-auto
+            animate-in slide-in-from-bottom-4 fade-in duration-300
+            ${toast.type === 'success'
+              ? 'bg-[var(--color-primary)] text-white'
+              : 'bg-[var(--color-error)] text-white'
+            }`}
+        >
+          <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+            {toast.type === 'success'
+              ? <CheckCircle2 className="w-4 h-4 text-white" />
+              : <span className="text-white text-sm font-bold">!</span>
+            }
+          </div>
+          <p className="text-[0.875rem] font-semibold leading-snug">{toast.message}</p>
+          <button
+            onClick={() => setToast(null)}
+            aria-label="Dismiss notification"
+            className="ml-auto w-6 h-6 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors flex-shrink-0"
+          >
+            <X className="w-3.5 h-3.5 text-white" />
+          </button>
+        </div>
+      )}
       <div className={`flex h-screen overflow-hidden bg-[#f9fafb] font-sans transition-all duration-300 ${isLogoutModalOpen ? 'blur-[4px] scale-[0.99] opacity-90' : ''}`}>
         
         {/* Mobile Top App Bar */}

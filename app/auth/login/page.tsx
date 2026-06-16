@@ -4,9 +4,14 @@ import { GoogleButton } from '@/components/auth/GoogleButton';
 import { AuthDivider } from '@/components/auth/AuthDivider';
 import Link from 'next/link';
 
-export const metadata = {
-  title: 'Sign In | PlateUp',
-  description: 'Sign in to your PlateUp account.',
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Sign In',
+  description:
+    'Sign in to your PlateUp account to access your AI-generated Nigerian meal plans, shopping lists, and meal history.',
+  alternates: { canonical: '/auth/login' },
+  robots: { index: false, follow: false },
 };
 
 export default function LoginPage() {

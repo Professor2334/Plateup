@@ -3,8 +3,12 @@ import Link from 'next/link';
 import { VerifyEmailSuccess } from '@/components/auth/VerifyEmailSuccess';
 import { redirect } from 'next/navigation';
 
-export const metadata = {
-  title: 'Verify Email | PlateUp',
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Verify Email',
+  description: 'Verify your PlateUp email address to activate your account.',
+  robots: { index: false, follow: false },
 };
 
 export default async function VerifyEmailPage({

@@ -3,9 +3,14 @@ import { GoogleButton } from '@/components/auth/GoogleButton';
 import { AuthDivider } from '@/components/auth/AuthDivider';
 import Link from 'next/link';
 
-export const metadata = {
-  title: 'Create Account | PlateUp',
-  description: 'Join PlateUp to start planning budget-aware Nigerian meals.',
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Create Account',
+  description:
+    'Join PlateUp to start planning budget-friendly Nigerian meals for your household. Set your budget, add ingredients, and get a 7-day meal plan instantly.',
+  alternates: { canonical: '/auth/register' },
+  robots: { index: false, follow: false },
 };
 
 export default function RegisterPage() {

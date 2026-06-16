@@ -2,9 +2,13 @@ import Link from 'next/link';
 import { PlateUpLogo } from '@/components/shared/PlateUpLogo';
 import { ArrowLeft } from 'lucide-react';
 
-export const metadata = {
-  title: 'Privacy Policy | PlateUp',
-  description: 'Privacy Policy for PlateUp, the AI-powered meal planning engine.',
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description:
+    'Read the PlateUp Privacy Policy. Learn how we collect, use, and protect your personal data on our AI-powered Nigerian meal planning platform.',
+  alternates: { canonical: '/privacy' },
 };
 
 export default function PrivacyPolicyPage() {

@@ -2,9 +2,13 @@ import Link from 'next/link';
 import { PlateUpLogo } from '@/components/shared/PlateUpLogo';
 import { ArrowLeft } from 'lucide-react';
 
-export const metadata = {
-  title: 'Terms of Service | PlateUp',
-  description: 'Terms of Service for PlateUp, the AI-powered meal planning engine.',
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Terms of Service',
+  description:
+    'Read the PlateUp Terms of Service. Understand your rights and responsibilities when using our AI-powered Nigerian meal planning platform.',
+  alternates: { canonical: '/terms' },
 };
 
 export default function TermsOfServicePage() {
