@@ -96,13 +96,13 @@ export function SavedPlansTab({
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="pb-12 relative w-full">
+    <div className="-mx-4 lg:-mx-14 bg-white px-4 lg:px-14 pb-12 relative w-full">
       {/* ── STICKY HEADER — fixed height only, never changes size ── */}
       <div
-        className={`sticky top-0 z-40 -mx-4 px-4 lg:-mx-14 lg:px-14 pt-5 pb-4 mb-2 transition-[background-color,backdrop-filter,box-shadow] duration-300 ${
+        className={`sticky top-[-24px] lg:top-[-32px] z-40 -mx-4 px-4 lg:-mx-14 lg:px-14 pt-6 lg:pt-8 pb-4 mb-6 transition-all duration-500 ease-in-out ${
           isScrolled
-            ? 'bg-white/90 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.06)]'
-            : 'bg-[#f9fafb]'
+            ? 'bg-white/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.02)]'
+            : 'bg-white'
         }`}
       >
         <div className="max-w-5xl">
