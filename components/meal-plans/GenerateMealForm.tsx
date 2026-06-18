@@ -66,8 +66,8 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFrien
     const isIngredientsEmpty = ingredientsRef.current.length === 0;
 
     if (isBudgetEmpty && isIngredientsEmpty) {
-      setBudgetError('Please enter your weekly budget and available ingredients.');
-      setIngredientError('');
+      setBudgetError('Please enter your weekly budget.');
+      setIngredientError('Please enter at least one available ingredient.');
       return;
     }
 
@@ -145,7 +145,7 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFrien
         <p className="text-sm text-[var(--color-on-surface-variant)] opacity-[0.73] mt-1 leading-relaxed">Set your budget and ingredients to get started.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <div className="space-y-1.5">
           <label htmlFor="budget" className="text-[0.8125rem] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Weekly Budget</label>
           <div className="relative">

@@ -129,7 +129,7 @@ function ResetPasswordForm() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <div className="space-y-2">
           <label htmlFor="password" className="text-[14px] font-semibold text-[var(--color-on-surface)] block">
             New Password

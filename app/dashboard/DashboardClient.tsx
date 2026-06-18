@@ -644,6 +644,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                   }
                 }}
                 className="space-y-6"
+                noValidate
               >
                 {/* Simulated static row */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[var(--color-outline-variant)]/20">
@@ -726,6 +727,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                     setPassError(res.error || 'Failed to update password');
                   }
                 }}
+                noValidate
               >
                 <div>
                   <label className="text-[0.8125rem] font-bold text-[var(--color-on-surface)] mb-2 block">Change Password</label>
@@ -1088,7 +1090,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
               submitBtn.textContent = originalText;
               submitBtn.disabled = false;
             }
-          }}>
+          }} noValidate>
             <div className="space-y-4 mb-8">
               <div>
                 <label className="text-[0.8125rem] font-bold text-[var(--color-on-surface)] mb-2 block">Display Name</label>

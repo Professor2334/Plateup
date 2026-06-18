@@ -46,7 +46,7 @@ export function ContactForm({ defaultEmail }: { defaultEmail: string | null }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-8" noValidate>
       {defaultEmail ? (
         <div className="space-y-2">
           <label className="text-[0.8125rem] font-bold text-[var(--color-on-surface)]">Your email address</label>
