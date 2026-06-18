@@ -482,7 +482,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-7xl relative">
       {/* Left Form */}
       <div className="lg:col-span-4">
-        <div className="lg:sticky lg:top-6 space-y-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto scrollbar-thin overflow-x-hidden pr-2 pb-4">
+        <div className="lg:sticky lg:top-6 space-y-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto scrollbar-thin overflow-x-hidden pb-4">
         <GenerateMealForm 
           key={formKey}
           onPlanGenerated={(plan, formData, id) => {
@@ -879,63 +879,63 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           </button>
         </div>
       )}
+      {/* Mobile Top App Bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-[var(--color-outline-variant)]/10 z-40 flex items-center justify-between px-4 shadow-sm">
+        <button onClick={() => setIsMobileNavOpen(true)} className="p-2 -ml-2 text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container-low)] rounded-lg transition-colors">
+          <Menu className="w-6 h-6" />
+        </button>
+        <PlateUpLogo size="sm" href={null} />
+        <div className="w-10"></div> {/* Spacer to center logo */}
+      </div>
+
+      {/* Mobile Navigation Drawer Overlay */}
+      <div 
+        className={`lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300 ${isMobileNavOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setIsMobileNavOpen(false)}
+      />
+      
+      {/* Mobile Navigation Drawer */}
+      <div className={`lg:hidden fixed inset-y-0 left-0 w-[280px] bg-white shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out ${isMobileNavOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex items-center justify-between px-6 pt-8 pb-6 border-b border-[var(--color-outline-variant)]/10">
+          <PlateUpLogo size="sm" href={null} />
+          <button onClick={() => setIsMobileNavOpen(false)} className="p-2 -mr-2 text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container-low)] rounded-full transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div className="px-6 py-4">
+          <p className="text-[0.8125rem] font-medium text-[var(--color-on-surface-variant)] opacity-80 flex items-center justify-start gap-1.5">
+            <span className={`w-1.5 h-1.5 rounded-full ${userData.emailVerified ? 'bg-[#10b981]' : 'bg-[var(--color-accent)]'}`}></span> 
+            {userData.emailVerified ? 'Verified Account' : 'Unverified Account'}
+          </p>
+        </div>
+
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+          <div onClick={() => setIsMobileNavOpen(false)}><SidebarItem icon={LayoutDashboard} label="Generate Plan" tab="generate" /></div>
+          <div onClick={() => setIsMobileNavOpen(false)}><SidebarItem icon={History} label="Meal History" tab="history" /></div>
+          <div onClick={() => setIsMobileNavOpen(false)}><SidebarItem icon={Bookmark} label="Saved Plans" tab="saved" /></div>
+          <div onClick={() => setIsMobileNavOpen(false)}><SidebarItem icon={Settings} label="Settings" tab="settings" /></div>
+        </nav>
+
+        <div className="px-4 pb-8 pt-4 flex flex-col gap-4 border-t border-[var(--color-outline-variant)]/10">
+          <button
+            onClick={() => { setIsMobileNavOpen(false); setIsLogoutModalOpen(true); }}
+            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-[10px] text-[var(--color-on-surface-variant)] opacity-80 hover:bg-[color-mix(in_srgb,var(--color-error)_8%,transparent)] hover:text-[var(--color-error)] hover:opacity-100 transition-all group"
+          >
+            <LogOut className="w-4 h-4 transition-colors group-hover:text-[var(--color-error)]" />
+            <span className="font-medium text-[0.8125rem]">Logout</span>
+          </button>
+
+          <div className="flex items-center justify-between gap-1 px-3">
+            <button onClick={() => { setIsMobileNavOpen(false); handleTabChange('support'); }} className="text-[0.75rem] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Contact</button>
+            <button onClick={() => { setIsMobileNavOpen(false); handleTabChange('terms'); }} className="text-[0.75rem] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Terms</button>
+            <button onClick={() => { setIsMobileNavOpen(false); handleTabChange('privacy'); }} className="text-[0.75rem] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Privacy</button>
+          </div>
+        </div>
+      </div>
+
       <div className={`flex h-screen overflow-hidden bg-[#f9fafb] font-sans transition-all duration-300 ${isLogoutModalOpen ? 'blur-[4px] scale-[0.99] opacity-90' : ''}`}>
         
-        {/* Mobile Top App Bar */}
-        <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-[var(--color-outline-variant)]/10 z-40 flex items-center justify-between px-4 shadow-sm">
-          <button onClick={() => setIsMobileNavOpen(true)} className="p-2 -ml-2 text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container-low)] rounded-lg transition-colors">
-            <Menu className="w-6 h-6" />
-          </button>
-          <PlateUpLogo size="sm" href={null} />
-          <div className="w-10"></div> {/* Spacer to center logo */}
-        </div>
-
-        {/* Mobile Navigation Drawer Overlay */}
-        <div 
-          className={`lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300 ${isMobileNavOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-          onClick={() => setIsMobileNavOpen(false)}
-        />
-        
-        {/* Mobile Navigation Drawer */}
-        <div className={`lg:hidden fixed inset-y-0 left-0 w-[280px] bg-white shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out ${isMobileNavOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <div className="flex items-center justify-between px-6 pt-8 pb-6 border-b border-[var(--color-outline-variant)]/10">
-            <PlateUpLogo size="sm" href={null} />
-            <button onClick={() => setIsMobileNavOpen(false)} className="p-2 -mr-2 text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container-low)] rounded-full transition-colors">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          
-          <div className="px-6 py-4">
-            <p className="text-[0.8125rem] font-medium text-[var(--color-on-surface-variant)] opacity-80 flex items-center justify-start gap-1.5">
-              <span className={`w-1.5 h-1.5 rounded-full ${userData.emailVerified ? 'bg-[#10b981]' : 'bg-[var(--color-accent)]'}`}></span> 
-              {userData.emailVerified ? 'Verified Account' : 'Unverified Account'}
-            </p>
-          </div>
-
-          <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
-            <div onClick={() => setIsMobileNavOpen(false)}><SidebarItem icon={LayoutDashboard} label="Generate Plan" tab="generate" /></div>
-            <div onClick={() => setIsMobileNavOpen(false)}><SidebarItem icon={History} label="Meal History" tab="history" /></div>
-            <div onClick={() => setIsMobileNavOpen(false)}><SidebarItem icon={Bookmark} label="Saved Plans" tab="saved" /></div>
-            <div onClick={() => setIsMobileNavOpen(false)}><SidebarItem icon={Settings} label="Settings" tab="settings" /></div>
-          </nav>
-
-          <div className="px-4 pb-8 pt-4 flex flex-col gap-4 border-t border-[var(--color-outline-variant)]/10">
-            <button
-              onClick={() => { setIsMobileNavOpen(false); setIsLogoutModalOpen(true); }}
-              className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-[10px] text-[var(--color-on-surface-variant)] opacity-80 hover:bg-[color-mix(in_srgb,var(--color-error)_8%,transparent)] hover:text-[var(--color-error)] hover:opacity-100 transition-all group"
-            >
-              <LogOut className="w-4 h-4 transition-colors group-hover:text-[var(--color-error)]" />
-              <span className="font-medium text-[0.8125rem]">Logout</span>
-            </button>
-
-            <div className="flex items-center justify-between gap-1 px-3">
-              <button onClick={() => { setIsMobileNavOpen(false); handleTabChange('support'); }} className="text-[0.75rem] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Contact</button>
-              <button onClick={() => { setIsMobileNavOpen(false); handleTabChange('terms'); }} className="text-[0.75rem] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Terms</button>
-              <button onClick={() => { setIsMobileNavOpen(false); handleTabChange('privacy'); }} className="text-[0.75rem] font-medium text-[var(--color-on-surface-variant)] opacity-50 hover:text-[var(--color-primary)] hover:opacity-100 transition-all">Privacy</button>
-            </div>
-          </div>
-        </div>
-
         {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-64 bg-white shadow-[1px_0_12px_rgba(0,0,0,0.03)] dark:bg-[var(--color-surface-container-low)] flex-col flex-shrink-0 z-10">
         <div className="px-8 pt-8 pb-4">

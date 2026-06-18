@@ -5,7 +5,7 @@ interface PrivacyTabProps {
 export function PrivacyTab({ isScrolled = false }: PrivacyTabProps) {
   return (
     <div className="animate-in fade-in duration-300 pb-12 relative w-full">
-      <div className={`sticky top-[-24px] lg:top-[-32px] z-40 -mx-10 px-10 lg:-mx-14 lg:px-14 pt-6 lg:pt-8 pb-4 mb-6 transition-all duration-500 ease-in-out ${isScrolled ? 'bg-white/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.02)]' : 'bg-[#f9fafb]'}`}>
+      <div className={`sticky top-[-24px] lg:top-[-32px] z-40 -mx-4 lg:-mx-14 px-4 lg:px-14 pt-6 lg:pt-8 pb-4 mb-6 transition-all duration-500 ease-in-out ${isScrolled ? 'bg-white/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.02)]' : 'bg-[#f9fafb]'}`}>
         <div className="max-w-4xl">
           <div className="flex flex-col">
             <div className="flex items-center justify-between">
