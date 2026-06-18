@@ -109,6 +109,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
   const [activeBudget, setActiveBudget] = useState(0);
   const [activeIngredients, setActiveIngredients] = useState('');
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
+  const [formKey, setFormKey] = useState(0);
 
   // Settings State
   const [prefSaving, setPrefSaving] = useState(false);
@@ -136,6 +137,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     setActivePlanView('recommended');
     setActiveBudget(0);
     setActiveIngredients('');
+    setFormKey(prev => prev + 1);
   }, []);
   
   // Logout Modal State
@@ -482,6 +484,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
       <div className="lg:col-span-4">
         <div className="lg:sticky lg:top-6 space-y-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto scrollbar-thin overflow-x-hidden pr-2 pb-4">
         <GenerateMealForm 
+          key={formKey}
           onPlanGenerated={(plan, formData, id) => {
             const b = parseFloat(formData.get('budget') as string);
             const i = formData.get('ingredients') as string;
