@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "clean": "rmdir /s /q .next 2>nul & echo .next cleared"
+    "clean": "rmdir /s /q .next 2>nul & echo .next cleared",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
