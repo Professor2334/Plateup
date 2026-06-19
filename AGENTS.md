@@ -386,6 +386,11 @@ Application Experience
 - Respect budget constraints.
 - Utilize available ingredients whenever possible.
 
+## Dynamic Budgeting (Cost-Per-Portion)
+- Budgeting constraints are **dynamically calculated** based on household size, not a hardcoded total budget.
+- The formula is: `Budget / (21 meals * Household Size) = Cost Per Portion`.
+- If the Cost Per Portion is tight (< 800 NGN), the AI is strictly forbidden from adding premium proteins (Chicken, Beef) to the shopping list. This guarantees cost estimation stability across all household sizes.
+
 ## AI Validation Rules
 
 - Validate AI responses before storage.

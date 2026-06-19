@@ -19,7 +19,6 @@
     "@upstash/redis": "^1.38.0",
     "bcrypt": "^6.0.0",
     "canvas-confetti": "^1.9.4",
-    "framer-motion": "^12.40.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "lottie-react": "^2.4.1",
@@ -32,6 +31,7 @@
     "react-dom": "^18",
     "react-hook-form": "^7.78.0",
     "resend": "^6.12.4",
+    "sonner": "^2.0.7",
     "zod": "^4.4.3"
   },
   "devDependencies": {

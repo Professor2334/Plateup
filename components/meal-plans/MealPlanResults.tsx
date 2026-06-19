@@ -209,7 +209,7 @@ export function MealPlanResults({
                     <p className="text-[0.8125rem]"><span className="font-semibold text-[var(--color-secondary)]">Budget Status:</span> <span className="font-bold text-[var(--color-error)]">Likely Insufficient</span></p>
                   </div>
                   {onRegenerateBudgetFriendly && (
-                    <Button onClick={onRegenerateBudgetFriendly} variant="outline" className="w-full sm:w-auto text-sm border-[var(--color-error)] text-[var(--color-error)] hover:bg-[var(--color-error)] hover:text-white h-9">
+                    <Button onClick={onRegenerateBudgetFriendly} variant="error-outline" className="w-full sm:w-auto text-sm h-9">
                       Generate Budget-Friendly Alternative
                     </Button>
                   )}

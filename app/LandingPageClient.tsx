@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { motion, useInView, AnimatePresence } from "framer-motion";
 import { PlateUpLogo } from "@/components/shared/PlateUpLogo";
 import { Menu, X, ArrowRight, CheckCircle2, XCircle, ChevronDown, Check, Zap, Sparkles, Receipt, ListTodo, History, MessageCircle, Wallet, Carrot, ShoppingBag, ChevronRight, Coffee, Utensils, Calendar, ShoppingCart, Loader2 } from "lucide-react";
 
@@ -23,8 +22,18 @@ export default function LandingPage() {
   const [demoStep, setDemoStep] = useState(0);
 
   // Showcase animation state
-  const showcaseRef = useRef(null);
-  const isShowcaseInView = useInView(showcaseRef, { once: false, amount: 0.3 });
+  const showcaseRef = useRef<HTMLDivElement>(null);
+  const [isShowcaseInView, setIsShowcaseInView] = useState(false);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsShowcaseInView(entry.isIntersecting),
+      { threshold: 0.3 }
+    );
+    if (showcaseRef.current) observer.observe(showcaseRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   const [showcaseState, setShowcaseState] = useState<'idle' | 'generating' | 'generated'>('idle');
 
   const [showcaseDayIndex, setShowcaseDayIndex] = useState(0);
@@ -657,11 +666,8 @@ export default function LandingPage() {
               {/* AI Connection Line (Desktop only) */}
               <div className="hidden lg:block absolute top-1/2 left-[310px] w-[60px] h-[2px] bg-green-500/10 z-0 overflow-hidden -translate-y-1/2 rounded-full">
                  {showcaseState === 'generating' && (
-                   <motion.div 
-                      initial={{ x: '-100%' }}
-                      animate={{ x: '400%' }}
-                      transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-                      className="w-[15px] h-full bg-gradient-to-r from-transparent via-green-500/40 to-transparent"
+                   <div 
+                      className="w-[15px] h-full bg-gradient-to-r from-transparent via-green-500/40 to-transparent animate-[marquee_1.2s_linear_infinite]"
                    />
                  )}
               </div>
@@ -708,15 +714,12 @@ export default function LandingPage() {
                     
                     <div className="flex flex-wrap items-center justify-between gap-4 mb-8 relative z-10">
                       <h3 className="text-[1.5rem] font-semibold text-[var(--color-on-surface)]">Your Plan</h3>
-                      <motion.span 
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: showcaseState === 'generated' ? 1 : 0, scale: showcaseState === 'generated' ? 1 : 0.95 }}
-                        transition={{ duration: 0.4, ease: "easeOut" }}
-                        className="px-3.5 py-1.5 bg-green-50 text-green-700 text-[0.75rem] font-bold rounded-full flex items-center gap-2 ring-1 ring-green-600/20 shadow-sm"
+                      <span 
+                        className={`px-3.5 py-1.5 bg-green-50 text-green-700 text-[0.75rem] font-bold rounded-full flex items-center gap-2 ring-1 ring-green-600/20 shadow-sm transition-all duration-500 ease-out transform ${showcaseState === 'generated' ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
                       >
                         <span className="w-2 h-2 rounded-full bg-green-500"></span>
                         Within Budget
-                      </motion.span>
+                      </span>
                     </div>
                     
                     <div className="space-y-6 relative z-10">
@@ -740,31 +743,20 @@ export default function LandingPage() {
                             </div>
                           </div>
                         ) : (
-                          <motion.div 
-                            className="grid grid-cols-1 gap-3"
-                            initial="hidden"
-                            animate="visible"
-                            variants={{
-                              hidden: { opacity: 0 },
-                              visible: {
-                                opacity: 1,
-                                transition: { staggerChildren: 0.15 }
-                              }
-                            }}
-                          >
-                            <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }} className="flex items-center gap-5 bg-[#f8f9fa] p-4 rounded-2xl group hover:bg-green-50/50 transition-colors">
+                          <div className="grid grid-cols-1 gap-3">
+                            <div className="flex items-center gap-5 bg-[#f8f9fa] p-4 rounded-2xl group hover:bg-green-50/50 transition-colors animate-slide-up-fade">
                               <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-[0.8125rem] font-semibold text-[var(--color-on-surface-variant)] group-hover:text-[var(--color-primary)] transition-colors">B</div>
                               <div className="text-[0.9375rem] font-normal text-[var(--color-on-surface)] opacity-85">{SHOWCASE_DAYS[showcaseDayIndex].meals.b}</div>
-                            </motion.div>
-                            <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }} className="flex items-center gap-5 bg-[#f8f9fa] p-4 rounded-2xl group hover:bg-green-50/50 transition-colors">
+                            </div>
+                            <div className="flex items-center gap-5 bg-[#f8f9fa] p-4 rounded-2xl group hover:bg-green-50/50 transition-colors opacity-0 animate-slide-up-fade" style={{ animationDelay: '150ms' }}>
                               <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-[0.8125rem] font-semibold text-[var(--color-on-surface-variant)] group-hover:text-[var(--color-primary)] transition-colors">L</div>
                               <div className="text-[0.9375rem] font-normal text-[var(--color-on-surface)] opacity-85">{SHOWCASE_DAYS[showcaseDayIndex].meals.l}</div>
-                            </motion.div>
-                            <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }} className="flex items-center gap-5 bg-[#f8f9fa] p-4 rounded-2xl group hover:bg-green-50/50 transition-colors">
+                            </div>
+                            <div className="flex items-center gap-5 bg-[#f8f9fa] p-4 rounded-2xl group hover:bg-green-50/50 transition-colors opacity-0 animate-slide-up-fade" style={{ animationDelay: '300ms' }}>
                               <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-[0.8125rem] font-semibold text-[var(--color-on-surface-variant)] group-hover:text-[var(--color-primary)] transition-colors">D</div>
                               <div className="text-[0.9375rem] font-normal text-[var(--color-on-surface)] opacity-85">{SHOWCASE_DAYS[showcaseDayIndex].meals.d}</div>
-                            </motion.div>
-                          </motion.div>
+                            </div>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -795,27 +787,16 @@ export default function LandingPage() {
                           </li>
                         </>
                       ) : (
-                        <motion.div
-                          initial="hidden"
-                          animate="visible"
-                          variants={{
-                            hidden: { opacity: 0 },
-                            visible: {
-                              opacity: 1,
-                              transition: { staggerChildren: 0.15 }
-                            }
-                          }}
-                          className="space-y-4"
-                        >
+                        <div className="space-y-4">
                           {SHOWCASE_DAYS[showcaseDayIndex].shopping.map((item, i) => (
-                            <motion.li key={i} variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }} className="flex items-center gap-3">
+                            <li key={i} className="flex items-center gap-3 opacity-0 animate-slide-up-fade" style={{ animationDelay: `${i * 150}ms` }}>
                               <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
                                 <Check className="w-3.5 h-3.5 text-green-700" strokeWidth={3} />
                               </div>
                               <span className="text-[0.875rem] font-normal text-[var(--color-on-surface)] opacity-85">{item}</span>
-                            </motion.li>
+                            </li>
                           ))}
-                        </motion.div>
+                        </div>
                       )}
                     </ul>
                   </div>
@@ -850,20 +831,14 @@ export default function LandingPage() {
                   {faq.q}
                   <ChevronDown className={`w-4 h-4 text-[var(--color-on-surface-variant)] transition-transform duration-300 ease-in-out ${activeFaq === i ? "rotate-180" : ""}`} />
                 </button>
-                <AnimatePresence>
-                  {activeFaq === i && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                    >
-                      <div className="px-6 pb-6 pt-0">
-                        <p className="text-[0.875rem] font-normal text-[var(--color-on-surface-variant)] leading-relaxed opacity-85">{faq.a}</p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <div 
+                  className="transition-all duration-300 ease-in-out overflow-hidden"
+                  style={{ maxHeight: activeFaq === i ? '200px' : '0', opacity: activeFaq === i ? 1 : 0 }}
+                >
+                  <div className="px-6 pb-6 pt-0">
+                    <p className="text-[0.875rem] font-normal text-[var(--color-on-surface-variant)] leading-relaxed opacity-85">{faq.a}</p>
+                  </div>
+                </div>
               </div>
             ))}
           </div>

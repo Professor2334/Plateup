@@ -16,13 +16,13 @@ export const authRateLimit = new Ratelimit({
   prefix: "@upstash/ratelimit/auth_v2",
 });
 
-// App Activity Rate Limiter: 20 requests per hour per IP (or per User ID)
-// Use this for Meal Generation Requests
+// App Activity Rate Limiter: 5 requests per hour per IP (or per User ID)
+// Use this for Meal Generation Requests to prevent AI credit abuse
 export const generationRateLimit = new Ratelimit({
   redis,
-  limiter: Ratelimit.slidingWindow(20, "1 h"),
+  limiter: Ratelimit.slidingWindow(5, "1 h"),
   analytics: true,
-  prefix: "@upstash/ratelimit/generation",
+  prefix: "@upstash/ratelimit/generation_v2", // change prefix to force immediate reset with new limit
 });
 
 // General API Rate Limiter: 100 requests per minute per IP

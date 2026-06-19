@@ -1,4 +1,5 @@
 'use client';
+import { toast } from 'sonner';
 
 import { useState, useEffect, useCallback } from 'react';
 import { SupportTab } from '@/components/dashboard/SupportTab';
@@ -119,14 +120,6 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
   const [passError, setPassError] = useState('');
   const [passSuccess, setPassSuccess] = useState('');
 
-  // Toast notification state
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-
-  const showToast = useCallback((message: string, type: 'success' | 'error') => {
-    setToast({ message, type });
-    // Auto-dismiss after 4 seconds
-    setTimeout(() => setToast(null), 4000);
-  }, []);
 
   /** Resets all generation result state — called after a successful save. */
   const clearGeneratedPlan = useCallback(() => {
@@ -215,11 +208,11 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     const success = await handleSavePlanById(idToSave);
     setSaving(false);
     if (success) {
-      showToast('Meal plan saved! Ready to generate a new one.', 'success');
-      // Clear all generation state so the form returns to its initial empty state
+      toast.success('Meal plan saved! Ready to generate a new one.');
       clearGeneratedPlan();
+      router.refresh();
     } else {
-      showToast('Failed to save meal plan. Please try again.', 'error');
+      toast.error('Failed to save meal plan. Please try again.');
     }
   };
 
@@ -264,10 +257,14 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           handlePlanGenerated(result.data, activeBudget, activeIngredients, result.id);
         }
       } else {
-        showToast(result?.error || 'Unable to generate a new meal plan. Please try again.', 'error');
+        if (result?.error === 'RATE_LIMIT_EXCEEDED') {
+          toast.error('Generation Limit Reached', { description: "You've reached your meal plan generation limit. Please wait a few minutes before trying again." });
+        } else {
+          toast.error('Unable to Generate Meal Plan', { description: "We couldn't generate a meal plan right now. Please try again." });
+        }
       }
     } catch (error) {
-      showToast('Unable to generate a new meal plan. Please try again.', 'error');
+      toast.error('Unable to Generate Meal Plan', { description: "We couldn't generate a meal plan right now. Please try again." });
     } finally {
       setIsRegenerating(false);
       setLoading(false);
@@ -469,10 +466,14 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
         };
         setHistory(prev => [newPlan, ...prev]);
       } else {
-        alert(result?.error || 'Failed to generate budget-friendly plan.');
+        if (result?.error === 'RATE_LIMIT_EXCEEDED') {
+          toast.error('Generation Limit Reached', { description: "You've reached your meal plan generation limit. Please wait a few minutes before trying again." });
+        } else {
+          toast.error('Unable to Generate Meal Plan', { description: "We couldn't generate a meal plan right now. Please try again." });
+        }
       }
     } catch (error) {
-      alert('An error occurred while generating the plan.');
+      toast.error('Unable to Generate Meal Plan', { description: "We couldn't generate a meal plan right now. Please try again." });
     } finally {
       setLoading(false);
     }
@@ -638,9 +639,9 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                   const res = await updatePreferences(prefHousehold, prefGoal);
                   setPrefSaving(false);
                   if (res.success) {
-                    alert('Preferences updated successfully!');
+                    toast.success('Preferences updated successfully!');
                   } else {
-                    alert(res.error || 'Failed to update preferences.');
+                    toast.error(res.error || 'Failed to update preferences.');
                   }
                 }}
                 className="space-y-6"
@@ -853,34 +854,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
 
   return (
     <>
-      {/* ── TOAST NOTIFICATION ── */}
-      {toast && (
-        <div
-          role="alert"
-          aria-live="polite"
-          className={`fixed bottom-6 right-6 z-[9999] flex items-center gap-3 px-5 py-4 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] max-w-sm w-auto
-            animate-in slide-in-from-bottom-4 fade-in duration-300
-            ${toast.type === 'success'
-              ? 'bg-[var(--color-primary)] text-white'
-              : 'bg-[var(--color-error)] text-white'
-            }`}
-        >
-          <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-            {toast.type === 'success'
-              ? <CheckCircle2 className="w-4 h-4 text-white" />
-              : <span className="text-white text-sm font-bold">!</span>
-            }
-          </div>
-          <p className="text-[0.875rem] font-semibold leading-snug">{toast.message}</p>
-          <button
-            onClick={() => setToast(null)}
-            aria-label="Dismiss notification"
-            className="ml-auto w-6 h-6 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors flex-shrink-0"
-          >
-            <X className="w-3.5 h-3.5 text-white" />
-          </button>
-        </div>
-      )}
+
       {/* Mobile Top App Bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-[var(--color-outline-variant)]/10 z-40 flex items-center justify-between px-4 shadow-sm">
         <button onClick={() => setIsMobileNavOpen(true)} className="p-2 -ml-2 text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container-low)] rounded-lg transition-colors">
@@ -1086,10 +1060,10 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             if (res.success) {
               setIsEditProfileModalOpen(false);
             } else {
-              alert(res.error || 'Failed to update profile');
-              submitBtn.textContent = originalText;
-              submitBtn.disabled = false;
+              toast.error(res.error || 'Failed to update profile');
             }
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
           }} noValidate>
             <div className="space-y-4 mb-8">
               <div>

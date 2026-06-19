@@ -50,6 +50,8 @@ export function pruneShoppingList(
     // 1A. Direct Match: Does the user already have this exact item or a close variant?
     let shouldPrune = userPantryList.some(p => {
       const pNorm = normalize(p);
+      // Prevent 'vegetable' from matching 'vegetable oil'
+      if (itemNorm === 'vegetable' && pNorm.includes('oil')) return false;
       return itemNorm.includes(pNorm) || pNorm.includes(itemNorm);
     });
 
@@ -57,8 +59,13 @@ export function pruneShoppingList(
     if (!shouldPrune) {
       for (const [key, substitutes] of Object.entries(SUBSTITUTIONS)) {
         const keyNorm = normalize(key);
-        // If the shopping item is the key or related to the key
-        if (itemNorm.includes(keyNorm) || keyNorm.includes(itemNorm)) {
+        // Prevent 'vegetable' from accidentally matching the 'vegetable oil' key
+        const isMatch = itemNorm.includes(keyNorm) || keyNorm.includes(itemNorm);
+        if (isMatch && itemNorm === 'vegetable' && keyNorm.includes('oil')) {
+          continue; // Skip this key, do not prune vegetable just because of vegetable oil
+        }
+        
+        if (isMatch) {
           // If the user has one of the substitutes in their pantry
           const hasSubstitute = substitutes.some(sub => {
              const subNorm = normalize(sub);

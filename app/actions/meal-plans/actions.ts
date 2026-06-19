@@ -26,7 +26,7 @@ export async function generateMealPlan(formData: FormData) {
   // Rate Limiting Check
   const { success: limitSuccess } = await generationRateLimit.limit(session.user.id);
   if (!limitSuccess) {
-    return { success: false, error: 'Too many meal plans generated recently. Please try again later.' };
+    return { success: false, error: 'RATE_LIMIT_EXCEEDED' };
   }
 
   const budget = parseFloat(formData.get('budget') as string);
@@ -122,7 +122,7 @@ export async function generateMealPlan(formData: FormData) {
         if (attempts < maxAttempts) {
           continue;
         } else {
-          throw new Error('Failed to generate a clean meal plan without AI reasoning after multiple attempts.');
+          return { success: false, error: 'GENERATION_FAILED' };
         }
       }
 
@@ -218,22 +218,14 @@ export async function generateMealPlan(formData: FormData) {
       break;
     } catch (error: any) {
       if (attempts >= maxAttempts) {
-        console.error('Meal Plan Generation Error:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to generate meal plan. Please try again.';
-        // Provide a more friendly message for user but preserve specific validation messages
-        let friendlyMessage = 'Failed to generate meal plan. Please try again.';
-        if (errorMessage.includes('Request Timeout')) friendlyMessage = 'The AI took too long to respond. Please try again.';
-        else if (errorMessage.includes('schema') || errorMessage.includes('malformed')) friendlyMessage = 'The AI returned an invalid response. Please try again.';
-        else friendlyMessage = errorMessage; // Return the exact validator error
-          
-        return { success: false, error: friendlyMessage };
+        return { success: false, error: 'GENERATION_FAILED' };
       }
       console.log(`Generation failed (Attempt ${attempts}), retrying...`, error.message);
     }
   }
 
   if (!finalMealPlan) {
-    return { success: false, error: 'Failed to generate a valid meal plan. Please try again.' };
+    return { success: false, error: 'GENERATION_FAILED' };
   }
 
   // Save to database as unsaved history

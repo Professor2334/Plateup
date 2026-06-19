@@ -70,6 +70,17 @@ export async function generateMealPlan(
     throw new Error('DEEPSEEK_API_KEY is missing');
   }
 
+  // Calculate dynamic budget pressure based on household size
+  const getHouseholdMultiplier = (size: string) => {
+    if (size.includes('-')) return parseInt(size.split('-')[0], 10);
+    if (size.includes('+')) return parseInt(size.replace('+', ''), 10);
+    return parseInt(size, 10) || 1;
+  };
+  const householdMultiplier = getHouseholdMultiplier(householdSize);
+  const totalWeeklyPortions = 21 * householdMultiplier; // 3 meals * 7 days * people
+  const budgetPerPortion = budget / totalWeeklyPortions;
+  const isBudgetTight = budgetPerPortion < 800; // Under 800 NGN per meal per person is tight
+
   let prompt = `Generate a 7-day budget-aware Nigerian meal plan.
 Household Size: ${householdSize}
 Goal: ${primaryGoal}
@@ -86,19 +97,22 @@ CRITICAL RULES FOR ALL GENERATIONS:
 6. MEAL VARIETY: Ensure reasonable weekly variety. No exact meal should dominate the week. Rotate among Rice, Beans, Yam, Garri, Plantain, Pap, and local soups. Do not repeat the exact same meal more than 3 times in the entire week.
 7. QUANTITY SCALING: You must scale your shopping list quantities strictly for a household size of ${householdSize}. Do NOT suggest bulk/family-size items (e.g., "3kg tomatoes", "2.5L palm oil", "1 crate of eggs") for a household of 1. Suggest small, affordable market measurements (e.g., "1 small paint rubber", "1 sachet", "₦200 worth", "2 pieces").
 8. NO REASONING: DO NOT include internal thoughts, questions, or reasoning in the meal fields. The meal text must be clean and final.
-9. PANTRY-FIRST STRATEGY: Prioritize existing pantry ingredients before introducing new ones. The more ingredients the user has in their pantry, the more aggressively you MUST reuse them across the week.
-10. PANTRY SCALING EXPECTATIONS: 
+9. NATURAL MEAL NAMES: DO NOT just append raw ingredients to the end of a meal name to prove you used them. Ingredients like palm oil, salt, and seasoning are cooked INTO the meal. Name the meal naturally. DO NOT include reasoning, suggestions, or words like "use", "instead", "maybe", or "consider" inside the meal names.
+10. REALISTIC PORTION MATH: When scaling quantities for the shopping list, be exact and realistic. For example, for a household of 1, eating eggs 3 times in a week means they need 3 to 6 eggs (1-2 per meal). Write quantities clearly (e.g., "6 pieces" or "half crate"). Do not suggest over-buying perishable proteins for a household of 1.
+11. PANTRY-FIRST STRATEGY: Prioritize existing pantry ingredients before introducing new ones. The more ingredients the user has in their pantry, the more aggressively you MUST reuse them across the week.
+12. PANTRY SCALING EXPECTATIONS: 
     - Minimal Pantry: Produce a larger shopping list, higher estimated spend, and lower savings.
     - Medium Pantry: Produce a noticeably smaller shopping list, lower estimated spend, and higher savings.
     - Heavy Pantry: Produce the SMALLEST shopping list, LOWEST estimated spend, and HIGHEST savings. A heavy pantry should drastically reduce shopping costs.
-11. COMPLEMENTARY INGREDIENT CONTROL: Only introduce complementary ingredients when necessary to create balanced meals. Avoid unnecessary additions that increase costs. Favor affordable additions over expensive proteins.
-12. BREAKFAST VARIETY: Do not repeat the exact same breakfast more than TWICE per week.
-13. PROTEIN ROTATION: Rotate between Eggs, Beans, Stockfish, Crayfish, Sardines, and Chicken (if budget allows). Avoid using the same protein repeatedly.
-14. CARBOHYDRATE ROTATION: Rotate between Rice, Yam, Garri, Spaghetti, Amala, and Semo. Avoid excessive repetition.
-15. LEFTOVER REUSE & FRESHNESS: Reuse leftovers only when it improves cost efficiency. A leftover MUST be eaten within 1 or 2 days of the original meal. NEVER suggest a leftover from 3 or more days ago.
-16. NUTRITION BALANCE: Ensure every day includes a carbohydrate, a protein, and vegetables where possible.
-17. COST-FIRST OPTIMIZATION: When using a well-stocked pantry, Cost Minimization becomes your HIGHEST priority. Avoid introducing premium ingredients when pantry alternatives exist. Every newly introduced ingredient must justify its cost impact.
-18. PROTEIN PRIORITY HIERARCHY: You MUST prefer pantry proteins before introducing new proteins. Follow this exact priority order: 1. Stockfish -> 2. Crayfish -> 3. Beans -> 4. Eggs -> 5. Sardines -> 6. Chicken -> 7. Beef. Avoid Chicken and Beef unless required for nutritional balance or explicitly requested.
+13. COMPLEMENTARY INGREDIENT CONTROL: Only introduce complementary ingredients when necessary to create balanced meals. Avoid unnecessary additions that increase costs. Favor affordable additions over expensive proteins.
+14. BREAKFAST VARIETY: Do not repeat the exact same breakfast more than TWICE per week.
+15. PROTEIN ROTATION: Rotate between Eggs, Beans, Stockfish, Crayfish, Sardines, and Chicken (if budget allows). Avoid using the same protein repeatedly.
+16. CARBOHYDRATE ROTATION: Rotate between Rice, Yam, Garri, Spaghetti, Amala, and Semo. Avoid excessive repetition.
+17. LEFTOVER REUSE & FRESHNESS: Reuse leftovers only when it improves cost efficiency. A leftover MUST be eaten within 1 or 2 days of the original meal. NEVER suggest a leftover from 3 or more days ago.
+18. NUTRITION BALANCE: Ensure every day includes a carbohydrate, a protein, and vegetables where possible.
+19. COST-FIRST OPTIMIZATION: When using a well-stocked pantry, Cost Minimization becomes your HIGHEST priority. Avoid introducing premium ingredients when pantry alternatives exist. Every newly introduced ingredient must justify its cost impact.
+20. PROTEIN PRIORITY HIERARCHY: You MUST prefer pantry proteins before introducing new proteins. Follow this exact priority order: 1. Stockfish -> 2. Crayfish -> 3. Beans -> 4. Eggs -> 5. Sardines -> 6. Chicken -> 7. Beef. Avoid Chicken and Beef unless required for nutritional balance or explicitly requested.
+21. STRICT PROTEIN BUDGET RULE: ${isBudgetTight ? "The budget per portion is TIGHT. NEVER add Chicken, Beef, or Goat Meat to the shopping list. You must rely exclusively on affordable proteins like Eggs, Fish, Sardines, Crayfish, and Beans." : "The budget per portion allows for standard proteins, but you MUST still minimize costs and avoid unnecessary luxury items."} The AI must be highly stable and consistent in cost estimation. Do not artificially inflate the shopping list just because there is "remaining budget". Your goal is to save the user money.
 
 PANTRY COST OPTIMIZATION RULES:
 1. Treat pantry ingredients as ingredients the user already owns and has already paid for.

@@ -2,7 +2,7 @@ import * as React from "react"
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline"
+  variant?: "primary" | "secondary" | "outline" | "error-outline"
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -17,6 +17,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       variantStyles = "bg-[var(--color-secondary)] text-white hover:opacity-90"
     } else if (variant === "outline") {
       variantStyles = "border border-[var(--color-outline)] text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container)]"
+    } else if (variant === "error-outline") {
+      variantStyles = "border border-[var(--color-error)] text-[var(--color-error)] hover:bg-[var(--color-error)] hover:text-white"
     }
 
     return (

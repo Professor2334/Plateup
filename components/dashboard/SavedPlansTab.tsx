@@ -96,7 +96,7 @@ export function SavedPlansTab({
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="-mx-4 lg:-mx-14 bg-white px-4 lg:px-14 pb-12 relative w-full">
+    <div className="-mx-4 lg:-mx-14 bg-white px-4 lg:px-14 pb-12 relative">
       {/* ── STICKY HEADER — fixed height only, never changes size ── */}
       <div
         className={`sticky top-[-24px] lg:top-[-32px] z-40 -mx-4 px-4 lg:-mx-14 lg:px-14 pt-6 lg:pt-8 pb-4 mb-6 transition-all duration-500 ease-in-out ${
