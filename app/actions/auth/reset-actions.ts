@@ -2,7 +2,7 @@
 
 import db from '@/lib/db';
 import crypto from 'crypto';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { sendPasswordResetEmail } from '@/lib/resend';
 import { z } from 'zod';
 

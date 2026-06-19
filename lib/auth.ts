@@ -3,7 +3,7 @@ import NextAuth from "next-auth";
 import { authConfig } from "@/auth.config";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import bcrypt from "bcrypt";
+import bcrypt from 'bcryptjs';
 import db from "@/lib/db";
 import { LoginSchema } from "@/lib/validators";
 import { headers } from "next/headers";

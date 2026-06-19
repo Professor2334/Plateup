@@ -3,7 +3,7 @@
 import db from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export async function updatePreferences(householdSize: string, primaryGoal: string) {
   const session = await auth();

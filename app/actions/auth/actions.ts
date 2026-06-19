@@ -1,6 +1,6 @@
 'use server';
 
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import db from '@/lib/db';
 import { SignupSchema } from '@/lib/validators';
 import { sendVerificationEmail } from '@/lib/resend';
