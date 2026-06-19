@@ -14,13 +14,13 @@ export default function AuthRightPanel() {
   const searchParams = useSearchParams();
   const isSuccessState = searchParams.get('success') === 'true';
 
-  let imageSrc = "/auth-illustration-v3.png";
-  if (isVerify) imageSrc = "/auth-success-illustration.png";
-  else if (isForgotPassword && isSuccessState) imageSrc = "/check-email-illustration.png";
-  else if (isForgotPassword) imageSrc = "/forgot-password-illustration.png";
-  else if (isResetPassword && isSuccessState) imageSrc = "/password-success-illustration.png";
-  else if (isResetPassword) imageSrc = "/reset-password-illustration.png";
-  else if (isLogin) imageSrc = "/auth-login-illustration-v5.png";
+  let imageSrc = "/auth-illustration-v3.webp";
+  if (isVerify) imageSrc = "/auth-success-illustration.webp";
+  else if (isForgotPassword && isSuccessState) imageSrc = "/check-email-illustration.webp";
+  else if (isForgotPassword) imageSrc = "/forgot-password-illustration.webp";
+  else if (isResetPassword && isSuccessState) imageSrc = "/password-success-illustration.webp";
+  else if (isResetPassword) imageSrc = "/reset-password-illustration.webp";
+  else if (isLogin) imageSrc = "/auth-login-illustration-v5.webp";
 
   return (
     <div className="hidden lg:flex flex-1 flex-col justify-center items-center bg-white p-12 lg:w-[55%] relative overflow-hidden">
@@ -40,7 +40,6 @@ export default function AuthRightPanel() {
                 alt="PlateUp Meal Planning" 
                 fill
                 className="object-contain mix-blend-multiply scale-[0.92] contrast-[1.1] brightness-[1.05]"
-                priority
               />
             )}
           </div>

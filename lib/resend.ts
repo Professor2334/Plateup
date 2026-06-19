@@ -3,6 +3,48 @@ import nodemailer from 'nodemailer';
 
 const fromEmail = process.env.EMAIL_FROM || 'onboarding@resend.dev';
 
+const sendRawEmail = async (to: string, subject: string, html: string) => {
+  // ── 1. Try Resend (Primary) ───────────────────────────────────────────────
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      await resend.emails.send({ from: fromEmail, to, subject, html });
+      return { success: true };
+    } catch (error) {
+      console.error('[Email] Resend failed, trying Nodemailer fallback:', error);
+    }
+  }
+
+  // ── 2. Try Nodemailer (Fallback) ────────────────────────────────────────────
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    try {
+      const port = parseInt(process.env.SMTP_PORT || '465');
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: port,
+        secure: port === 465,
+        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+        tls: { rejectUnauthorized: false },
+      });
+      const fromLine = process.env.SMTP_FROM || process.env.SMTP_USER || fromEmail;
+      await transporter.sendMail({ from: fromLine, to, subject, html });
+      return { success: true };
+    } catch (error) {
+      console.error('[Email] Nodemailer failed:', error);
+    }
+  }
+
+  // ── 3. Dev mode fallback ────────────────────────────────────────────────
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('\n─────────────────────────────────────────────────');
+    console.log('[DEV MODE EMAIL]', { to, subject });
+    console.log('─────────────────────────────────────────────────\n');
+    return { success: true };
+  }
+
+  return { success: false, error: 'No email provider is configured or all attempts failed.' };
+};
+
 export const sendVerificationEmail = async (email: string, token: string) => {
   const confirmLink = `${process.env.AUTH_URL || 'http://localhost:3000'}/auth/verify-email?token=${token}`;
   const subject = 'Welcome to PlateUp — verify your email';
@@ -25,56 +67,9 @@ export const sendVerificationEmail = async (email: string, token: string) => {
     </div>
   `;
 
-  // Always log the link in development so you never get stuck if the email network fails!
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('\n─────────────────────────────────────────────────');
-    console.log(`[DEV PREVIEW] Verification link for ${email}:`);
-    console.log(confirmLink);
-    console.log('─────────────────────────────────────────────────\n');
-  }
 
-  // ── 1. Try Nodemailer ────────────────────────────────────────────────────
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    try {
-      const port = parseInt(process.env.SMTP_PORT || '465');
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: port,
-        secure: port === 465, // Use SSL for 465, STARTTLS for 587
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-        tls: { rejectUnauthorized: false }, // Bypass local antivirus/firewall SSL interception
-      });
-      const fromLine = process.env.SMTP_FROM || process.env.SMTP_USER || fromEmail;
-      await transporter.sendMail({ from: fromLine, to: email, subject, html });
-      return { success: true };
-    } catch (error) {
-      console.error('[Email] Nodemailer failed, trying Resend fallback:', error);
-    }
-  }
 
-  // ── 2. Try Resend fallback ───────────────────────────────────────────────
-  if (process.env.RESEND_API_KEY) {
-    try {
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({ from: fromEmail, to: email, subject, html });
-      return { success: true };
-    } catch (error) {
-      console.error('[Email] Resend failed:', error);
-    }
-  }
-
-  // ── 3. Dev mode: log token to console ───────────────────────────────────
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('\n─────────────────────────────────────────────────');
-    console.log('[DEV MODE] No email provider configured.');
-    console.log(`Verification link for ${email}:`);
-    console.log(confirmLink);
-    console.log('─────────────────────────────────────────────────\n');
-    // Return success in dev so registration still works without email config
-    return { success: true };
-  }
-
-  return { success: false, error: 'No email provider is configured.' };
+  return await sendRawEmail(email, subject, html);
 };
 
 export const sendContactNotification = async (name: string | null, email: string, subject: string, message: string) => {
@@ -89,31 +84,7 @@ export const sendContactNotification = async (name: string | null, email: string
     </div>
   `;
 
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    try {
-      const port = parseInt(process.env.SMTP_PORT || '465');
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: port,
-        secure: port === 465,
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-        tls: { rejectUnauthorized: false },
-      });
-      const fromLine = process.env.SMTP_FROM || process.env.SMTP_USER || fromEmail;
-      await transporter.sendMail({ from: fromLine, to: 'support@plateup.app', subject: mailSubject, html });
-      return { success: true };
-    } catch (error) {
-      console.error('[Email] Nodemailer failed for notification:', error);
-      return { success: false, error: 'Nodemailer failed' };
-    }
-  } else {
-    // Dev mode fallback
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[DEV MODE NOTIFICATION VIA NODEMAILER]', { to: 'support@plateup.app', mailSubject });
-      return { success: true };
-    }
-    return { success: false, error: 'SMTP variables not configured' };
-  }
+  return await sendRawEmail('support@plateup.app', mailSubject, html);
 };
 
 export const sendContactConfirmation = async (email: string) => {
@@ -132,43 +103,6 @@ export const sendContactConfirmation = async (email: string) => {
     </div>
   `;
   return await sendRawEmail(email, subject, html);
-};
-
-const sendRawEmail = async (to: string, subject: string, html: string) => {
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    try {
-      const port = parseInt(process.env.SMTP_PORT || '465');
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: port,
-        secure: port === 465,
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-        tls: { rejectUnauthorized: false },
-      });
-      const fromLine = process.env.SMTP_FROM || process.env.SMTP_USER || fromEmail;
-      await transporter.sendMail({ from: fromLine, to, subject, html });
-      return { success: true };
-    } catch (error) {
-      console.error('[Email] Nodemailer failed:', error);
-    }
-  }
-
-  if (process.env.RESEND_API_KEY) {
-    try {
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({ from: fromEmail, to, subject, html });
-      return { success: true };
-    } catch (error) {
-      console.error('[Email] Resend failed:', error);
-    }
-  }
-
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('[DEV MODE EMAIL]', { to, subject });
-    return { success: true };
-  }
-
-  return { success: false };
 };
 
 export const sendPasswordResetEmail = async (email: string, token: string) => {
@@ -193,12 +127,7 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
     </div>
   `;
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('\n─────────────────────────────────────────────────');
-    console.log(`[DEV PREVIEW] Password reset link for ${email}:`);
-    console.log(resetLink);
-    console.log('─────────────────────────────────────────────────\n');
-  }
+
 
   return await sendRawEmail(email, subject, html);
 };
