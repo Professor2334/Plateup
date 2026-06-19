@@ -28,10 +28,7 @@ export default async function ContactPage() {
         <div className="mb-12">
           <h1 className="text-[32px] md:text-[40px] font-extrabold text-[var(--color-on-surface)] tracking-tight mb-4">Contact Us</h1>
           <p className="text-[16px] font-medium text-[var(--color-on-surface-variant)] leading-relaxed">
-            Use this form to send us a message, or email us directly at{' '}
-            <a href="mailto:support@plateup.app" className="text-[var(--color-primary)] hover:underline">
-              support@plateup.app
-            </a>.
+            Use the contact form below to reach our team.
           </p>
           <p className="text-[14px] font-medium text-[var(--color-on-surface-variant)] leading-relaxed mt-4 opacity-80">
             We'll send an immediate email confirmation that we got your message. We usually respond same-day, but it can sometimes take us one to two business days to get back to you.

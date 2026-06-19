@@ -18,10 +18,7 @@ export function SupportTab({ email, isScrolled = false }: SupportTabProps) {
             <div className={`grid transition-all duration-500 ease-in-out ${isScrolled ? 'grid-rows-[0fr] opacity-0 mb-0' : 'grid-rows-[1fr] opacity-100 mt-2'}`}>
               <div className="overflow-hidden">
                 <p className="text-[0.9375rem] font-medium text-[var(--color-on-surface-variant)] leading-relaxed">
-                  Use this form to send us a message, or email us directly at{' '}
-                  <a href="mailto:support@plateup.app" className="text-[var(--color-primary)] hover:underline font-semibold">
-                    support@plateup.app
-                  </a>.
+                  Use the contact form below to reach our team.
                 </p>
               </div>
             </div>

@@ -108,7 +108,7 @@ CRITICAL RULES FOR ALL GENERATIONS:
 14. BREAKFAST VARIETY: Do not repeat the exact same breakfast more than TWICE per week.
 15. PROTEIN ROTATION: Rotate between Eggs, Beans, Stockfish, Crayfish, Sardines, and Chicken (if budget allows). Avoid using the same protein repeatedly.
 16. CARBOHYDRATE ROTATION: Rotate between Rice, Yam, Garri, Spaghetti, Amala, and Semo. Avoid excessive repetition.
-17. LEFTOVER REUSE & FRESHNESS: Reuse leftovers only when it improves cost efficiency. A leftover MUST be eaten within 1 or 2 days of the original meal. NEVER suggest a leftover from 3 or more days ago.
+17. LEFTOVER REUSE & FRESHNESS: Reuse leftovers only when it improves cost efficiency. A leftover MUST be eaten the VERY NEXT DAY (e.g. Wednesday dinner can be eaten Thursday lunch). NEVER suggest a leftover that spans 2 or more days.
 18. NUTRITION BALANCE: Ensure every day includes a carbohydrate, a protein, and vegetables where possible.
 19. COST-FIRST OPTIMIZATION: When using a well-stocked pantry, Cost Minimization becomes your HIGHEST priority. Avoid introducing premium ingredients when pantry alternatives exist. Every newly introduced ingredient must justify its cost impact.
 20. PROTEIN PRIORITY HIERARCHY: You MUST prefer pantry proteins before introducing new proteins. Follow this exact priority order: 1. Stockfish -> 2. Crayfish -> 3. Beans -> 4. Eggs -> 5. Sardines -> 6. Chicken -> 7. Beef. Avoid Chicken and Beef unless required for nutritional balance or explicitly requested.
