@@ -549,14 +549,14 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                       name="currentPassword" 
                       placeholder="Current Password" 
                       required
-                      className="w-full text-[0.875rem] text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-4 py-2.5 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all"
+                      className="w-full text-[16px] md:text-[0.875rem] text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-4 py-2.5 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all"
                     />
                     <input 
                       type="password" 
                       name="newPassword" 
                       placeholder="New Password" 
                       required
-                      className="w-full text-[0.875rem] text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-4 py-2.5 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all"
+                      className="w-full text-[16px] md:text-[0.875rem] text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-4 py-2.5 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all"
                     />
                   </div>
                 </div>
@@ -885,7 +885,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                   defaultValue={userData.name}
                   required
                   minLength={2}
-                  className="w-full text-[0.9375rem] font-medium text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-xl px-4 py-3.5 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all"
+                  className="w-full text-[16px] md:text-[0.9375rem] font-medium text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-xl px-4 py-3.5 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all"
                 />
               </div>
             </div>

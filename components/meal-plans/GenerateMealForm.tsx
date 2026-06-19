@@ -216,7 +216,7 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFrien
                 onKeyDown={handleKeyDown}
                 placeholder={ingredients.length === 0 ? "e.g. Rice, Beans (Press Enter)" : "Add more..."}
                 disabled={isFormDisabled}
-                className="flex-1 min-w-[140px] bg-transparent border-none focus:outline-none focus:ring-0 text-[0.875rem] font-medium py-1.5 px-2 outline-none h-auto placeholder-[var(--color-outline-variant)]"
+                className="flex-1 min-w-[140px] bg-transparent border-none focus:outline-none focus:ring-0 text-[16px] md:text-[0.875rem] font-medium py-1.5 px-2 outline-none h-auto placeholder-[var(--color-outline-variant)]"
                 onBlur={() => {
                   if (inputValue.trim() && !isFormDisabled) {
                     handleAddIngredient(inputValue);

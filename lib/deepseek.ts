@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import fs from 'fs';
 import path from 'path';
+import { sanitizeMealPlanResponse } from './ai-sanitizer';
 
 export const DeepSeekResponseSchema = z.object({
   budgetStrategy: z.string().optional(),
@@ -14,7 +15,7 @@ export const DeepSeekResponseSchema = z.object({
       lunch: z.string(),
       dinner: z.string(),
     })
-  ).length(7),
+  ),
   shoppingList: z.array(
     z.object({
       item: z.string(),
@@ -213,13 +214,8 @@ DO NOT include a \`budgetStrategy\` field in your JSON.`;
       throw new Error('AI returned malformed JSON');
     }
 
-    let validatedData;
-    try {
-      validatedData = DeepSeekResponseSchema.parse(parsed);
-    } catch (validationError) {
-      console.error('Zod Validation Error on DeepSeek response:', validationError);
-      throw new Error('AI response did not match the required schema');
-    }
+    const validationResult = DeepSeekResponseSchema.safeParse(parsed);
+    const validatedData = sanitizeMealPlanResponse<z.infer<typeof DeepSeekResponseSchema>>(validationResult);
 
     const legacyMealPlan: MealPlanResponse["mealPlan"] = [];
 

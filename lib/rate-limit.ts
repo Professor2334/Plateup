@@ -20,7 +20,7 @@ export const authRateLimit = new Ratelimit({
 // Use this for Meal Generation Requests to prevent AI credit abuse
 export const generationRateLimit = new Ratelimit({
   redis,
-  limiter: Ratelimit.slidingWindow(5, "1 h"),
+  limiter: Ratelimit.slidingWindow(10, "1 d"),
   analytics: true,
   prefix: "@upstash/ratelimit/generation_v2", // change prefix to force immediate reset with new limit
 });

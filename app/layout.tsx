@@ -5,7 +5,7 @@ import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ["latin"] });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://plateup.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://plateup.com.ng";
 
 export const viewport: Viewport = {
   themeColor: "hsl(142, 72%, 29%)",
@@ -45,6 +45,9 @@ export const metadata: Metadata = {
 
   alternates: {
     canonical: "/",
+  },
+  verification: {
+    google: "A-tLQyiuxgnHPCNuKw_s8obNpqWlHk2YmTymBCbS9Dg",
   },
 
   openGraph: {
@@ -88,9 +91,9 @@ export const metadata: Metadata = {
   },
 
   icons: {
-    icon: [{ url: "/plateup-logo.svg", type: "image/svg+xml" }],
-    shortcut: "/plateup-logo.svg",
-    apple: "/plateup-logo.svg",
+    icon: [{ url: "/plateup-logo.png", type: "image/png" }],
+    shortcut: "/plateup-logo.png",
+    apple: "/plateup-logo.png",
   },
 };
 

@@ -135,7 +135,7 @@ export function SavedPlansTab({
                   placeholder="Search by ingredient or budget..."
                   value={savedSearchText}
                   onChange={(e) => setSavedSearchText(e.target.value)}
-                  className="w-full h-12 pl-11 pr-4 rounded-2xl bg-white border border-[var(--color-outline-variant)]/30 focus:border-[var(--color-primary)]/50 focus:ring-2 focus:ring-[var(--color-primary)]/10 text-sm transition-all outline-none shadow-sm"
+                  className="w-full h-12 pl-11 pr-4 rounded-2xl bg-white border border-[var(--color-outline-variant)]/30 focus:border-[var(--color-primary)]/50 focus:ring-2 focus:ring-[var(--color-primary)]/10 text-[16px] md:text-sm transition-all outline-none shadow-sm"
                 />
               </div>
 

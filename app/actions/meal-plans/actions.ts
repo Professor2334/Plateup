@@ -11,6 +11,7 @@ import { validateAndSanitizeLeftovers } from '@/lib/leftover-validator';
 import { enforceMealVariety } from '@/lib/variety-validator';
 import { pruneShoppingList, pruneUnusedShoppingItems } from '@/lib/shopping-validator';
 import { ValidationReporter } from '@/lib/validation-reporter';
+import { handleActionError } from '@/lib/error-handler';
 import { validateAndSanitizeOutput } from '@/lib/sanitization-validator';
 import { validateShoppingQuantities } from '@/lib/quantity-validator';
 import { calculatePantryScore } from '@/lib/pantry-scorer';
@@ -26,7 +27,8 @@ export async function generateMealPlan(formData: FormData) {
   // Rate Limiting Check
   const { success: limitSuccess } = await generationRateLimit.limit(session.user.id);
   if (!limitSuccess) {
-    return { success: false, error: 'RATE_LIMIT_EXCEEDED' };
+    console.warn(`[Rate Limit] User ${session.user.id} exceeded rate limit.`);
+    return { success: false, error: "You've reached your daily meal plan limit (10/10). Please try again tomorrow." };
   }
 
   const budget = parseFloat(formData.get('budget') as string);
@@ -35,7 +37,7 @@ export async function generateMealPlan(formData: FormData) {
   const validatedFields = MealPlanGenerationSchema.safeParse({ budget, ingredients });
 
   if (!validatedFields.success) {
-    return { success: false, error: 'Invalid input data.' };
+    return { success: false, error: 'The details you provided seem incorrect. Please check your inputs and try again.' };
   }
 
   const userPrefs = await db.user.findUnique({
@@ -123,7 +125,7 @@ export async function generateMealPlan(formData: FormData) {
         if (attempts < maxAttempts) {
           continue;
         } else {
-          return { success: false, error: 'GENERATION_FAILED' };
+          return { success: false, error: "We're having trouble generating your meal plan right now. Please try again in a moment." };
         }
       }
 
@@ -219,7 +221,7 @@ export async function generateMealPlan(formData: FormData) {
       break;
     } catch (error: unknown) {
       if (attempts >= maxAttempts) {
-        return { success: false, error: 'GENERATION_FAILED' };
+        return { success: false, error: handleActionError(error, "We're having trouble generating your meal plan right now. Please try again in a moment.") };
       }
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.log(`Generation failed (Attempt ${attempts}), retrying...`, errorMessage);
@@ -227,7 +229,7 @@ export async function generateMealPlan(formData: FormData) {
   }
 
   if (!finalMealPlan) {
-    return { success: false, error: 'GENERATION_FAILED' };
+    return { success: false, error: "We're having trouble generating your meal plan right now. Please try again in a moment." };
   }
 
   // Save to database as unsaved history
@@ -246,8 +248,7 @@ export async function generateMealPlan(formData: FormData) {
     revalidatePath('/dashboard');
     return { success: true, data: finalMealPlan, id: newPlan.id };
   } catch (error) {
-    console.error('Database Save Error:', error);
-    return { success: false, error: 'Failed to save meal plan history.' };
+    return { success: false, error: handleActionError(error, 'Failed to save meal plan history.') };
   }
 }
 
@@ -271,8 +272,7 @@ export async function saveMealPlan(id: string) {
     revalidatePath('/dashboard');
     return { success: true, id };
   } catch (error) {
-    console.error('Save Meal Plan Error:', error);
-    return { success: false, error: 'Failed to save meal plan.' };
+    return { success: false, error: handleActionError(error, 'Failed to save meal plan.') };
   }
 }
 
@@ -312,8 +312,7 @@ export async function deleteMealPlan(id: string) {
     revalidatePath('/dashboard');
     return { success: true };
   } catch (error) {
-    console.error('Delete Meal Plan Error:', error);
-    return { success: false, error: 'Failed to delete meal plan.' };
+    return { success: false, error: handleActionError(error, 'Failed to delete meal plan.') };
   }
 }
 
@@ -328,8 +327,7 @@ export async function deleteAllMealPlans() {
     revalidatePath('/dashboard');
     return { success: true };
   } catch (error) {
-    console.error('Delete All Meal Plans Error:', error);
-    return { success: false, error: 'Failed to clear meal history.' };
+    return { success: false, error: handleActionError(error, 'Failed to clear meal history.') };
   }
 }
 

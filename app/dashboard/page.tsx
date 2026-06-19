@@ -4,6 +4,12 @@ import { redirect } from 'next/navigation';
 import { getMealHistory } from '@/app/actions/meal-plans/actions';
 import db from '@/lib/db';
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Dashboard | PlateUp',
+  description: 'Manage your meal plans and budget.',
+};
 
 export default async function DashboardPage() {
   const session = await auth();

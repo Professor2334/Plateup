@@ -6,6 +6,7 @@ import { Feedback } from '@/lib/feedback';
 import type { MealPlanResponse } from '@/lib/deepseek';
 import { MealPlanModel } from '@/types';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface UseMealGenerationProps {
   addPlanToHistory: (plan: MealPlanModel) => void;
@@ -143,8 +144,8 @@ export function useMealGeneration({ addPlanToHistory, markPlanAsSaved, setActive
           handlePlanGenerated(result.data, activeBudget, activeIngredients, result.id);
         }
       } else {
-        if (result?.error === 'RATE_LIMIT_EXCEEDED') {
-          Feedback.error.rateLimit();
+        if (result?.error) {
+          toast.error(result.error);
         } else {
           Feedback.error.generation();
         }
@@ -205,8 +206,8 @@ export function useMealGeneration({ addPlanToHistory, markPlanAsSaved, setActive
           updatedAt: new Date(),
         });
       } else {
-        if (result?.error === 'RATE_LIMIT_EXCEEDED') {
-          Feedback.error.rateLimit();
+        if (result?.error) {
+          toast.error(result.error);
         } else {
           Feedback.error.generation();
         }

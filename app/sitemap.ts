@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://plateup.app';
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://plateup.com.ng';
   const now = new Date();
 
   return [

@@ -8,6 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 export const metadata = {
   title: 'Contact Us | PlateUp',
   description: 'Get in touch with the PlateUp team.',
+  alternates: { canonical: '/contact' },
 };
 
 export default async function ContactPage() {

@@ -92,7 +92,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[var(--color-background)] font-sans text-[var(--color-on-background)] selection:bg-[var(--color-primary)] selection:text-white pb-20 overflow-x-hidden">
       {/* ── TOP NAVIGATION ── */}
       <div className="fixed top-0 w-full z-50 transition-all duration-300 pointer-events-none px-4 md:px-6">
-        <header className={`mx-auto max-w-[1440px] pointer-events-auto transition-all duration-500 rounded-2xl ${isScrolled ? "mt-4 bg-[var(--color-surface)]/75 backdrop-blur-[16px] shadow-[0_8px_30px_rgba(0,0,0,0.06)] py-3 px-11" : "mt-6 bg-transparent py-4 px-7"}`}>
+        <header className={`mx-auto max-w-[1440px] pointer-events-auto transition-all duration-500 rounded-2xl ${isScrolled ? "mt-4 bg-[var(--color-surface)]/75 backdrop-blur-[16px] shadow-[0_8px_30px_rgba(0,0,0,0.06)] py-3 px-4 md:px-11" : "mt-6 bg-transparent py-4 px-4 md:px-7"}`}>
           <div className="flex items-center justify-between">
             {/* LEFT: Logo */}
             <div className="flex-1 flex justify-start">
@@ -139,7 +139,7 @@ export default function LandingPage() {
 
       <main>
         {/* ── SECTION 1: HERO ── */}
-        <section id="home" className="pt-32 lg:pt-40 pb-24 px-6 max-w-5xl mx-auto flex flex-col items-center text-center">
+        <section id="home" className="pt-24 md:pt-32 lg:pt-40 pb-12 md:pb-24 px-6 max-w-5xl mx-auto flex flex-col items-center text-center">
           <div className="flex flex-col items-center w-full">
             <div className="relative group mb-8 md:mb-10">
               <div className="absolute inset-0 bg-[var(--color-primary)] opacity-20 blur-xl rounded-full scale-110"></div>
@@ -148,7 +148,7 @@ export default function LandingPage() {
               </div>
             </div>
             
-            <h1 className="text-[clamp(2.25rem,4vw+1rem,3.25rem)] font-extrabold leading-[1.15] tracking-tight text-[var(--color-on-surface)] max-w-[850px] mb-[25px]">
+            <h1 className="text-[clamp(2rem,4vw+1rem,3.25rem)] font-extrabold leading-[1.15] tracking-tight text-[var(--color-on-surface)] max-w-[850px] mb-[25px]">
               Plan Your Week's Meals in <span className="text-[var(--color-primary)]">Under 60 Seconds</span>
             </h1>
             
@@ -200,7 +200,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── SECTION 3: HOW IT WORKS ── */}
-        <section id="how-it-works" className="py-24 px-6 relative z-20 overflow-hidden">
+        <section id="how-it-works" className="py-12 md:py-24 px-6 relative z-20 overflow-hidden">
           {/* Base background with 85% opacity (reduced by 15%) */}
           <div className="absolute inset-0 bg-[var(--color-surface-container-low)] opacity-85 pointer-events-none"></div>
           
@@ -244,7 +244,7 @@ export default function LandingPage() {
             ].map((item) => (
               <div 
                 key={item.step} 
-                className="bg-[var(--color-surface-container-lowest)] rounded-[24px] p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[var(--color-outline-variant)]/40 flex-1 relative flex flex-col items-start w-full transition-all hover:bg-[var(--color-surface-container-low)] hover:-translate-y-1 duration-300"
+                className="bg-[var(--color-surface-container-lowest)] rounded-[24px] p-5 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[var(--color-outline-variant)]/40 flex-1 relative flex flex-col items-start w-full transition-all hover:bg-[var(--color-surface-container-low)] hover:-translate-y-1 duration-300"
                 style={{ zIndex: 40 - item.step * 10 }}
               >
                 {/* Pill with bolts */}
@@ -283,7 +283,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── SECTION 4: INTERACTIVE DEMO ── */}
-        <section className="py-24 px-6 bg-[var(--color-surface-container-low)] relative overflow-hidden">
+        <section className="py-12 md:py-24 px-6 bg-[var(--color-surface-container-low)] relative overflow-hidden">
           {/* Subtle Ambient Background Glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-[var(--color-primary)] opacity-[0.05] blur-[120px] rounded-full pointer-events-none"></div>
 
@@ -307,7 +307,7 @@ export default function LandingPage() {
               </div>
 
               {/* Left Panel: AI Command Center */}
-              <div className="w-full md:w-1/2 max-w-[420px] bg-[var(--color-surface)] p-8 rounded-[32px] shadow-lg relative z-10">
+              <div className="w-full md:w-1/2 max-w-[420px] bg-[var(--color-surface)] p-6 md:p-8 rounded-[32px] shadow-lg relative z-10">
                 <div className="space-y-8">
                   {/* Budget */}
                   <div className={`transition-all duration-700 ease-out ${demoStep >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
@@ -444,7 +444,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── SECTION 5: BENTO FEATURE GRID ── */}
-        <section id="features" className="py-24 px-6 max-w-6xl mx-auto">
+        <section id="features" className="py-12 md:py-24 px-6 max-w-6xl mx-auto">
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-[clamp(1.75rem,3vw,2rem)] font-extrabold text-[var(--color-on-surface)] tracking-tight">Everything your household needs</h2>
             <p className="text-[1rem] text-[var(--color-on-surface-variant)] font-normal opacity-80 max-w-2xl mx-auto">Powerful tools designed to save you time, reduce waste, and keep your budget on track.</p>
@@ -452,7 +452,7 @@ export default function LandingPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 auto-rows-[minmax(240px,auto)]">
             {/* Large Card: AI Weekly Meal Plans */}
-            <div className="md:col-span-2 md:row-span-2 bg-[var(--color-surface)] rounded-[32px] p-8 md:p-12 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-500 flex flex-col overflow-hidden relative group">
+            <div className="md:col-span-2 md:row-span-2 bg-[var(--color-surface)] rounded-[32px] p-6 md:p-12 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-500 flex flex-col overflow-hidden relative group">
               <div className="absolute inset-0 bg-[var(--color-primary)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
               
               <div className="z-10 relative max-w-sm mb-8 md:mb-0">
@@ -494,7 +494,7 @@ export default function LandingPage() {
             </div>
 
             {/* Medium Card 1: Smart Shopping Lists */}
-            <div className="bg-[var(--color-surface)] rounded-[32px] p-8 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-500 flex flex-col overflow-hidden relative group">
+            <div className="bg-[var(--color-surface)] rounded-[32px] p-6 md:p-8 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-500 flex flex-col overflow-hidden relative group">
               <div className="z-10 relative mb-40 md:mb-24">
                 <h3 className="text-[1.25rem] font-semibold text-[var(--color-on-surface)] tracking-tight mb-3">Smart Shopping Lists</h3>
                 <p className="text-[0.875rem] font-normal text-[var(--color-on-surface-variant)] opacity-[0.85] leading-relaxed">Automatically extracted ingredients structured for easy market runs.</p>
@@ -507,7 +507,7 @@ export default function LandingPage() {
             </div>
 
             {/* Medium Card 2: Budget Optimization */}
-            <div className="bg-[var(--color-surface)] rounded-[32px] p-8 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-500 flex flex-col overflow-hidden relative group">
+            <div className="bg-[var(--color-surface)] rounded-[32px] p-6 md:p-8 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-500 flex flex-col overflow-hidden relative group">
               <div className="z-10 relative mb-24">
                 <h3 className="text-[1.25rem] font-semibold text-[var(--color-on-surface)] tracking-tight mb-3">Budget Optimization</h3>
                 <p className="text-[0.875rem] font-normal text-[var(--color-on-surface-variant)] opacity-[0.85] leading-relaxed">Algorithms prioritize affordable ingredients to stay within your limits.</p>
@@ -526,7 +526,7 @@ export default function LandingPage() {
             {/* Small Cards Row */}
             <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Small Card 1 */}
-              <div className="bg-[var(--color-surface)] rounded-[32px] p-7 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-500 flex flex-col group overflow-hidden relative">
+              <div className="bg-[var(--color-surface)] rounded-[32px] p-6 md:p-7 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-500 flex flex-col group overflow-hidden relative">
                 <h3 className="text-[1.125rem] font-semibold text-[var(--color-on-surface)] mb-2 relative z-10 tracking-tight">Meal History</h3>
                 <p className="text-[0.875rem] font-normal text-[var(--color-on-surface-variant)] opacity-[0.85] relative z-10">Access previous entries.</p>
                 <div className="mt-8 flex flex-col gap-2.5 relative z-10 transform group-hover:-translate-y-2 transition-transform duration-700 ease-out">
@@ -536,7 +536,7 @@ export default function LandingPage() {
               </div>
 
               {/* Small Card 2 */}
-              <div className="bg-[var(--color-surface)] rounded-[32px] p-7 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-500 flex flex-col group overflow-hidden relative">
+              <div className="bg-[var(--color-surface)] rounded-[32px] p-6 md:p-7 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-500 flex flex-col group overflow-hidden relative">
                 <h3 className="text-[1.125rem] font-semibold text-[var(--color-on-surface)] mb-2 relative z-10 tracking-tight">Ingredient Reuse</h3>
                 <p className="text-[0.875rem] font-normal text-[var(--color-on-surface-variant)] opacity-[0.85] relative z-10">Minimize food waste.</p>
                 <div className="mt-8 flex flex-wrap gap-2 relative z-10 transform group-hover:-translate-y-2 transition-transform duration-700 ease-out">
@@ -547,7 +547,7 @@ export default function LandingPage() {
               </div>
 
               {/* Small Card 3 */}
-              <div className="bg-[var(--color-surface)] rounded-[32px] p-7 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-500 flex flex-col group overflow-hidden relative">
+              <div className="bg-[var(--color-surface)] rounded-[32px] p-6 md:p-7 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-500 flex flex-col group overflow-hidden relative">
                 <h3 className="text-[1.125rem] font-semibold text-[var(--color-on-surface)] mb-2 relative z-10 tracking-tight">WhatsApp Sharing</h3>
                 <p className="text-[0.875rem] font-normal text-[var(--color-on-surface-variant)] opacity-[0.85] relative z-10">Send lists instantly.</p>
                 <div className="mt-8 bg-[#25D366]/10 rounded-t-[20px] p-4 relative z-10 transform group-hover:-translate-y-2 transition-transform duration-700 ease-out translate-y-3">
@@ -561,7 +561,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── SECTION 6: BEFORE VS AFTER ── */}
-        <section className="py-24 px-6 bg-[var(--color-surface-container-low)] relative">
+        <section className="py-12 md:py-24 px-6 bg-[var(--color-surface-container-low)] relative">
           <div className="max-w-5xl mx-auto">
             
             <div className="text-center mb-16 space-y-4">
@@ -571,7 +571,7 @@ export default function LandingPage() {
             <div className="flex flex-col md:flex-row items-stretch justify-center gap-8 md:gap-12 relative">
               
               {/* Without PlateUp */}
-              <div className="w-full md:w-1/2 bg-[var(--color-surface)] rounded-[32px] p-8 md:p-12 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+              <div className="w-full md:w-1/2 bg-[var(--color-surface)] rounded-[32px] p-6 md:p-12 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
                 <div className="absolute inset-0 bg-red-500/[0.02] pointer-events-none"></div>
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-400/40 to-transparent opacity-50"></div>
                 
@@ -602,7 +602,7 @@ export default function LandingPage() {
               </div>
 
               {/* With PlateUp */}
-              <div className="w-full md:w-1/2 bg-[var(--color-surface)] rounded-[32px] p-8 md:p-12 shadow-[0_20px_40px_rgba(0,0,0,0.06)] relative overflow-hidden group hover:shadow-[0_30px_60px_rgba(0,0,0,0.08)] transition-shadow">
+              <div className="w-full md:w-1/2 bg-[var(--color-surface)] rounded-[32px] p-6 md:p-12 shadow-[0_20px_40px_rgba(0,0,0,0.06)] relative overflow-hidden group hover:shadow-[0_30px_60px_rgba(0,0,0,0.08)] transition-shadow">
                 <div className="absolute inset-0 bg-[var(--color-primary)]/[0.03] pointer-events-none"></div>
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--color-primary)] to-transparent"></div>
                 
@@ -645,7 +645,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── SECTION 7: PRODUCT SHOWCASE ── */}
-        <section className="py-24 px-6 max-w-6xl mx-auto">
+        <section className="py-12 md:py-24 px-6 max-w-6xl mx-auto">
           <div className="text-center mb-12 space-y-3">
             <h2 className="text-[clamp(1.75rem,3vw,2rem)] font-extrabold text-[var(--color-on-surface)] tracking-tight">Built for clarity and focus</h2>
           </div>
@@ -663,7 +663,7 @@ export default function LandingPage() {
             </div>
             
             {/* App Body Preview */}
-            <div ref={showcaseRef} className="p-8 md:p-12 bg-[#fafafa] flex flex-col lg:flex-row gap-8 lg:gap-12 items-start relative overflow-hidden">
+            <div ref={showcaseRef} className="p-5 md:p-12 bg-[#fafafa] flex flex-col lg:flex-row gap-8 lg:gap-12 items-start relative overflow-hidden">
               
               {/* AI Connection Line (Desktop only) */}
               <div className="hidden lg:block absolute top-1/2 left-[310px] w-[60px] h-[2px] bg-green-500/10 z-0 overflow-hidden -translate-y-1/2 rounded-full">
@@ -676,7 +676,7 @@ export default function LandingPage() {
               
               {/* Sidebar - Budget & Inputs (Tertiary) */}
               <div className="w-full lg:w-[280px] flex-shrink-0 space-y-6">
-                <div className="bg-white rounded-3xl p-8 shadow-[0_15px_30px_-10px_rgba(0,0,0,0.03)] ring-1 ring-black/[0.02]">
+                <div className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_15px_30px_-10px_rgba(0,0,0,0.03)] ring-1 ring-black/[0.02]">
                   <div className="space-y-6">
                     <div className="space-y-3">
                       <label className="text-[0.75rem] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Weekly Budget</label>
@@ -710,7 +710,7 @@ export default function LandingPage() {
                 <div className="flex flex-col md:flex-row gap-8 items-start">
                   
                   {/* Meal Plan (Primary Focus) */}
-                  <div className="flex-1 w-full bg-white rounded-3xl p-8 md:p-10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.03] relative overflow-hidden">
+                  <div className="flex-1 w-full bg-white rounded-3xl p-6 md:p-10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.03] relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1.5 bg-[var(--color-primary)]"></div>
                     <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-primary)]/[0.03] to-transparent pointer-events-none"></div>
                     
@@ -810,7 +810,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── SECTION 8: FAQ ── */}
-        <section id="faq" className="py-24 px-6 max-w-3xl mx-auto">
+        <section id="faq" className="py-12 md:py-24 px-6 max-w-3xl mx-auto">
           <div className="text-center mb-16 space-y-3">
             <div className="text-[0.75rem] font-bold text-[var(--color-primary)] uppercase tracking-widest">Questions & Answers</div>
             <h2 className="text-[clamp(1.75rem,3vw,2rem)] font-extrabold text-[var(--color-on-surface)] tracking-tight">Frequently Asked Questions</h2>
@@ -858,11 +858,11 @@ export default function LandingPage() {
         </section>
 
         {/* ── SECTION 9: FINAL CTA ── */}
-        <section className="py-24 px-6 relative flex justify-center group">
+        <section className="py-12 md:py-24 px-6 relative flex justify-center group">
           {/* Subtle Glow Behind Container */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] max-w-3xl h-[250px] bg-[var(--color-primary)]/20 blur-[100px] rounded-full pointer-events-none z-0 transition-opacity duration-700 opacity-50 group-hover:opacity-100"></div>
 
-          <div className="max-w-3xl w-full mx-auto bg-gradient-to-br from-[var(--color-primary)] to-[#0c4a22] rounded-[32px] p-10 md:p-12 text-center shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] group-hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.25)] transition-shadow duration-700 ease-out relative overflow-hidden z-10">
+          <div className="max-w-3xl w-full mx-auto bg-gradient-to-br from-[var(--color-primary)] to-[#0c4a22] rounded-[32px] p-8 md:p-12 text-center shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] group-hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.25)] transition-shadow duration-700 ease-out relative overflow-hidden z-10">
             {/* Background Decoration */}
             <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-white opacity-[0.04] rounded-full blur-[60px] transform translate-x-1/3 -translate-y-1/3"></div>
             <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-black opacity-[0.15] rounded-full blur-[60px] transform -translate-x-1/3 translate-y-1/3"></div>

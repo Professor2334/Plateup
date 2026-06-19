@@ -35,7 +35,7 @@ export function PlateUpLogo({
       {/* Logo symbol */}
       <span className="flex-shrink-0 select-none" aria-hidden="true">
         <Image
-          src="/plateup-logo.svg"
+          src="/plateup-logo.png"
           alt=""
           width={img}
           height={img}

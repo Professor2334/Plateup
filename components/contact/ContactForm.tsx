@@ -89,7 +89,7 @@ export function ContactForm({ defaultEmail }: { defaultEmail: string | null }) {
           placeholder="What do you need help with?" 
           required 
           rows={6}
-          className="w-full rounded-xl border border-[var(--color-outline-variant)]/50 bg-white px-4 py-3 text-[0.875rem] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] resize-y placeholder:opacity-60 placeholder:font-normal"
+          className="w-full rounded-xl border border-[var(--color-outline-variant)]/50 bg-white px-4 py-3 text-[16px] md:text-[0.875rem] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] resize-y placeholder:opacity-60 placeholder:font-normal"
         />
       </div>
 

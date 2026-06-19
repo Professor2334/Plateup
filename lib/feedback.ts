@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 export const Feedback = {
   error: {
     generation: () => toast.error('Unable to generate your meal plan right now. Please try again in a few moments.'),
-    rateLimit: () => toast.error('Too many requests. Please wait a minute before generating another meal plan.'),
+    rateLimit: () => toast.error("You've reached your daily meal plan limit (10/10). Please try again tomorrow."),
     network: () => toast.error('Connection lost. Please check your internet connection and try again.'),
     auth: () => toast.error('Your session has expired. Please sign in again.'),
     save: () => toast.error('Unable to save your meal plan. Please try again.'),

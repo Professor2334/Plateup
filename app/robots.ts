@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://plateup.app';
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://plateup.com.ng';
 
   return {
     rules: [

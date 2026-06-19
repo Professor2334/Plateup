@@ -127,7 +127,7 @@ export function MealHistoryTab({
                     placeholder="Search by ingredient, budget, or date..."
                     value={historySearchText}
                     onChange={(e) => setHistorySearchText(e.target.value)}
-                    className="w-full h-11 pl-11 pr-4 rounded-2xl bg-white border border-[var(--color-outline-variant)]/30 focus:border-[var(--color-primary)]/50 focus:ring-2 focus:ring-[var(--color-primary)]/10 text-sm transition-all outline-none shadow-sm"
+                    className="w-full h-11 pl-11 pr-4 rounded-2xl bg-white border border-[var(--color-outline-variant)]/30 focus:border-[var(--color-primary)]/50 focus:ring-2 focus:ring-[var(--color-primary)]/10 text-[16px] md:text-sm transition-all outline-none shadow-sm"
                   />
                 </div>
                 <div className="flex bg-white sm:bg-[#f9fafb] p-1 rounded-full border border-[var(--color-outline-variant)]/30 self-start">
