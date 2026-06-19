@@ -17,21 +17,7 @@ export class ValidationReporter {
   }
 
   printFinal(status: 'APPROVED' | 'REJECTED') {
-    console.log('\nValidation Report\n');
-
-    this.logs.forEach(log => {
-      if (log.passed) {
-        console.log(`✓ ${log.name} Passed\n`);
-        if (log.reason) {
-          console.log(`${log.reason}\n`);
-        }
-      } else {
-        console.log(`✗ ${log.name} Failed\n`);
-        console.log(`Reason:\n${log.reason}\n`);
-        console.log(`Action:\n${log.action}\n`);
-      }
-    });
-
-    console.log(`Final Status:\n${status}\n--------------------------------------------------\n`);
+    // Validation output to terminal disabled per user request
+    // The validation logic still runs in the backend
   }
 }
