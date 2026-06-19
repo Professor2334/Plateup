@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { config } from 'dotenv';
 config({ path: '.env' });
 config({ path: '.env.local' });

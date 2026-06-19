@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { config } from 'dotenv';
 config({ path: '.env' });
 config({ path: '.env.local' });
@@ -49,7 +51,7 @@ async function runTests() {
         });
 
         // Test the validation logics from actions.ts
-        let hasError = false;
+        const hasError = false;
         
         // 1. Missing ingredients validation
         const allRequired = new Set<string>();

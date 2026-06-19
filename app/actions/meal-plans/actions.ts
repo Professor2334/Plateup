@@ -2,7 +2,7 @@
 
 import { auth } from '@/lib/auth';
 import db from '@/lib/db';
-import { generateMealPlan as deepSeekGenerate } from '@/lib/deepseek';
+import { generateMealPlan as deepSeekGenerate, type MealPlanResponse } from '@/lib/deepseek';
 import { MealPlanGenerationSchema } from '@/lib/validators';
 import { revalidatePath } from 'next/cache';
 
@@ -78,7 +78,7 @@ export async function generateMealPlan(formData: FormData) {
 
   let attempts = 0;
   const maxAttempts = 3;
-  let finalMealPlan: any = null;
+  let finalMealPlan: MealPlanResponse | null = null;
 
   while (attempts < maxAttempts) {
     const reporter = new ValidationReporter();
@@ -115,9 +115,10 @@ export async function generateMealPlan(formData: FormData) {
       try {
         validateAndSanitizeOutput(mealPlan.mealPlan);
         reporter.logPass('Output Sanitization Validation');
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
         const actionMessage = attempts < maxAttempts ? 'Regenerate meal plan.' : 'Max attempts reached. Plan rejected.';
-        reporter.logFail('Output Sanitization Validation', err.message, actionMessage);
+        reporter.logFail('Output Sanitization Validation', errorMessage, actionMessage);
         reporter.printFinal('REJECTED');
         if (attempts < maxAttempts) {
           continue;
@@ -134,7 +135,7 @@ export async function generateMealPlan(formData: FormData) {
       enforceMealVariety(mealPlan.mealPlan, ingredients);
       
       const uniqueMeals = new Set<string>();
-      mealPlan.mealPlan.forEach((day: any) => {
+      mealPlan.mealPlan.forEach((day: { breakfast: string, lunch: string, dinner: string }) => {
         uniqueMeals.add(day.breakfast.toLowerCase().trim());
         uniqueMeals.add(day.lunch.toLowerCase().trim());
         uniqueMeals.add(day.dinner.toLowerCase().trim());
@@ -216,11 +217,12 @@ export async function generateMealPlan(formData: FormData) {
       };
 
       break;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (attempts >= maxAttempts) {
         return { success: false, error: 'GENERATION_FAILED' };
       }
-      console.log(`Generation failed (Attempt ${attempts}), retrying...`, error.message);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.log(`Generation failed (Attempt ${attempts}), retrying...`, errorMessage);
     }
   }
 

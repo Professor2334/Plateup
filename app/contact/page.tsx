@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import { auth } from '@/lib/auth';
 import { ContactForm } from '@/components/contact/ContactForm';
 import { PlateUpLogo } from '@/components/shared/PlateUpLogo';

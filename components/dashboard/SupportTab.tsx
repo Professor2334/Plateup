@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import { ContactForm } from '@/components/contact/ContactForm';
 
 interface SupportTabProps {

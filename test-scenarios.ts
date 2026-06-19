@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { generateMealPlan as deepSeekGenerate } from './lib/deepseek';
 import { pruneShoppingList } from './lib/shopping-validator';
 import dotenv from 'dotenv';

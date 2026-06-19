@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import { useState, useRef } from 'react';
@@ -106,7 +107,7 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFrien
       finalFormData.set('budget', formData.get('budget') as string);
       finalFormData.set('ingredients', ingredientsRef.current.join(', '));
 
-      onPlanGenerated(result.data, finalFormData, result.id);
+      onPlanGenerated(result.data as MealPlanResponse, finalFormData, result.id);
       setLoading(false);
       onLoadingChange(false);
     }

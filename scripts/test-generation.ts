@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { generateMealPlan as deepSeekGenerate } from '../lib/deepseek';
 import { validateAndSanitizeLeftovers } from '../lib/leftover-validator';
 import { pruneShoppingList } from '../lib/shopping-validator';

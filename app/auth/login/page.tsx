@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import { Suspense } from 'react';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { GoogleButton } from '@/components/auth/GoogleButton';

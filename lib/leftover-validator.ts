@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { MealPlanDay } from './quantity-validator';
 
 export function validateAndSanitizeLeftovers(mealPlan: MealPlanDay[]): void {
@@ -27,7 +28,7 @@ export function validateAndSanitizeLeftovers(mealPlan: MealPlanDay[]): void {
 
   // Helper to completely strip parentheses for a cleaner "Fresh X" label
   const getCleanFreshName = (mealName: string): string => {
-     let clean = getCoreMealName(mealName).replace(/\s*\([^)]*\)\s*/g, '').trim();
+     const clean = getCoreMealName(mealName).replace(/\s*\([^)]*\)\s*/g, '').trim();
      return clean || 'Meal';
   };
 

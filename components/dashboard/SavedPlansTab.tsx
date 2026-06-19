@@ -1,3 +1,6 @@
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import { useState } from 'react';
@@ -70,7 +73,7 @@ export function SavedPlansTab({
     }
   }
 
-  let filteredPlans = allSavedPlans.filter((plan: MealPlanModel) => {
+  const filteredPlans = allSavedPlans.filter((plan: MealPlanModel) => {
     if (savedFilter === 'Budget Friendly' && plan.budget > 15000) return false;
     if (savedFilter === 'Recent') {
       const oneWeekAgo = new Date();
