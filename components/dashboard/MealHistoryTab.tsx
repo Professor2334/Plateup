@@ -117,15 +117,15 @@ export function MealHistoryTab({
             {history.length > 0 && (
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1 flex items-center">
-                  <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                    <Search className="w-4 h-4 text-[var(--color-on-surface-variant)] opacity-50 mt-[1px]" />
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Search className="w-4 h-4 text-[var(--color-on-surface-variant)] opacity-50" />
                   </div>
                   <input
-                    type="text"
+                    type="search"
                     placeholder="Search by ingredient, budget, or date..."
                     value={historySearchText}
                     onChange={(e) => setHistorySearchText(e.target.value)}
-                    className="w-full h-11 pl-12 pr-4 rounded-full bg-white sm:bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 focus:bg-white focus:border-[var(--color-primary)]/50 focus:ring-1 focus:ring-[var(--color-primary)]/20 text-sm transition-all outline-none"
+                    className="w-full h-11 pl-11 pr-4 rounded-2xl bg-white border border-[var(--color-outline-variant)]/30 focus:border-[var(--color-primary)]/50 focus:ring-2 focus:ring-[var(--color-primary)]/10 text-sm transition-all outline-none shadow-sm"
                   />
                 </div>
                 <div className="flex bg-white sm:bg-[#f9fafb] p-1 rounded-full border border-[var(--color-outline-variant)]/30 self-start">
