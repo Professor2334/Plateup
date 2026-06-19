@@ -161,8 +161,8 @@ export function MealHistoryTab({
       <div className="max-w-5xl">
         {history.length === 0 ? (
           <div className="py-20 flex flex-col items-center justify-center text-center">
-            <h3 className="text-lg font-bold text-[var(--color-on-surface)]">No meal plans yet</h3>
-            <p className="text-sm text-[var(--color-on-surface-variant)] mt-2 max-w-sm">Generate your first meal plan to start building your history.</p>
+            <h3 className="text-lg font-bold text-[var(--color-on-surface)]">No meal plans yet.</h3>
+            <p className="text-sm text-[var(--color-on-surface-variant)] mt-2 max-w-sm">Generate your first meal plan to get started.</p>
             <Button className="mt-6 font-bold" onClick={() => handleTabChange('generate')}>Generate Meal Plan</Button>
           </div>
         ) : filteredHistory.length === 0 ? (

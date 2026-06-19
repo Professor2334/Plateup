@@ -7,6 +7,7 @@ import { ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { registerUser } from '@/app/actions/auth/actions';
+import { Feedback } from '@/lib/feedback';
 
 export function RegisterForm() {
   const [step, setStep] = useState(1);
@@ -116,7 +117,7 @@ export function RegisterForm() {
         router.refresh();
       }
     } catch {
-      setError('An unexpected error occurred');
+      Feedback.error.unexpected();
     } finally {
       setLoading(false);
     }
@@ -291,7 +292,10 @@ export function RegisterForm() {
       <div className="space-y-4 pt-4 md:pt-2">
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              {Feedback.loading.signup}
+            </span>
           ) : (
             'Create Account'
           )}

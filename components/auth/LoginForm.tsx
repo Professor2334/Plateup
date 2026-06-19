@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { checkLoginRateLimit } from '@/app/actions/auth/actions';
+import { Feedback } from '@/lib/feedback';
 
 export function LoginForm() {
   const [error, setError] = useState('');
@@ -36,7 +37,7 @@ export function LoginForm() {
     try {
       const rateLimitCheck = await checkLoginRateLimit(email);
       if (!rateLimitCheck.success) {
-        setError(rateLimitCheck.error || 'Too many requests');
+        Feedback.error.rateLimit();
         setLoading(false);
         return;
       }
@@ -52,8 +53,8 @@ export function LoginForm() {
       });
 
       if (res?.error) {
-        if (res.error === "Too many requests. Please try again later.") {
-          setError(res.error);
+        if (res.error.includes("Too many requests")) {
+          Feedback.error.rateLimit();
         } else {
           setError('Invalid email or password');
         }
@@ -62,7 +63,7 @@ export function LoginForm() {
         router.refresh();
       }
     } catch {
-      setError('An unexpected error occurred');
+      Feedback.error.unexpected();
     } finally {
       setLoading(false);
     }
@@ -120,7 +121,10 @@ export function LoginForm() {
       <div className="pt-2 md:pt-0">
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              {Feedback.loading.login}
+            </span>
           ) : (
             'Sign In'
           )}

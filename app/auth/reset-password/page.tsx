@@ -7,6 +7,7 @@ import { Loader2, ShieldCheck, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { resetPassword } from '@/app/actions/auth/reset-actions';
+import { Feedback } from '@/lib/feedback';
 
 export default function ResetPasswordPage() {
   return (
@@ -69,7 +70,7 @@ function ResetPasswordForm() {
       setSuccess(true);
       router.replace('/auth/reset-password?success=true');
     } else {
-      setError(res.error || 'Failed to reset password');
+      Feedback.error.reset();
     }
   };
 
@@ -178,7 +179,10 @@ function ResetPasswordForm() {
             disabled={loading}
           >
             {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="flex items-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Updating...
+              </span>
             ) : (
               'Update Password'
             )}

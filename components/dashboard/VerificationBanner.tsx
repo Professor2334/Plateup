@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { AlertTriangle, X, Mail, Loader2, CheckCircle, Shield } from 'lucide-react';
 import { resendVerificationEmailAction } from '@/app/actions/auth/actions';
+import { Feedback } from '@/lib/feedback';
 
 interface VerificationBannerProps {
   email: string;
@@ -21,9 +22,16 @@ export function VerificationBanner({ email, onDismiss }: VerificationBannerProps
     setResendState('idle');
     try {
       const res = await resendVerificationEmailAction(email);
-      setResendState(res.success ? 'success' : 'error');
+      if (res.success) {
+        setResendState('success');
+        Feedback.success.verificationSent();
+      } else {
+        setResendState('error');
+        Feedback.error.verification();
+      }
     } catch {
       setResendState('error');
+      Feedback.error.verification();
     } finally {
       setIsResending(false);
     }
@@ -47,15 +55,6 @@ export function VerificationBanner({ email, onDismiss }: VerificationBannerProps
       </div>
 
       <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto flex-shrink-0 mt-2 sm:mt-0">
-        {resendState === 'success' ? (
-          <span className="flex items-center gap-1.5 text-[0.8125rem] font-semibold text-[var(--color-primary)]">
-            <CheckCircle className="w-4 h-4" />
-            Email Sent
-          </span>
-        ) : resendState === 'error' ? (
-          <span className="text-[0.8125rem] font-semibold text-[var(--color-error)]">Failed. Try again.</span>
-        ) : null}
-
         <button
           id="verification-banner-resend-btn"
           onClick={handleResend}

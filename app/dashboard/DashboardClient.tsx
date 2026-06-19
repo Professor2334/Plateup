@@ -20,6 +20,9 @@ import { PlateUpLogo } from '@/components/shared/PlateUpLogo';
 import { logoutUser } from '@/app/actions/auth/actions';
 import { updatePreferences, changePassword, updateProfile } from '@/app/actions/settings/actions';
 import { MealPlanResults } from '@/components/meal-plans/MealPlanResults';
+import { useMealHistory } from '@/components/dashboard/hooks/useMealHistory';
+import { useSettings } from '@/components/dashboard/hooks/useSettings';
+import { useMealGeneration } from '@/components/dashboard/hooks/useMealGeneration';
 
 import { MealPlanModel } from '@/types';
 
@@ -43,7 +46,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
   const pathname = usePathname();
   const viewParam = searchParams.get('view');
 
-  const [history, setHistory] = useState(initialHistory);
+
   const [activeTab, setActiveTab] = useState<Tab>('generate');
   const [isBannerDismissed, setIsBannerDismissed] = useState(false);
 
@@ -84,61 +87,52 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     window.history.pushState(null, '', newUrl);
   };
   
-  useEffect(() => {
-    setHistory(initialHistory);
-  }, [initialHistory]);
+  const {
+    history,
+    requestDeletePlan,
+    confirmDeletePlan,
+    deleteModalPlanId,
+    setDeleteModalPlanId,
+    requestClearAllHistory,
+    confirmClearAllHistory,
+    isClearAllModalOpen,
+    setIsClearAllModalOpen,
+    addPlanToHistory,
+    markPlanAsSaved
+  } = useMealHistory(initialHistory);
 
-  // Re-show verification banner every 20 minutes if not verified
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    if (isBannerDismissed && !userData.emailVerified) {
-      // 20 minutes = 20 * 60 * 1000 = 1200000 ms
-      timeoutId = setTimeout(() => {
-        setIsBannerDismissed(false);
-      }, 1200000);
-    }
-    return () => clearTimeout(timeoutId);
-  }, [isBannerDismissed, userData.emailVerified]);
+  const {
+    loading, setLoading,
+    isRegenerating,
+    saving,
+    generatedPlan,
+    alternativePlan,
+    activePlanView, setActivePlanView,
+    activeBudget,
+    activeIngredients,
+    activePlanId,
+    activeAlternativePlanId,
+    formKey,
+    handlePlanGenerated,
+    handleSavePlan,
+    handleRegeneratePlan,
+    handleRegenerateBudgetFriendly,
+    clearGeneratedPlan,
+    handleReusePlan,
+    handleViewOnlyPlan
+  } = useMealGeneration({ addPlanToHistory, markPlanAsSaved, setActiveTab });
 
-  const [loading, setLoading] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [generatedPlan, setGeneratedPlan] = useState<MealPlanResponse | null>(null);
-  const [alternativePlan, setAlternativePlan] = useState<MealPlanResponse | null>(null);
-  const [activePlanView, setActivePlanView] = useState<'recommended' | 'budget-friendly'>('recommended');
-  const [activeAlternativePlanId, setActiveAlternativePlanId] = useState<string | null>(null);
-  const [activeBudget, setActiveBudget] = useState(0);
-  const [activeIngredients, setActiveIngredients] = useState('');
-  const [activePlanId, setActivePlanId] = useState<string | null>(null);
-  const [formKey, setFormKey] = useState(0);
-
-  // Settings State
-  const [prefSaving, setPrefSaving] = useState(false);
-  const [prefHousehold, setPrefHousehold] = useState(userData?.householdSize || '1');
-  const [prefGoal, setPrefGoal] = useState(userData?.primaryGoal || 'save-money');
-  const [passSaving, setPassSaving] = useState(false);
-  const [passError, setPassError] = useState('');
-  const [passSuccess, setPassSuccess] = useState('');
-
-
-  /** Resets all generation result state — called after a successful save. */
-  const clearGeneratedPlan = useCallback(() => {
-    setGeneratedPlan(null);
-    setAlternativePlan(null);
-    setActivePlanId(null);
-    setActiveAlternativePlanId(null);
-    setActivePlanView('recommended');
-    setActiveBudget(0);
-    setActiveIngredients('');
-    setFormKey(prev => prev + 1);
-  }, []);
-  
-  // Logout Modal State
-  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  // Edit Profile Modal State
-  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+  const {
+    prefSaving, setPrefSaving,
+    prefHousehold, setPrefHousehold,
+    prefGoal, setPrefGoal,
+    passSaving, setPassSaving,
+    passError, setPassError,
+    passSuccess, setPassSuccess,
+    isLogoutModalOpen, setIsLogoutModalOpen,
+    isLoggingOut, setIsLoggingOut,
+    isEditProfileModalOpen, setIsEditProfileModalOpen
+  } = useSettings(userData?.householdSize || '1', userData?.primaryGoal || 'save-money');
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -165,158 +159,15 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isLogoutModalOpen]);
 
-  const handlePlanGenerated = (plan: MealPlanResponse, budget: number, ingredients: string, id: string) => {
-    setGeneratedPlan(plan);
-    setAlternativePlan(null);
-    setActivePlanView('recommended');
-    setActiveAlternativePlanId(null);
-    setActiveBudget(budget);
-    setActiveIngredients(ingredients);
-    setActivePlanId(id);
-    
-    // Add the newly created unsaved plan to history state manually so it shows in timeline instantly
-    const newPlan: MealPlanModel = {
-      id,
-      userId: '', // placeholder — real userId is server-side only
-      budget,
-      ingredients,
-      generatedPlan: plan.mealPlan,
-      shoppingList: plan.shoppingList,
-      isSaved: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      estimatedCost: plan.estimatedCost,
-      estimatedCostRange: plan.estimatedCostRange
-    };
-    setHistory(prev => [newPlan, ...prev]);
-  };
-
   const handleSavePlanById = async (id: string) => {
+    const { saveMealPlan } = await import('@/app/actions/meal-plans/actions');
     const res = await saveMealPlan(id);
     if (res.success) {
-      setHistory(prev => prev.map(p => p.id === id ? { ...p, isSaved: true } : p));
+      markPlanAsSaved(id);
       router.refresh();
       return true;
     }
     return false;
-  };
-
-  const handleSavePlan = async () => {
-    const idToSave = activePlanView === 'recommended' ? activePlanId : activeAlternativePlanId;
-    if (!idToSave) return;
-    setSaving(true);
-    const success = await handleSavePlanById(idToSave);
-    setSaving(false);
-    if (success) {
-      toast.success('Meal plan saved! Ready to generate a new one.');
-      clearGeneratedPlan();
-      router.refresh();
-    } else {
-      toast.error('Failed to save meal plan. Please try again.');
-    }
-  };
-
-  const handleRegeneratePlan = async () => {
-    setIsRegenerating(true);
-    setLoading(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    try {
-      const formData = new FormData();
-      formData.set('budget', activeBudget.toString());
-      formData.set('ingredients', activeIngredients);
-      
-      const isBudgetFriendly = activePlanView === 'budget-friendly';
-      if (isBudgetFriendly) {
-        formData.set('budgetFriendly', 'true');
-        if (generatedPlan) {
-          formData.set('originalEstimatedCost', generatedPlan.estimatedCost.toString());
-        }
-      }
-
-      const result = await generateMealPlan(formData);
-      
-      if (result && result.success && result.data && result.id) {
-        if (isBudgetFriendly) {
-          setAlternativePlan(result.data);
-          setActiveAlternativePlanId(result.id);
-          
-          const newPlan: MealPlanModel = {
-            id: result.id,
-            userId: '',
-            budget: activeBudget,
-            ingredients: activeIngredients,
-            generatedPlan: result.data.mealPlan,
-            shoppingList: result.data.shoppingList,
-            isSaved: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
-          setHistory(prev => [newPlan, ...prev]);
-        } else {
-          handlePlanGenerated(result.data, activeBudget, activeIngredients, result.id);
-        }
-      } else {
-        if (result?.error === 'RATE_LIMIT_EXCEEDED') {
-          toast.error('Generation Limit Reached', { description: "You've reached your meal plan generation limit. Please wait a few minutes before trying again." });
-        } else {
-          toast.error('Unable to Generate Meal Plan', { description: "We couldn't generate a meal plan right now. Please try again." });
-        }
-      }
-    } catch (error) {
-      toast.error('Unable to Generate Meal Plan', { description: "We couldn't generate a meal plan right now. Please try again." });
-    } finally {
-      setIsRegenerating(false);
-      setLoading(false);
-    }
-  };
-
-  const handleDeletePlan = async (id: string) => {
-    if (confirm('Are you sure you want to delete this saved plan?')) {
-      setHistory(prev => prev.filter(plan => plan.id !== id));
-      await deleteMealPlan(id);
-      router.refresh();
-    }
-  };
-
-  const handleClearAllHistory = async () => {
-    if (history.length === 0) return;
-    if (confirm('Are you sure you want to delete ALL meal plans from your history? This action cannot be undone.')) {
-      setHistory([]);
-      await deleteAllMealPlans();
-      router.refresh();
-    }
-  };
-
-  const handleReusePlan = (plan: any) => {
-    setGeneratedPlan({
-      mealPlan: plan.generatedPlan,
-      shoppingList: plan.shoppingList,
-      estimatedCost: plan.budget,
-      budgetStatus: 'WITHIN_BUDGET',
-      ingredientUtilization: 'Loaded from saved history.'
-    });
-    setAlternativePlan(null);
-    setActivePlanView('recommended');
-    setActiveAlternativePlanId(null);
-    setActiveBudget(plan.budget);
-    setActiveIngredients(plan.ingredients);
-    setActivePlanId(plan.id);
-    handleTabChange('generate');
-  };
-
-  const handleViewOnlyPlan = (plan: any) => {
-    setGeneratedPlan({
-      mealPlan: plan.generatedPlan,
-      shoppingList: plan.shoppingList,
-      estimatedCost: plan.budget,
-      budgetStatus: 'WITHIN_BUDGET',
-      ingredientUtilization: 'Loaded from saved history.'
-    });
-    setActiveBudget(plan.budget);
-    setActiveIngredients(plan.ingredients);
-    setActivePlanId(plan.id);
-    handleTabChange('view-plan');
   };
 
   const shareViaWhatsApp = async (selectedItems?: Set<number>) => {
@@ -432,52 +283,6 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     window.open(`https://wa.me/?text=${encodedText}`, '_blank');
   };
 
-  const handleRegenerateBudgetFriendly = async () => {
-    setLoading(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    const formData = new FormData();
-    formData.set('budget', activeBudget.toString());
-    formData.set('ingredients', activeIngredients);
-    formData.set('budgetFriendly', 'true');
-    if (generatedPlan) {
-      formData.set('originalEstimatedCost', generatedPlan.estimatedCost.toString());
-    }
-
-    try {
-      const result = await generateMealPlan(formData);
-      
-      if (result && result.success && result.data && result.id) {
-        setAlternativePlan(result.data);
-        setActiveAlternativePlanId(result.id);
-        setActivePlanView('budget-friendly');
-        
-        // Add the alternative plan to history so it shows in the timeline
-        const newPlan: MealPlanModel = {
-          id: result.id,
-          userId: '', // placeholder — real userId is server-side only
-          budget: activeBudget,
-          ingredients: activeIngredients,
-          generatedPlan: result.data.mealPlan,
-          shoppingList: result.data.shoppingList,
-          isSaved: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        setHistory(prev => [newPlan, ...prev]);
-      } else {
-        if (result?.error === 'RATE_LIMIT_EXCEEDED') {
-          toast.error('Generation Limit Reached', { description: "You've reached your meal plan generation limit. Please wait a few minutes before trying again." });
-        } else {
-          toast.error('Unable to Generate Meal Plan', { description: "We couldn't generate a meal plan right now. Please try again." });
-        }
-      }
-    } catch (error) {
-      toast.error('Unable to Generate Meal Plan', { description: "We couldn't generate a meal plan right now. Please try again." });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const renderGenerateTab = () => (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-7xl relative">
@@ -988,8 +793,8 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
             />
           </div>
         )}
-        {activeTab === 'history' && <MealHistoryTab history={history} handleClearAllHistory={handleClearAllHistory} handleSavePlanById={handleSavePlanById} handleDeletePlan={handleDeletePlan} handleTabChange={handleTabChange} isScrolled={isScrolled} />}
-        {activeTab === 'saved' && <SavedPlansTab history={history} title="Saved Plans" handleViewOnlyPlan={handleViewOnlyPlan} handleDeletePlan={handleDeletePlan} handleReusePlan={handleReusePlan} handleTabChange={handleTabChange} isScrolled={isScrolled} />}
+        {activeTab === 'history' && <MealHistoryTab history={history} handleClearAllHistory={requestClearAllHistory} handleSavePlanById={handleSavePlanById} handleDeletePlan={requestDeletePlan} handleTabChange={handleTabChange} isScrolled={isScrolled} />}
+        {activeTab === 'saved' && <SavedPlansTab history={history} title="Saved Plans" handleViewOnlyPlan={handleViewOnlyPlan} handleDeletePlan={requestDeletePlan} handleReusePlan={handleReusePlan} handleTabChange={handleTabChange} isScrolled={isScrolled} />}
         {activeTab === 'settings' && renderSettingsTab()}
         {activeTab === 'support' && <SupportTab email={userData.email} isScrolled={isScrolled} />}
         {activeTab === 'privacy' && <PrivacyTab isScrolled={isScrolled} />}
@@ -1096,6 +901,69 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
               </Button>
             </div>
           </form>
+        </div>
+      </div>
+    )}
+    {/* Delete Plan Confirmation Modal */}
+    {deleteModalPlanId && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
+        <div 
+          className="absolute inset-0 bg-[var(--color-background)]/30 backdrop-blur-md transition-opacity duration-300"
+          onClick={() => setDeleteModalPlanId(null)}
+        />
+        <div className="relative bg-[var(--color-surface)] w-full max-w-[360px] rounded-[24px] shadow-[0_16px_40px_rgb(0,0,0,0.12)] p-6 sm:p-8 animate-in zoom-in-95 fade-in duration-200">
+          <h3 className="text-[1.25rem] font-bold text-[var(--color-on-surface)] mb-2 tracking-tight">Delete Meal Plan?</h3>
+          <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-8 leading-relaxed">
+            Are you sure you want to delete this saved plan? This action cannot be undone.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Button 
+              onClick={confirmDeletePlan}
+              className="w-full min-h-[48px] rounded-xl font-semibold shadow-sm text-[0.9375rem] hover:opacity-90 transition-opacity border-none disabled:opacity-50"
+              style={{ backgroundColor: 'var(--color-error)', color: 'var(--color-on-error)' }}
+            >
+              Delete Plan
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteModalPlanId(null)}
+              className="w-full min-h-[48px] rounded-xl font-semibold border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface)] text-[0.9375rem]"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Clear All History Confirmation Modal */}
+    {isClearAllModalOpen && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
+        <div 
+          className="absolute inset-0 bg-[var(--color-background)]/30 backdrop-blur-md transition-opacity duration-300"
+          onClick={() => setIsClearAllModalOpen(false)}
+        />
+        <div className="relative bg-[var(--color-surface)] w-full max-w-[360px] rounded-[24px] shadow-[0_16px_40px_rgb(0,0,0,0.12)] p-6 sm:p-8 animate-in zoom-in-95 fade-in duration-200">
+          <h3 className="text-[1.25rem] font-bold text-[var(--color-on-surface)] mb-2 tracking-tight">Clear All History?</h3>
+          <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] mb-8 leading-relaxed">
+            Are you sure you want to delete ALL meal plans from your history? This action cannot be undone.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Button 
+              onClick={confirmClearAllHistory}
+              className="w-full min-h-[48px] rounded-xl font-semibold shadow-sm text-[0.9375rem] hover:opacity-90 transition-opacity border-none disabled:opacity-50"
+              style={{ backgroundColor: 'var(--color-error)', color: 'var(--color-on-error)' }}
+            >
+              Clear History
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsClearAllModalOpen(false)}
+              className="w-full min-h-[48px] rounded-xl font-semibold border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface)] text-[0.9375rem]"
+            >
+              Cancel
+            </Button>
+          </div>
         </div>
       </div>
     )}

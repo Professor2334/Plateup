@@ -100,17 +100,17 @@ export async function resetPassword(formData: FormData) {
       return { success: false, error: 'User associated with this token no longer exists.' };
     }
 
-    // 4. Update user password
+    // 4. Update user password & delete token
     const hashedPassword = await bcrypt.hash(validPassword, 10);
-    await db.user.update({
-      where: { id: user.id },
-      data: { password: hashedPassword }
-    });
-
-    // 5. Delete the token
-    await db.passwordResetToken.delete({
-      where: { id: resetTokenRecord.id }
-    });
+    await db.$transaction([
+      db.user.update({
+        where: { id: user.id },
+        data: { password: hashedPassword }
+      }),
+      db.passwordResetToken.delete({
+        where: { id: resetTokenRecord.id }
+      })
+    ]);
 
     return { success: true };
   } catch (error) {

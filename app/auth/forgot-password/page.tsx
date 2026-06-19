@@ -7,17 +7,16 @@ import { Loader2, ArrowLeft, MailCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { requestPasswordReset } from '@/app/actions/auth/reset-actions';
+import { Feedback } from '@/lib/feedback';
 
 export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
 
     const formData = new FormData(e.currentTarget);
     const res = await requestPasswordReset(formData);
@@ -26,9 +25,10 @@ export default function ForgotPasswordPage() {
 
     if (res.success) {
       setSuccess(true);
+      Feedback.success.resetSent();
       router.replace('/auth/forgot-password?success=true');
     } else {
-      setError(res.error || 'Failed to process request');
+      Feedback.error.reset();
     }
   };
 
@@ -109,7 +109,7 @@ export default function ForgotPasswordPage() {
             />
           </div>
           
-          {error && <p className="text-[var(--color-error)] text-sm font-medium">{error}</p>}
+
           
           <div className="pt-2 flex flex-col gap-3">
             <Button 
@@ -119,7 +119,10 @@ export default function ForgotPasswordPage() {
               disabled={loading}
             >
               {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  {Feedback.loading.reset}
+                </span>
               ) : (
                 'Send Reset Link'
               )}

@@ -97,3 +97,31 @@ export async function changePassword(formData: FormData) {
     return { success: false, error: 'Failed to change password' };
   }
 }
+
+export async function deleteAccount() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  try {
+    const userId = session.user.id;
+    const userEmail = session.user.email;
+
+    // Use a transaction to ensure all associated records are deleted atomically.
+    // Order matters depending on foreign keys, but Prisma handles it if we delete dependents first.
+    await db.$transaction([
+      db.mealPlan.deleteMany({ where: { userId } }),
+      db.verificationToken.deleteMany({ where: { userId } }),
+      db.passwordResetToken.deleteMany({ where: { email: userEmail! } }), // email might be null for OAuth but we require email
+      // Delete the actual user record
+      db.user.delete({ where: { id: userId } }),
+    ]);
+
+    return { success: true };
+  } catch (error) {
+    console.error('Delete account error:', error);
+    return { success: false, error: 'Failed to delete account' };
+  }
+}
+

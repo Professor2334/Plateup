@@ -198,11 +198,10 @@ export function SavedPlansTab({
               />
             </div>
             <h3 className="text-xl font-bold text-[var(--color-on-surface)] mb-2">
-              No saved plans yet
+              You haven’t saved any meal plans yet.
             </h3>
             <p className="text-sm text-[var(--color-on-surface-variant)] max-w-xs leading-relaxed mb-8">
-              Generate a Nigerian meal plan and tap Save to keep it here for future reference and
-              reuse.
+              Generate a Nigerian meal plan and tap Save to keep it here for future reference and reuse.
             </p>
             <Button
               onClick={() => handleTabChange('generate')}

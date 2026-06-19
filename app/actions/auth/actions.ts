@@ -80,14 +80,15 @@ export async function verifyEmailToken(token: string) {
       return { success: false, error: 'Token expired' };
     }
 
-    await db.user.update({
-      where: { id: verificationToken.userId },
-      data: { emailVerified: new Date() },
-    });
-
-    await db.verificationToken.delete({
-      where: { id: verificationToken.id },
-    });
+    await db.$transaction([
+      db.user.update({
+        where: { id: verificationToken.userId },
+        data: { emailVerified: new Date() },
+      }),
+      db.verificationToken.delete({
+        where: { id: verificationToken.id },
+      })
+    ]);
 
     return { success: true, email: verificationToken.user.email };
   } catch (error) {
