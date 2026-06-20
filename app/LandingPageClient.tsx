@@ -89,10 +89,10 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)] font-sans text-[var(--color-on-background)] selection:bg-[var(--color-primary)] selection:text-white pb-20 overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--color-background)] font-sans text-[var(--color-on-background)] selection:bg-[var(--color-primary)] selection:text-white pb-20 overflow-x-clip">
       {/* ── TOP NAVIGATION ── */}
-      <div className="fixed top-0 w-full z-50 transition-all duration-300 pointer-events-none px-4 md:px-6">
-        <header className={`mx-auto max-w-[1440px] pointer-events-auto transition-all duration-500 rounded-2xl ${isScrolled ? "mt-4 bg-[var(--color-surface)]/80 backdrop-blur-md border border-[var(--color-outline-variant)]/20 shadow-[0_8px_30px_rgba(0,0,0,0.08)] py-3 px-4 md:px-11" : "mt-6 bg-transparent py-4 px-4 md:px-7"}`}>
+      <div className="sticky top-0 w-full z-[1000] transition-all duration-300 pointer-events-none px-4 md:px-6 pt-4 pb-2 md:pt-6 md:pb-4">
+        <header className="mx-auto max-w-[1440px] pointer-events-auto rounded-2xl bg-[var(--color-surface)]/85 backdrop-blur-xl border border-[var(--color-outline-variant)]/20 shadow-[0_8px_30px_rgba(0,0,0,0.08)] py-3 px-4 md:px-7 lg:px-11 transition-all duration-300">
           <div className="flex items-center justify-between">
             {/* LEFT: Logo */}
             <div className="flex-1 flex justify-start">
@@ -139,7 +139,7 @@ export default function LandingPage() {
 
       <main>
         {/* ── SECTION 1: HERO ── */}
-        <section id="home" className="min-h-[calc(100vh-5rem)] md:min-h-0 pt-32 md:pt-32 lg:pt-40 pb-16 md:pb-24 px-6 max-w-5xl mx-auto flex flex-col justify-center items-center text-center">
+        <section id="home" className="min-h-[calc(100vh-5rem)] md:min-h-0 pt-8 md:pt-12 lg:pt-16 pb-16 md:pb-24 px-6 max-w-5xl mx-auto flex flex-col justify-center items-center text-center">
           <div className="flex flex-col items-center w-full">
             <div className="relative group mb-10 md:mb-12">
               <div className="absolute inset-0 bg-[var(--color-primary)] opacity-20 blur-xl rounded-full scale-110"></div>
