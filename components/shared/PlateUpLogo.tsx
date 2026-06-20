@@ -39,10 +39,10 @@ export function PlateUpLogo({
       {/* Logo symbol */}
       <span className="flex-shrink-0 select-none flex items-center justify-center" aria-hidden="true">
         <Image
-          src="/plateup-logo.png"
+          src="/icon.png"
           alt=""
-          width={400}
-          height={400}
+          width={512}
+          height={512}
           className={`${imgClass} object-contain`}
           priority
         />
