@@ -15,7 +15,7 @@ type PlateUpLogoProps = {
 const sizeMap = {
   sm: { imgClass: 'h-[1.375rem] w-auto', text: 'text-lg' },
   md: { imgClass: 'h-[1.75rem] w-auto', text: 'text-2xl' },
-  lg: { imgClass: 'h-[2.125rem] w-auto', text: 'text-3xl' },
+  lg: { imgClass: 'h-[1.875rem] w-auto', text: 'text-[1.75rem]' },
   xl: { imgClass: 'h-[2.625rem] w-auto', text: 'text-4xl' },
   responsive: { 
     imgClass: 'h-[2rem] md:h-[2.25rem] lg:h-[2.5rem] w-auto', 
@@ -39,7 +39,7 @@ export function PlateUpLogo({
       {/* Logo symbol */}
       <span className="flex-shrink-0 select-none flex items-center justify-center" aria-hidden="true">
         <Image
-          src="/icon.png"
+          src="/plateup-logo-cropped.png"
           alt=""
           width={512}
           height={512}

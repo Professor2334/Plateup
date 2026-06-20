@@ -92,7 +92,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[var(--color-background)] font-sans text-[var(--color-on-background)] selection:bg-[var(--color-primary)] selection:text-white pb-20 overflow-x-hidden">
       {/* ── TOP NAVIGATION ── */}
       <div className="fixed top-0 w-full z-50 transition-all duration-300 pointer-events-none px-4 md:px-6">
-        <header className={`mx-auto max-w-[1440px] pointer-events-auto transition-all duration-500 rounded-2xl ${isScrolled ? "mt-4 bg-[var(--color-surface)]/75 backdrop-blur-[16px] shadow-[0_8px_30px_rgba(0,0,0,0.06)] py-3 px-4 md:px-11" : "mt-6 bg-transparent py-4 px-4 md:px-7"}`}>
+        <header className={`mx-auto max-w-[1440px] pointer-events-auto transition-all duration-500 rounded-2xl ${isScrolled ? "mt-4 bg-[var(--color-surface)]/80 backdrop-blur-md border border-[var(--color-outline-variant)]/20 shadow-[0_8px_30px_rgba(0,0,0,0.08)] py-3 px-4 md:px-11" : "mt-6 bg-transparent py-4 px-4 md:px-7"}`}>
           <div className="flex items-center justify-between">
             {/* LEFT: Logo */}
             <div className="flex-1 flex justify-start">
@@ -123,13 +123,13 @@ export default function LandingPage() {
 
           {/* Mobile Nav */}
           {isMobileMenuOpen && (
-            <div className="absolute top-full left-0 w-full bg-[var(--color-surface)] rounded-2xl shadow-lg p-5 flex flex-col gap-3 md:hidden mt-2 border border-[var(--color-outline-variant)]">
+            <div className="absolute top-full left-0 right-0 mx-4 mt-2 bg-[var(--color-surface)]/85 backdrop-blur-xl rounded-[24px] shadow-[0_16px_40px_rgba(0,0,0,0.1)] p-6 flex flex-col gap-2 md:hidden border border-black/[0.05] animate-in fade-in slide-in-from-top-4 duration-300 ease-out">
               {navLinks.map((link) => (
-                <button key={link.id} onClick={() => scrollToSection(link.id)} className="text-left text-[0.875rem] font-semibold text-[var(--color-on-surface)] py-2 border-b border-[var(--color-outline-variant)]/30">
+                <button key={link.id} onClick={() => scrollToSection(link.id)} className="text-left text-[1.125rem] font-semibold text-[var(--color-on-surface)] py-3 px-4 rounded-xl hover:bg-black/[0.03] active:bg-black/[0.05] transition-colors">
                   {link.label}
                 </button>
               ))}
-              <Link href="/auth/register" prefetch={true} className="mt-3 flex items-center justify-center h-10 rounded-lg bg-[var(--color-primary)] text-white font-bold text-[0.875rem] shadow-sm">
+              <Link href="/auth/register" prefetch={true} className="mt-4 flex items-center justify-center h-12 rounded-xl bg-[var(--color-primary)] text-white font-bold text-[1rem] shadow-[0_8px_20px_rgba(20,128,60,0.2)] hover:opacity-90 active:scale-[0.98] transition-all">
                 Get Started
               </Link>
             </div>
@@ -139,20 +139,20 @@ export default function LandingPage() {
 
       <main>
         {/* ── SECTION 1: HERO ── */}
-        <section id="home" className="pt-24 md:pt-32 lg:pt-40 pb-12 md:pb-24 px-6 max-w-5xl mx-auto flex flex-col items-center text-center">
+        <section id="home" className="min-h-[calc(100vh-5rem)] md:min-h-0 pt-32 md:pt-32 lg:pt-40 pb-16 md:pb-24 px-6 max-w-5xl mx-auto flex flex-col justify-center items-center text-center">
           <div className="flex flex-col items-center w-full">
-            <div className="relative group mb-8 md:mb-10">
+            <div className="relative group mb-10 md:mb-12">
               <div className="absolute inset-0 bg-[var(--color-primary)] opacity-20 blur-xl rounded-full scale-110"></div>
               <div className="relative inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--color-primary)]/10 text-[0.8125rem] font-semibold text-[var(--color-primary)] shadow-sm animate-[float-subtle_4s_ease-in-out_infinite]">
                 <span className="text-[0.875rem]">🇳🇬</span> Built for Nigerian Households
               </div>
             </div>
             
-            <h1 className="text-[clamp(2rem,4vw+1rem,3.25rem)] font-extrabold leading-[1.15] tracking-tight text-[var(--color-on-surface)] max-w-[850px] mb-[25px]">
+            <h1 className="text-[clamp(2rem,4vw+1rem,3.25rem)] font-extrabold leading-[1.15] tracking-tight text-[var(--color-on-surface)] max-w-[850px] mb-6 md:mb-8">
               Plan Your Week's Meals in <span className="text-[var(--color-primary)]">Under 60 Seconds</span>
             </h1>
             
-            <p className="text-[1rem] md:text-[1.125rem] text-[var(--color-on-surface-variant)] opacity-70 leading-relaxed max-w-[600px] mb-10 md:mb-12">
+            <p className="text-[1rem] md:text-[1.125rem] text-[var(--color-on-surface-variant)] opacity-70 leading-relaxed max-w-[600px] mb-12 md:mb-14">
               Tell PlateUp your budget and available ingredients. Get a complete 7-day Nigerian meal plan and shopping list instantly.
             </p>
             
