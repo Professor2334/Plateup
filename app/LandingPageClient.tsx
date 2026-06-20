@@ -89,10 +89,10 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)] font-sans text-[var(--color-on-background)] selection:bg-[var(--color-primary)] selection:text-white pb-20 overflow-x-clip">
+    <div className="min-h-screen bg-[var(--color-background)] font-sans text-[var(--color-on-background)] selection:bg-[var(--color-primary)] selection:text-white pb-20">
       {/* ── TOP NAVIGATION ── */}
       <div className="sticky top-0 w-full z-[1000] transition-all duration-300 pointer-events-none px-4 md:px-6 pt-4 pb-2 md:pt-6 md:pb-4">
-        <header className="mx-auto max-w-[1440px] pointer-events-auto rounded-2xl bg-[var(--color-surface)]/85 backdrop-blur-xl border border-[var(--color-outline-variant)]/20 shadow-[0_8px_30px_rgba(0,0,0,0.08)] py-3 px-4 md:px-7 lg:px-11 transition-all duration-300">
+        <header className="mx-auto max-w-[1440px] pointer-events-auto rounded-2xl bg-white/85 backdrop-blur-xl border border-[var(--color-outline-variant)]/20 shadow-[0_8px_30px_rgba(0,0,0,0.08)] py-3 px-4 md:px-7 lg:px-11 transition-all duration-300">
           <div className="flex items-center justify-between">
             {/* LEFT: Logo */}
             <div className="flex-1 flex justify-start">
@@ -123,7 +123,7 @@ export default function LandingPage() {
 
           {/* Mobile Nav */}
           {isMobileMenuOpen && (
-            <div className="absolute top-full left-0 right-0 mx-4 mt-2 bg-[var(--color-surface)]/85 backdrop-blur-xl rounded-[24px] shadow-[0_16px_40px_rgba(0,0,0,0.1)] p-6 flex flex-col gap-2 md:hidden border border-black/[0.05] animate-in fade-in slide-in-from-top-4 duration-300 ease-out">
+            <div className="absolute top-full left-0 right-0 mx-4 mt-2 bg-white/95 backdrop-blur-lg rounded-[24px] shadow-[0_10px_30px_rgba(0,0,0,0.08)] p-6 flex flex-col gap-2 md:hidden border border-white/40 animate-in fade-in slide-in-from-top-4 duration-300 ease-out">
               {navLinks.map((link) => (
                 <button key={link.id} onClick={() => scrollToSection(link.id)} className="text-left text-[1.125rem] font-semibold text-[var(--color-on-surface)] py-3 px-4 rounded-xl hover:bg-black/[0.03] active:bg-black/[0.05] transition-colors">
                   {link.label}
@@ -137,7 +137,7 @@ export default function LandingPage() {
         </header>
       </div>
 
-      <main>
+      <main className="overflow-x-clip">
         {/* ── SECTION 1: HERO ── */}
         <section id="home" className="min-h-[calc(100vh-5rem)] md:min-h-0 pt-8 md:pt-12 lg:pt-16 pb-16 md:pb-24 px-6 max-w-5xl mx-auto flex flex-col justify-center items-center text-center">
           <div className="flex flex-col items-center w-full">
