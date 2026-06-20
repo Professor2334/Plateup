@@ -2,8 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 type PlateUpLogoProps = {
-  /** Size class for the logo symbol height — defaults to 'md' */
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Size class for the logo symbol height — defaults to 'responsive' */
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'responsive';
   /** Whether the logo should link to the homepage */
   href?: string | null;
   /** Additional className for the wrapper */
@@ -13,39 +13,43 @@ type PlateUpLogoProps = {
 };
 
 const sizeMap = {
-  sm: { img: 22, text: 'text-lg' },
-  md: { img: 28, text: 'text-2xl' },
-  lg: { img: 34, text: 'text-3xl' },
-  xl: { img: 42, text: 'text-4xl' },
+  sm: { imgClass: 'h-[1.375rem] w-auto', text: 'text-lg' },
+  md: { imgClass: 'h-[1.75rem] w-auto', text: 'text-2xl' },
+  lg: { imgClass: 'h-[2.125rem] w-auto', text: 'text-3xl' },
+  xl: { imgClass: 'h-[2.625rem] w-auto', text: 'text-4xl' },
+  responsive: { 
+    imgClass: 'h-[2rem] md:h-[2.25rem] lg:h-[2.5rem] w-auto', 
+    text: 'text-2xl md:text-3xl lg:text-4xl' 
+  },
 };
 
 export function PlateUpLogo({
-  size = 'md',
+  size = 'responsive',
   href = '/',
   className = '',
   textColorClass = 'text-[var(--color-primary)]',
 }: PlateUpLogoProps) {
-  const { img, text } = sizeMap[size];
+  const { imgClass, text } = sizeMap[size];
 
   const inner = (
     <span
-      className={`inline-flex items-center gap-1 ${className}`}
+      className={`inline-flex items-center gap-1.5 ${className}`}
       aria-label="PlateUp"
     >
       {/* Logo symbol */}
-      <span className="flex-shrink-0 select-none" aria-hidden="true">
+      <span className="flex-shrink-0 select-none flex items-center justify-center" aria-hidden="true">
         <Image
           src="/plateup-logo.png"
           alt=""
-          width={img}
-          height={img}
-          className="object-contain"
+          width={400}
+          height={400}
+          className={`${imgClass} object-contain`}
           priority
         />
       </span>
 
       {/* Wordmark */}
-      <span className={`font-bold tracking-tight leading-none ${text} ${textColorClass}`}>
+      <span className={`font-bold tracking-tight leading-none flex items-center ${text} ${textColorClass}`}>
         PlateUp
       </span>
     </span>
@@ -53,7 +57,7 @@ export function PlateUpLogo({
 
   if (href) {
     return (
-      <Link href={href} className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] rounded-sm">
+      <Link href={href} className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] rounded-sm transition-opacity hover:opacity-90">
         {inner}
       </Link>
     );
