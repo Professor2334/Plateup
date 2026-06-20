@@ -126,11 +126,14 @@ async function runTest() {
           });
           
           console.log("\n=> FINAL MEAL PLAN:");
-          result.mealPlan.forEach(day => {
+          result.mealPlan.forEach((day: any) => {
              console.log(`   [${day.day}]`);
              console.log(`      B: ${day.breakfast}`);
              console.log(`      L: ${day.lunch}`);
              console.log(`      D: ${day.dinner}`);
+             if (day.primaryIngredientsUsed && day.primaryIngredientsUsed.length > 0) {
+                 console.log(`      > Ingredients Used: ${day.primaryIngredientsUsed.join(', ')}`);
+             }
           });
       }
     } catch (e: any) {

@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import fs from 'fs';
 import path from 'path';
-import { sanitizeMealPlanResponse } from './ai-sanitizer';
+import { sanitizeMealPlanResponse, normalizeTerminology, validateIngredients } from './ai-sanitizer';
 
 export const DeepSeekResponseSchema = z.object({
   budgetStrategy: z.string().optional(),
@@ -14,6 +14,7 @@ export const DeepSeekResponseSchema = z.object({
       breakfast: z.string(),
       lunch: z.string(),
       dinner: z.string(),
+      primaryIngredientsUsed: z.array(z.string()),
     })
   ),
   shoppingList: z.array(
@@ -101,7 +102,10 @@ CRITICAL RULES FOR ALL GENERATIONS:
 7. QUANTITY SCALING: You must scale your shopping list quantities strictly for a household size of ${householdSize}. Do NOT suggest bulk/family-size items (e.g., "3kg tomatoes", "2.5L palm oil", "1 crate of eggs") for a household of 1. Suggest small, affordable market measurements (e.g., "1 small paint rubber", "1 sachet", "₦200 worth", "2 pieces").
 8. NO REASONING: DO NOT include internal thoughts, questions, or reasoning in the meal fields. The meal text must be clean and final.
 9. NATURAL MEAL NAMES: DO NOT just append raw ingredients to the end of a meal name to prove you used them. Ingredients like palm oil, salt, and seasoning are cooked INTO the meal. Name the meal naturally. DO NOT include reasoning, suggestions, or words like "use", "instead", "maybe", or "consider" inside the meal names.
-10. REALISTIC PORTION MATH: When scaling quantities for the shopping list, be exact and realistic. For example, for a household of 1, eating eggs 3 times in a week means they need 3 to 6 eggs (1-2 per meal). Write quantities clearly (e.g., "6 pieces" or "half crate"). Do not suggest over-buying perishable proteins for a household of 1.
+10. NIGERIAN TERMINOLOGY RULES (CRITICAL):
+    - If Garri is paired with ANY soup (e.g., Okra, Egusi, Vegetable, Ogbono), you MUST output it as "Eba with [Soup Name]". NEVER output "Garri with Okra Soup" or "Garri with Soup".
+    - Use "Garri" ONLY when it is consumed directly without hot water (e.g., "Soaked Garri with Groundnut", "Garri and Sugar").
+11. REALISTIC PORTION MATH: When scaling quantities for the shopping list, be exact and realistic. For example, for a household of 1, eating eggs 3 times in a week means they need 3 to 6 eggs (1-2 per meal). Write quantities clearly (e.g., "6 pieces" or "half crate"). Do not suggest over-buying perishable proteins for a household of 1.
 11. PANTRY-FIRST STRATEGY: Prioritize existing pantry ingredients before introducing new ones. The more ingredients the user has in their pantry, the more aggressively you MUST reuse them across the week.
 12. PANTRY SCALING EXPECTATIONS: 
     - Minimal Pantry: Produce a larger shopping list, higher estimated spend, and lower savings.
@@ -138,6 +142,7 @@ PANTRY COST OPTIMIZATION RULES:
    - Heavy pantry spending is not higher than medium pantry spending.
    - Heavy pantry savings are not lower than medium pantry savings.
    - Heavy pantry shopping lists are not larger than medium pantry shopping lists.
+   - EVERY SINGLE INGREDIENT placed in \`primaryIngredientsUsed\` originates strictly from the Pantry or the Shopping List. If not, the system will reject your response.
 10. If the generated result violates these rules, regenerate the meal plan and shopping list before returning the final response.`;
 
   if (budgetFriendly) {
@@ -225,14 +230,25 @@ DO NOT include a \`budgetStrategy\` field in your JSON.`;
         breakfast: day.breakfast,
         lunch: day.lunch,
         dinner: day.dinner,
-        primaryIngredientsUsed: [] // Handled dynamically in UI or skipped
+        primaryIngredientsUsed: day.primaryIngredientsUsed || []
       });
     }
+
+    // 1. Normalize Terminology (Garri -> Eba logic)
+    const normalizedMealPlan = legacyMealPlan.map(day => ({
+      ...day,
+      breakfast: normalizeTerminology(day.breakfast),
+      lunch: normalizeTerminology(day.lunch),
+      dinner: normalizeTerminology(day.dinner),
+    }));
+
+    // 2. Strict Ingredient Validation
+    validateIngredients(ingredients, validatedData.shoppingList, normalizedMealPlan);
 
     return {
       budgetStrategy: validatedData.budgetStrategy,
       ingredientUtilization: validatedData.ingredientUtilization,
-      mealPlan: legacyMealPlan,
+      mealPlan: normalizedMealPlan,
       shoppingList: validatedData.shoppingList,
       estimatedCost: validatedData.estimatedCost,
       budgetStatus: validatedData.budgetStatus

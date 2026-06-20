@@ -19,6 +19,12 @@ export function ContactForm({ defaultEmail }: { defaultEmail: string | null }) {
     setError('');
 
     const formData = new FormData(e.currentTarget);
+    const email = formData.get('email');
+    if (!email || !String(email).includes('@')) {
+      setError('Please provide a valid email address.');
+      setLoading(false);
+      return;
+    }
     const res = await submitContactMessage(formData);
 
     if (res.success) {
@@ -47,13 +53,20 @@ export function ContactForm({ defaultEmail }: { defaultEmail: string | null }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-8">
       {defaultEmail ? (
         <div className="space-y-2">
-          <label className="text-[0.8125rem] font-bold text-[var(--color-on-surface)]">Your email address</label>
-          <div className="text-[0.9375rem] font-medium text-[var(--color-on-surface-variant)] py-2">
-            {defaultEmail}
-          </div>
+          <label htmlFor="email" className="text-[0.8125rem] font-bold text-[var(--color-on-surface)]">Email Address</label>
+          <Input 
+            id="email"
+            name="email"
+            type="email" 
+            value={defaultEmail}
+            readOnly
+            className="h-12 bg-[var(--color-surface-variant)]/30 border-[var(--color-outline-variant)]/50 text-[var(--color-on-surface-variant)] rounded-xl opacity-90 cursor-not-allowed focus-visible:ring-0 select-none"
+            tabIndex={-1}
+            aria-readonly="true"
+          />
         </div>
       ) : (
         <div className="space-y-2">

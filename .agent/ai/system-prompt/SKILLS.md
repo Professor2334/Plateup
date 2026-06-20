@@ -200,6 +200,9 @@ Think of this step as: "With the remaining budget, what can I add to these meals
 Before generating the final output, ask yourself:
 - Are the ingredients for each meal accurately listed?
 - ABSOLUTE CONSISTENCY CHECK: Every single ingredient explicitly referenced in a generated meal MUST be available through either: 1) The user's pantry, OR 2) The generated shopping list. (e.g., If a meal mentions "Egusi Soup with Stockfish", and Stockfish is not in the pantry, it MUST appear in the shopping list. Otherwise, change the meal to use an available protein).
+- Did you accurately populate `primaryIngredientsUsed` for each day? It MUST contain a complete list of every ingredient used.
+- Are all ingredients in `primaryIngredientsUsed` strictly available in the pantry or the shopping list? If not, the system will reject your response.
+- Did you apply the Nigerian Terminology Rules? (e.g., "Eba with Okra Soup" instead of "Garri with Okra Soup").
 - The final meal plan must be fully executable using ONLY the Pantry + Shopping List.
 - Are the meals varied and realistic across 7 days? (If not, introduce affordable variety.)
 - Does the plan feel like what a Nigerian household would actually eat? (If not, revise.)

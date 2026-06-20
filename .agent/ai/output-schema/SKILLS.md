@@ -11,13 +11,15 @@ All PlateUp AI responses must strictly follow this structure.
       "day": "Monday",
       "breakfast": "Yam and Egg Sauce",
       "lunch": "White Rice and Stew",
-      "dinner": "Beans Porridge"
+      "dinner": "Beans Porridge",
+      "primaryIngredientsUsed": ["Yam", "Eggs", "Rice", "Tomato", "Beans", "Palm Oil"]
     },
     {
       "day": "Tuesday",
       "breakfast": "...",
       "lunch": "...",
-      "dinner": "..."
+      "dinner": "...",
+      "primaryIngredientsUsed": ["..."]
     }
   ],
   "shoppingList": [
@@ -49,6 +51,7 @@ Type: `string`
 
 ## mealPlan
 Seven-day meal plan. Each day must contain `day`, `breakfast`, `lunch`, and `dinner` (all strings).
+Additionally, it MUST contain `primaryIngredientsUsed` (array of strings) listing EVERY SINGLE INGREDIENT needed to cook that day's meals. Every ingredient listed MUST be drawn from either the user's pantry or the shopping list.
 
 ## shoppingList
 Array of objects containing `item` (string) and `quantity` (string) for all ingredients the user MUST purchase. Ensure quantities strictly match the requested household size using practical Nigerian market measurements.
