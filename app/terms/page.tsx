@@ -10,6 +10,15 @@ export const metadata: Metadata = {
   description:
     'Read the PlateUp Terms of Service. Understand your rights and responsibilities when using our AI-powered Nigerian meal planning platform.',
   alternates: { canonical: '/terms' },
+  openGraph: {
+    title: 'Terms of Service | PlateUp',
+    description: 'Read the PlateUp Terms of Service. Understand your rights and responsibilities when using our AI-powered Nigerian meal planning platform.',
+    url: 'https://plateup.com.ng/terms',
+  },
+  twitter: {
+    title: 'Terms of Service | PlateUp',
+    description: 'Read the PlateUp Terms of Service. Understand your rights and responsibilities when using our AI-powered Nigerian meal planning platform.',
+  },
 };
 
 export default function TermsOfServicePage() {

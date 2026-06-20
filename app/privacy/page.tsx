@@ -9,6 +9,15 @@ export const metadata: Metadata = {
   description:
     'Read the PlateUp Privacy Policy. Learn how we collect, use, and protect your personal data on our AI-powered Nigerian meal planning platform.',
   alternates: { canonical: '/privacy' },
+  openGraph: {
+    title: 'Privacy Policy | PlateUp',
+    description: 'Read the PlateUp Privacy Policy. Learn how we collect, use, and protect your personal data on our AI-powered Nigerian meal planning platform.',
+    url: 'https://plateup.com.ng/privacy',
+  },
+  twitter: {
+    title: 'Privacy Policy | PlateUp',
+    description: 'Read the PlateUp Privacy Policy. Learn how we collect, use, and protect your personal data on our AI-powered Nigerian meal planning platform.',
+  },
 };
 
 export default function PrivacyPolicyPage() {

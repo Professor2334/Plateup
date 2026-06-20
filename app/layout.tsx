@@ -17,12 +17,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
 
   title: {
-    default: "PlateUp | AI Meal Planning for Nigerian Households",
+    default: "PlateUp - AI Meal Planner for Nigerian Families",
     template: "%s | PlateUp",
   },
 
   description:
-    "AI-powered Nigerian meal planning platform that helps households create budget-friendly weekly meal plans using available ingredients and spending limits.",
+    "Generate affordable Nigerian meal plans using AI. Plan weekly meals based on your budget, pantry ingredients, and household size.",
 
   keywords: [
     "Nigerian meal planner",
@@ -55,9 +55,9 @@ export const metadata: Metadata = {
     locale: "en_NG",
     url: APP_URL,
     siteName: "PlateUp",
-    title: "PlateUp | AI Meal Planning for Nigerian Households",
+    title: "PlateUp - AI Meal Planner for Nigerian Families",
     description:
-      "AI-powered Nigerian meal planning platform that helps households create budget-friendly weekly meal plans using available ingredients and spending limits.",
+      "Generate affordable Nigerian meal plans using AI. Plan weekly meals based on your budget, pantry ingredients, and household size.",
     images: [
       {
         url: "/og-image.png",
@@ -71,9 +71,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "PlateUp | AI Meal Planning for Nigerian Households",
+    title: "PlateUp - AI Meal Planner for Nigerian Families",
     description:
-      "Generate a complete 7-day Nigerian meal plan and shopping list in under 60 seconds. Budget-aware, ingredient-smart.",
+      "Generate affordable Nigerian meal plans using AI. Plan weekly meals based on your budget, pantry ingredients, and household size.",
     images: ["/og-image.png"],
     creator: "@plateupapp",
     site: "@plateupapp",

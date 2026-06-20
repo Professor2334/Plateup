@@ -10,7 +10,16 @@ export const metadata: Metadata = {
   description:
     'Join PlateUp to start planning budget-friendly Nigerian meals for your household. Set your budget, add ingredients, and get a 7-day meal plan instantly.',
   alternates: { canonical: '/auth/register' },
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
+  openGraph: {
+    title: 'Create Account | PlateUp',
+    description: 'Join PlateUp to start planning budget-friendly Nigerian meals for your household. Set your budget, add ingredients, and get a 7-day meal plan instantly.',
+    url: 'https://plateup.com.ng/auth/register',
+  },
+  twitter: {
+    title: 'Create Account | PlateUp',
+    description: 'Join PlateUp to start planning budget-friendly Nigerian meals for your household. Set your budget, add ingredients, and get a 7-day meal plan instantly.',
+  },
 };
 
 export default function RegisterPage() {

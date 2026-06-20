@@ -5,10 +5,21 @@ import { PlateUpLogo } from '@/components/shared/PlateUpLogo';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-export const metadata = {
-  title: 'Contact Us | PlateUp',
-  description: 'Get in touch with the PlateUp team.',
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Contact Us',
+  description: 'Get in touch with the PlateUp team for support, partnerships, or general inquiries about our AI meal planner.',
   alternates: { canonical: '/contact' },
+  openGraph: {
+    title: 'Contact Us | PlateUp',
+    description: 'Get in touch with the PlateUp team for support, partnerships, or general inquiries about our AI meal planner.',
+    url: 'https://plateup.com.ng/contact',
+  },
+  twitter: {
+    title: 'Contact Us | PlateUp',
+    description: 'Get in touch with the PlateUp team for support, partnerships, or general inquiries about our AI meal planner.',
+  },
 };
 
 export default async function ContactPage() {

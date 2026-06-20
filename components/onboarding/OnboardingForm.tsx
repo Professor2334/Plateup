@@ -78,37 +78,51 @@ export function OnboardingForm() {
   return (
     <div className="w-full">
       
-      {/* ── Brand logo & Mobile Back — top-left edge of the page ── */}
-      <div className="absolute top-10 left-6 md:top-8 md:left-10 z-50 flex items-center gap-3">
-        {step === 2 && (
-          <button
-            type="button"
-            onClick={() => changeStep(1)}
-            disabled={loading}
-            className="md:hidden p-2 rounded-full bg-[var(--color-surface-container-lowest)] shadow-sm border border-[color-mix(in_srgb,var(--color-outline-variant)_30%,transparent)] text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-low)] transition-all focus:outline-none"
-            aria-label="Go back"
-          >
-            <ArrowLeft size={20} />
-          </button>
-        )}
-        <PlateUpLogo size="md" href="/" />
-      </div>
-
-      {/* Progress Bar Header */}
-      {step < 3 && (
-        <div className="mb-10 max-w-lg mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-3 gap-2 md:gap-0">
-            <span className="text-center md:text-left text-sm font-bold text-[var(--color-on-surface)]">Personalize PlateUp</span>
-            <span className="text-center md:text-right text-[0.8125rem] font-medium text-[var(--color-on-surface-variant)] tracking-wide uppercase">Step {step} of 2</span>
-          </div>
-          <div className="w-full h-1.5 bg-[var(--color-surface-container-highest)] rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-[var(--color-primary)] transition-all duration-500 ease-in-out"
-              style={{ width: `${(step / 2) * 100}%` }}
-            />
-          </div>
+      {/* ── Header Area ── */}
+      <div className="w-full max-w-lg mx-auto mb-8 md:mb-10">
+        {/* Logo Row */}
+        <div className="flex flex-row items-center gap-3 mb-8 md:mb-10">
+          {step === 2 && (
+            <button
+              type="button"
+              onClick={() => changeStep(1)}
+              disabled={loading}
+              className="md:hidden p-2 rounded-full bg-[var(--color-surface-container-lowest)] shadow-sm border border-[color-mix(in_srgb,var(--color-outline-variant)_30%,transparent)] text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-low)] transition-all focus:outline-none"
+              aria-label="Go back"
+            >
+              <ArrowLeft size={20} />
+            </button>
+          )}
+          <PlateUpLogo size="md" href="/" />
         </div>
-      )}
+
+        {/* Progress Bar Header */}
+        {step < 3 && (
+          <div className="w-full">
+            {/* Title Row */}
+            <div className="mb-2">
+              <span className="block text-[1.25rem] md:text-[1.5rem] font-bold text-[var(--color-on-surface)] leading-tight break-words">
+                Personalize Your Experience
+              </span>
+            </div>
+
+            {/* Step indicator Row */}
+            <div className="mb-4">
+              <span className="block text-[0.8125rem] font-bold text-[var(--color-on-surface-variant)] tracking-widest uppercase">
+                Step {step} of 2
+              </span>
+            </div>
+
+            {/* Progress Bar Row */}
+            <div className="w-full h-1.5 bg-[var(--color-surface-container-highest)] rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-[var(--color-primary)] transition-all duration-500 ease-in-out"
+                style={{ width: `${(step / 2) * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Main Content Area with Transition */}
       <div 

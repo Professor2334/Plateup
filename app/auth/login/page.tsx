@@ -12,7 +12,16 @@ export const metadata: Metadata = {
   description:
     'Sign in to your PlateUp account to access your AI-generated Nigerian meal plans, shopping lists, and meal history.',
   alternates: { canonical: '/auth/login' },
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
+  openGraph: {
+    title: 'Sign In | PlateUp',
+    description: 'Sign in to your PlateUp account to access your AI-generated Nigerian meal plans, shopping lists, and meal history.',
+    url: 'https://plateup.com.ng/auth/login',
+  },
+  twitter: {
+    title: 'Sign In | PlateUp',
+    description: 'Sign in to your PlateUp account to access your AI-generated Nigerian meal plans, shopping lists, and meal history.',
+  },
 };
 
 export default function LoginPage() {

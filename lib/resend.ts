@@ -46,7 +46,7 @@ const sendRawEmail = async (to: string, subject: string, html: string) => {
 };
 
 export const sendVerificationEmail = async (email: string, token: string) => {
-  const confirmLink = `${process.env.AUTH_URL || 'http://localhost:3000'}/auth/verify-email?token=${token}`;
+  const confirmLink = `${process.env.NEXT_PUBLIC_APP_URL || 'https://plateup.com.ng'}/auth/verify?token=${token}`;
   const subject = 'Welcome to PlateUp — verify your email';
   const html = `
     <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #fff; border-radius: 12px;">
@@ -106,7 +106,7 @@ export const sendContactConfirmation = async (email: string) => {
 };
 
 export const sendPasswordResetEmail = async (email: string, token: string) => {
-  const resetLink = `${process.env.AUTH_URL || 'http://localhost:3000'}/auth/reset-password?token=${token}`;
+  const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || 'https://plateup.com.ng'}/auth/reset-password?token=${token}`;
   const subject = 'Reset your PlateUp password';
   const html = `
     <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #fff; border-radius: 12px;">
