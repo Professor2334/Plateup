@@ -15,9 +15,9 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: 'en-NG',
     icons: [
       {
-        src: '/favicon.ico',
+        src: '/icon.svg',
         sizes: 'any',
-        type: 'image/x-icon',
+        type: 'image/svg+xml',
       },
       {
         src: '/plateup-logo.png',
