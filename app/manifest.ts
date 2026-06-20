@@ -15,21 +15,21 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: 'en-NG',
     icons: [
       {
-        src: '/icon.svg',
+        src: '/favicon.ico',
         sizes: 'any',
-        type: 'image/svg+xml',
+        type: 'image/x-icon',
       },
       {
-        src: '/plateup-logo.png',
-        sizes: '1254x1254',
+        src: '/icon-192.png',
+        sizes: '192x192',
         type: 'image/png',
         purpose: 'any',
       },
       {
-        src: '/plateup-logo.png',
-        sizes: '1254x1254',
+        src: '/icon.png',
+        sizes: '512x512',
         type: 'image/png',
-        purpose: 'maskable',
+        purpose: 'any',
       },
     ],
   };
