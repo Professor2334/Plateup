@@ -153,7 +153,7 @@ export default function LandingPage() {
             </h1>
             
             <p className="text-[1rem] md:text-[1.125rem] text-[var(--color-on-surface-variant)] opacity-70 leading-relaxed max-w-[600px] mb-12 md:mb-14">
-              Tell PlateUp your budget and available ingredients. Get a complete 7-day Nigerian meal plan and shopping list instantly.
+              Enter your budget and ingredients. Get a 7-day meal plan and shopping list instantly.
             </p>
             
             <div className="w-full sm:w-auto flex flex-col items-center">
