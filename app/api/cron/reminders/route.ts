@@ -19,6 +19,9 @@ export async function GET(request: Request) {
   let errors = 0;
 
   try {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
     // ── A. Welcome Reminder ─────────────────────────────────────────────
     // Trigger: User verified email, > 24 hours ago, hasn't generated a plan, hasn't received welcome email.
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -26,10 +29,15 @@ export async function GET(request: Request) {
     // Find candidates for Welcome email
     const welcomeCandidates = await db.user.findMany({
       where: {
-        emailVerified: { lte: twentyFourHoursAgo }, // Verified more than 24 hours ago
+        emailVerified: { lte: twentyFourHoursAgo, not: null }, // Verified more than 24 hours ago
         lastPlanGeneratedAt: null, // Hasn't generated a plan
         emailLogs: {
-          none: { type: 'welcome_reminder' } // Hasn't received this email type
+          none: {
+            OR: [
+              { type: 'welcome_reminder' }, // Hasn't received this email type
+              { createdAt: { gte: startOfToday } } // Prevent duplicate reminders of any type today
+            ]
+          }
         }
       },
       take: 50 // Process in batches
@@ -50,23 +58,30 @@ export async function GET(request: Request) {
     }
 
     // ── B. Weekly Planning Reminder ─────────────────────────────────────
-    // Trigger: Sunday evening (18:00+ UTC) or Monday morning (before 12:00 UTC)
-    // Runs if user opted in to weekly reminders, hasn't generated plan recently, and hasn't received weekly reminder recently (e.g. within 6 days).
-    const isSundayEvening = now.getUTCDay() === 0 && now.getUTCHours() >= 18;
-    const isMondayMorning = now.getUTCDay() === 1 && now.getUTCHours() < 12;
+    // Trigger: Mondays
+    // Runs if user opted in to weekly reminders, hasn't generated plan recently (within last 7 days), and hasn't received weekly reminder recently (e.g. within 6 days).
+    const isMonday = now.getUTCDay() === 1;
 
-    if (isSundayEvening || isMondayMorning) {
+    if (isMonday) {
       const sixDaysAgo = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       
       const weeklyCandidates = await db.user.findMany({
         where: {
           receiveWeeklyReminders: true,
           emailVerified: { not: null },
-          // Must not have received a weekly reminder in the last 6 days
+          // Exclude users who recently generated a meal plan
+          OR: [
+            { lastPlanGeneratedAt: null },
+            { lastPlanGeneratedAt: { lt: sevenDaysAgo } }
+          ],
+          // Must not have received a weekly reminder in the last 6 days, and no reminder today
           emailLogs: {
             none: {
-              type: 'weekly_reminder',
-              createdAt: { gte: sixDaysAgo }
+              OR: [
+                { type: 'weekly_reminder', createdAt: { gte: sixDaysAgo } },
+                { createdAt: { gte: startOfToday } }
+              ]
             }
           }
         },
@@ -108,11 +123,13 @@ export async function GET(request: Request) {
             ]
           }
         ],
-        // Must not have received a re-engagement email in the last 14 days
+        // Must not have received a re-engagement email in the last 14 days, and no reminder today
         emailLogs: {
           none: {
-            type: 're_engagement',
-            createdAt: { gte: fourteenDaysAgo }
+            OR: [
+              { type: 're_engagement', createdAt: { gte: fourteenDaysAgo } },
+              { createdAt: { gte: startOfToday } }
+            ]
           }
         }
       },
