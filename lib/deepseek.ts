@@ -42,6 +42,8 @@ export interface MealPlanResponse {
   budgetStatus: 'WITHIN_BUDGET' | 'APPROACHING_BUDGET' | 'EXCEEDS_BUDGET';
   estimatedCostRange?: { min: number; max: number };
   budgetUtilization?: number;
+  pantryContribution?: string;
+  remainingBudget?: number;
 }
 
 // Read prompt files once at module load — not on every request.
@@ -60,6 +62,46 @@ function loadPromptFiles(): string {
 }
 
 const COMBINED_SYSTEM_MESSAGE = loadPromptFiles();
+
+function getGoalSpecificRules(goal: string): string {
+  const normalizedGoal = goal.toLowerCase();
+  
+  if (normalizedGoal.includes('save-time')) {
+    return `PRIMARY GOAL RULES - SAVE TIME:
+1. MINIMIZE COOKING FREQUENCY: Prioritize meals that require less active cooking time.
+2. BATCH COOKING: Favor meals that can be cooked in large batches (e.g., Soups, Stews).
+3. STRATEGIC LEFTOVERS: Increase the use of leftover meals. Cook once, eat twice.
+4. REDUCE INGREDIENT VARIETY: Use similar base ingredients across meals to reduce prep time.
+5. QUICK BREAKFASTS: Prefer extremely fast breakfasts (e.g., Bread and Tea, Pap and Akara (bought), Garri).`;
+  }
+
+  if (normalizedGoal.includes('reduce-food-waste')) {
+    return `PRIMARY GOAL RULES - REDUCE FOOD WASTE:
+1. CONSUME PANTRY FIRST: Prioritize using what the user already has.
+2. PERISHABLES FIRST: Use fresh vegetables and perishable proteins early in the week.
+3. REUSE VEGETABLES: If vegetables are bought, they MUST be used in multiple meals so they don't spoil.
+4. NO SINGLE-USE INGREDIENTS: Every purchased ingredient must appear in at least one or more meals. Do not recommend an ingredient for just one small meal component.
+5. MINIMIZE ORPHAN INGREDIENTS: Keep the shopping list highly cohesive and tightly matched to the meals.`;
+  }
+
+  if (normalizedGoal.includes('eat-healthier')) {
+    return `PRIMARY GOAL RULES - EAT HEALTHIER:
+1. INCREASE VEGETABLES: Ensure vegetables are included in as many meals as possible.
+2. ADD FRUITS: Include fruit recommendations (e.g., Bananas, Oranges, Watermelon) if budget allows.
+3. IMPROVE PROTEIN: Prioritize quality proteins (Beans, Fish, Chicken) over purely carb-heavy meals.
+4. NUTRITIOUS BREAKFAST: Avoid purely empty carbs for breakfast; add proteins like eggs or beans.
+5. DIVERSITY: Prefer balanced, diverse meals over the absolute cheapest options. Avoid excessive carbohydrate repetition.
+6. FRESHNESS FIRST: Limit leftovers to a maximum of 1 or 2 per week. Prioritize freshly cooked, nutrient-rich meals over reusing leftovers.`;
+  }
+
+  // Default to save-money
+  return `PRIMARY GOAL RULES - SAVE MONEY:
+1. MAXIMIZE PANTRY: Rely heavily on existing ingredients.
+2. MINIMIZE SHOPPING: Do not spend money just because budget exists. Remaining budget is considered a success.
+3. REUSE INGREDIENTS: Use purchased ingredients across multiple meals.
+4. AFFORDABLE STAPLES: Prefer cheap Nigerian staples (Garri, Beans, Rice).
+5. REDUCE EXPENSIVE PROTEINS: Strictly avoid premium proteins unless the user already owns them. Use Eggs, Sardines, or Crayfish instead.`;
+}
 
 export async function generateMealPlan(
   budget: number,
@@ -92,6 +134,8 @@ Budget: NGN ${budget}
 Available Ingredients: ${ingredients}
 (CRITICAL INSTRUCTION: You MUST incorporate these specific available ingredients into your meals. Do not suggest buying new proteins like Chicken or Beef if the user already has proteins like Stockfish or Eggs.)
 
+${getGoalSpecificRules(primaryGoal)}
+
 CRITICAL RULES FOR ALL GENERATIONS:
 1. Day 1 (Monday) is the first day. You CANNOT have leftovers on Monday. NEVER use words like "leftover", "remaining", or "from previous" on Day 1.
 2. If you suggest a leftover on Days 2-7, the EXACT original meal must have been cooked on an earlier day.
@@ -120,6 +164,17 @@ CRITICAL RULES FOR ALL GENERATIONS:
 19. COST-FIRST OPTIMIZATION: When using a well-stocked pantry, Cost Minimization becomes your HIGHEST priority. Avoid introducing premium ingredients when pantry alternatives exist. Every newly introduced ingredient must justify its cost impact.
 20. PROTEIN PRIORITY HIERARCHY: You MUST prefer pantry proteins before introducing new proteins. Follow this exact priority order: 1. Stockfish -> 2. Crayfish -> 3. Beans -> 4. Eggs -> 5. Sardines -> 6. Chicken -> 7. Beef. Avoid Chicken and Beef unless required for nutritional balance or explicitly requested.
 21. STRICT PROTEIN BUDGET RULE: ${isBudgetTight ? "The budget per portion is TIGHT. NEVER add Chicken, Beef, or Goat Meat to the shopping list. You must rely exclusively on affordable proteins like Eggs, Fish, Sardines, Crayfish, and Beans." : "The budget per portion allows for standard proteins, but you MUST still minimize costs and avoid unnecessary luxury items."} The AI must be highly stable and consistent in cost estimation. Do not artificially inflate the shopping list just because there is "remaining budget". Your goal is to save the user money.
+22. PANTRY-AWARE BUDGET UTILIZATION INTELLIGENCE:
+    - Target Budget Utilization based on budget size:
+      * Budget below ₦25,000: Target 80%-95% utilization.
+      * Budget ₦25,000 - ₦40,000: Target 70%-90% utilization.
+      * Budget above ₦40,000: Target 60%-85% utilization.
+    - PANTRY OWNERSHIP RESPECT: If the user owns substantial pantry ingredients, DO NOT force spending just to hit these utilization targets. Avoid recommending duplicate purchases.
+    - ENRICHMENT RULES: If utilization falls below the target range, enrich the plan naturally without wasting money:
+      * Level 1 (Highest): Add Vegetables, Fruits, Protein sources, and nutritious breakfast options.
+      * Level 2: Increase meal variety, better portion sizes, additional side dishes.
+      * Level 3: Convenience foods only if justified.
+    - NEVER add ingredients solely to spend budget. Every addition must improve Nutrition, Variety, Portion adequacy, Family feeding capacity, or User goal satisfaction.
 
 PANTRY COST OPTIMIZATION RULES:
 1. Treat pantry ingredients as ingredients the user already owns and has already paid for.

@@ -189,13 +189,22 @@ export async function generateMealPlan(formData: FormData) {
       
       reporter.logPass('AI Ingredient Utilization', mealPlan.ingredientUtilization);
       
-      const pantryLogDetails = `Pantry Utilization:\n${pantryResult.score}%\n\nPantry Items Used:\n${pantryResult.usedItemsCount}/${pantryResult.availableItemsCount}\n\nNew Items Required:\n${pantryResult.newItemsCount}\n\nStatus:\n${pantryResult.status}`;
+      // Calculate Pantry Contribution Level
+      let pantryContribution: 'High' | 'Medium' | 'Low' = 'Low';
+      if (pantryResult.score >= 65) {
+        pantryContribution = 'High';
+      } else if (pantryResult.score >= 35) {
+        pantryContribution = 'Medium';
+      }
+      
+      const pantryLogDetails = `Pantry Utilization:\n${pantryResult.score}%\nPantry Contribution: ${pantryContribution}\n\nPantry Items Used:\n${pantryResult.usedItemsCount}/${pantryResult.availableItemsCount}\n\nNew Items Required:\n${pantryResult.newItemsCount}\n\nStatus:\n${pantryResult.status}`;
       reporter.logPass('Pantry Utilization Validation', pantryLogDetails);
 
       // Ensure the estimated cost is realistic and not drastically underestimated by AI
       const safeEstimatedCost = calculateSafeEstimatedCost(mealPlan.shoppingList, mealPlan.estimatedCost);
 
       const budgetUtilization = Math.round((safeEstimatedCost / budget) * 100);
+      const remainingBudget = Math.max(0, budget - safeEstimatedCost);
 
       // Classify Feasibility
       let budgetStatus: 'WITHIN_BUDGET' | 'APPROACHING_BUDGET' | 'EXCEEDS_BUDGET';
@@ -217,8 +226,40 @@ export async function generateMealPlan(formData: FormData) {
       reporter.logPass('Feasibility Validation', `Status: ${budgetStatus}, Estimated Spending: ₦${safeEstimatedCost}`);
 
       // In both modes, we fail if the budget constraints are impossible (recalculated cost exceeds budget).
-      // In budget-friendly mode, we also try to optimize if the plan is under-utilized or more expensive than the original.
-      const isUnderUtilized = budgetFriendly && budgetUtilization < 70;
+      // Pantry-Aware Budget Utilization Intelligence
+      let targetMinUtilization = 60;
+      if (budget < 25000) {
+        targetMinUtilization = 80;
+      } else if (budget <= 40000) {
+        targetMinUtilization = 70;
+      }
+
+      // If they have a high pantry contribution, we allow even lower utilization (don't force them to spend)
+      if (pantryContribution === 'High') {
+        targetMinUtilization -= 20; // e.g. 60% becomes 40%, 80% becomes 60%
+      } else if (pantryContribution === 'Medium') {
+        targetMinUtilization -= 10;
+      }
+      
+      // Goal Priority Overrides for Budget Intelligence
+      const goalLower = primaryGoal.toLowerCase();
+      if (goalLower.includes('save-money')) {
+        // Under-utilizing is a SUCCESS for save-money. Do not fail on under-utilization.
+        targetMinUtilization = 0;
+      } else if (goalLower.includes('eat-healthier') || goalLower.includes('feed-a-large-family')) {
+        // These goals require substantial food volume/quality. We raise the minimum expectation.
+        targetMinUtilization = Math.min(100, targetMinUtilization + 10);
+      }
+      
+      // Ensure it doesn't go below 30% to prevent completely empty shopping lists on large budgets unless pantry is truly exhaustive
+      // Exception: save-money goal allows 0% floor
+      if (!goalLower.includes('save-money')) {
+        targetMinUtilization = Math.max(30, targetMinUtilization);
+      }
+
+      // In budget-friendly mode, we optimize if the plan is under-utilized or more expensive than the original.
+      // In standard mode, we also want to prevent severe under-utilization to ensure plan quality.
+      const isUnderUtilized = budgetUtilization < targetMinUtilization;
       const isOverUtilized = budgetStatus === 'EXCEEDS_BUDGET';
       const isMoreExpensiveThanOriginal = budgetFriendly && originalEstimatedCost !== undefined && safeEstimatedCost >= originalEstimatedCost;
 
@@ -262,6 +303,8 @@ export async function generateMealPlan(formData: FormData) {
         estimatedCostRange,
         budgetUtilization,
         budgetStatus,
+        pantryContribution,
+        remainingBudget
       };
 
       break;
