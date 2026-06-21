@@ -311,14 +311,15 @@ export async function generateMealPlan(formData: FormData) {
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       if (attempts >= maxAttempts) {
-        return { success: false, error: handleActionError(error, `Generation failed after ${maxAttempts} attempts. Last error: ${errorMessage}`) };
+        console.error(`Generation failed after ${maxAttempts} attempts. Last error: ${errorMessage}`);
+        return { success: false, error: "We couldn't generate your meal plan right now. Please try again in a moment." };
       }
-      console.log(`Generation failed (Attempt ${attempts}), retrying...`, errorMessage);
+      console.error(`Generation failed (Attempt ${attempts}), retrying...`, errorMessage);
     }
   }
 
   if (!finalMealPlan) {
-    return { success: false, error: "We're having trouble generating your meal plan right now. Please try again in a moment." };
+    return { success: false, error: "We couldn't generate your meal plan right now. Please try again in a moment." };
   }
 
   // Save to database as unsaved history

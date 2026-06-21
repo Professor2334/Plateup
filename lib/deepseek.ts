@@ -144,7 +144,10 @@ CRITICAL RULES FOR ALL GENERATIONS:
 5. MEAL REALISM: Do not suggest meals that Nigerians do not eat (e.g., Garri + Palm Oil + Salt). Ensure combinations are practical and culturally accurate.
 6. MEAL VARIETY: Ensure reasonable weekly variety. No exact meal should dominate the week. Rotate among Rice, Beans, Yam, Garri, Plantain, Pap, and local soups. Do not repeat the exact same meal more than 3 times in the entire week.
 7. QUANTITY SCALING: You must scale your shopping list quantities strictly for a household size of ${householdSize}. Do NOT suggest bulk/family-size items (e.g., "3kg tomatoes", "2.5L palm oil", "1 crate of eggs") for a household of 1. Suggest small, affordable market measurements (e.g., "1 small paint rubber", "1 sachet", "₦200 worth", "2 pieces").
-8. NO REASONING: DO NOT include internal thoughts, questions, or reasoning in the meal fields. The meal text must be clean and final.
+8. NO REASONING OR ANALYSIS IN OUTPUT: You are generating a final product for the user. DO NOT include internal thoughts, questions, reasoning, explanations, or validation notes in ANY field (especially meal names or descriptions).
+   - FORBIDDEN examples: "Jollof Rice (use leftover tomatoes? yes)", "Beans (maximizes budget)", "Egusi [fresh meal]".
+   - CORRECT examples: "Jollof Rice", "Beans", "Egusi Soup".
+   - Leftover logic must be applied silently behind the scenes without mentioning the decision process.
 9. NATURAL MEAL NAMES: DO NOT just append raw ingredients to the end of a meal name to prove you used them. Ingredients like palm oil, salt, and seasoning are cooked INTO the meal. Name the meal naturally. DO NOT include reasoning, suggestions, or words like "use", "instead", "maybe", or "consider" inside the meal names.
 10. NIGERIAN TERMINOLOGY RULES (CRITICAL):
     - If Garri is paired with ANY soup (e.g., Okra, Egusi, Vegetable, Ogbono), you MUST output it as "Eba with [Soup Name]". NEVER output "Garri with Okra Soup" or "Garri with Soup".
