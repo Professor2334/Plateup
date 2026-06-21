@@ -1,4 +1,5 @@
 import { MealPlanDay } from './quantity-validator';
+import { normalizeMealName } from './meal-name-normalizer';
 
 const FORBIDDEN_PHRASES = [
   '?',
@@ -57,6 +58,9 @@ export function validateAndSanitizeOutput(mealPlan: MealPlanDay[]): void {
         }
         return '';
       }).trim();
+
+      // 3. Strip Artificial Prefixes
+      mealText = normalizeMealName(mealText);
 
       // Assign the sanitized text back
       day[mealType] = mealText;

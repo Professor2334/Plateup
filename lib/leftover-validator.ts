@@ -19,12 +19,14 @@ export function validateAndSanitizeLeftovers(mealPlan: MealPlanDay[]): void {
 
   const getCoreMealName = (leftoverName: string): string => {
     // Strip common leftover phrases, including specific days of the week
-    let core = leftoverName.replace(/leftover|remaining|from previous( night| day)?|the|some|of|warmed up|warmed|from monday|from tuesday|from wednesday|from thursday|from friday|from saturday|from sunday/gi, '').trim();
+    let core = leftoverName.replace(/\b(leftover|remaining|from previous( night| day)?|the|some|of|warmed up|warmed|from monday|from tuesday|from wednesday|from thursday|from friday|from saturday|from sunday)\b/gi, '').trim();
     // Also strip dangling parentheses like "( from Wednesday)" or "( Okra)" if the inside is empty or irrelevant
     core = core.replace(/\(\s*\)|\(\s*from\s*\)/gi, '').trim();
     // Clean up double spaces
     return core.replace(/\s{2,}/g, ' ');
   };
+
+
 
   // Helper to completely strip parentheses for a cleaner "Fresh X" label
   const getCleanFreshName = (mealName: string): string => {
@@ -46,7 +48,7 @@ export function validateAndSanitizeLeftovers(mealPlan: MealPlanDay[]): void {
       if (isLeftover(meal.name)) {
         // Rule 1: Day 1 Breakfast can never be a leftover
         if (dayIndex === 0 && meal.key === 'breakfast') {
-          day[meal.key] = `Fresh ${getCleanFreshName(meal.name)}`;
+          day[meal.key] = getCleanFreshName(meal.name);
           timeline.push({ name: day[meal.key].toLowerCase(), dayIndex });
           continue;
         }
@@ -59,14 +61,14 @@ export function validateAndSanitizeLeftovers(mealPlan: MealPlanDay[]): void {
 
         if (!sourceMealObj) {
           // Rule 2 & 3: Source meal doesn't exist in history. Sanitize it.
-          day[meal.key] = `Fresh ${getCleanFreshName(meal.name)}`;
+          day[meal.key] = getCleanFreshName(meal.name);
           timeline.push({ name: day[meal.key].toLowerCase(), dayIndex });
         } else {
           // Freshness check: Is the leftover more than 1 day old?
           const ageInDays = dayIndex - sourceMealObj.dayIndex;
           if (ageInDays > 1) {
              // Too old to be a realistic leftover! Sanitize.
-             day[meal.key] = `Fresh ${getCleanFreshName(meal.name)}`;
+             day[meal.key] = getCleanFreshName(meal.name);
              timeline.push({ name: day[meal.key].toLowerCase(), dayIndex });
              continue;
           }
@@ -76,7 +78,7 @@ export function validateAndSanitizeLeftovers(mealPlan: MealPlanDay[]): void {
           
           if (leftoverUsageCount[sourceMealObj.name] > MAX_LEFTOVER_REUSE) {
              // Exceeded realistic leftover limit. Sanitize.
-             day[meal.key] = `Fresh ${getCleanFreshName(meal.name)}`;
+             day[meal.key] = getCleanFreshName(meal.name);
              timeline.push({ name: day[meal.key].toLowerCase(), dayIndex });
           } else {
              // Valid leftover! We don't add leftovers to the timeline as "source" meals.

@@ -51,15 +51,15 @@ export function validateCulturalCorrectness(
           if (isBreakfast) {
             // Since they wanted Pap or Yam/Bread, let's look at what they tried
             if (lowerMeal.includes('pap')) {
-              day[slot] = 'Fresh Pap and Akara';
+              day[slot] = 'Pap and Akara';
               day.primaryIngredientsUsed = Array.from(new Set([...day.primaryIngredientsUsed, 'pap', 'beans', 'oil']));
             } else {
-              day[slot] = 'Fresh Yam and Egg Sauce';
+              day[slot] = 'Yam and Egg Sauce';
               day.primaryIngredientsUsed = Array.from(new Set([...day.primaryIngredientsUsed, 'yam', 'eggs', 'onions', 'pepper', 'oil']));
             }
           } else {
             const fallbackName = getBestFallback('main');
-            day[slot] = `Fresh ${fallbackName}`;
+            day[slot] = fallbackName;
             const fallbackMeal = FALLBACK_MEALS.find(m => m.name === fallbackName);
             if (fallbackMeal) {
               day.primaryIngredientsUsed = Array.from(new Set([...day.primaryIngredientsUsed, ...fallbackMeal.ingredients]));
@@ -92,7 +92,7 @@ export function validateCulturalCorrectness(
         if (hasBeans(today[slot])) {
           const isBreakfast = slot === 'breakfast';
           const fallbackName = getBestFallback(isBreakfast ? 'breakfast' : 'main', true);
-          today[slot] = `Fresh ${fallbackName}`;
+          today[slot] = fallbackName;
           const fallbackMeal = FALLBACK_MEALS.find(m => m.name === fallbackName);
           if (fallbackMeal) {
             const cleanIngredients = today.primaryIngredientsUsed.filter(ing => !ing.toLowerCase().includes('beans'));
@@ -121,7 +121,7 @@ export function validateCulturalCorrectness(
       const day = mealPlan[dayIndex];
       const isBreakfast = slot === 'breakfast';
       const fallbackName = getBestFallback(isBreakfast ? 'breakfast' : 'main', true);
-      day[slot] = `Fresh ${fallbackName}`;
+      day[slot] = fallbackName;
       const fallbackMeal = FALLBACK_MEALS.find(m => m.name === fallbackName);
       if (fallbackMeal) {
         const cleanIngredients = day.primaryIngredientsUsed.filter(ing => !ing.toLowerCase().includes('beans'));
@@ -139,7 +139,7 @@ export function validateCulturalCorrectness(
   const breakfastCounts: Record<string, number> = {};
   for (let i = 0; i < breakfasts.length; i++) {
     const b = breakfasts[i];
-    let normalized = b.replace(/leftover|remaining|fresh|the|some|of|warmed up|warmed/gi, '').trim();
+    let normalized = b.replace(/\b(leftover|remaining|fresh|the|some|of|warmed up|warmed)\b/gi, '').trim();
     normalized = normalized.replace(/\s{2,}/g, ' ');
 
     breakfastCounts[normalized] = (breakfastCounts[normalized] || 0) + 1;
@@ -147,13 +147,13 @@ export function validateCulturalCorrectness(
       console.warn(`[AI Sanitizer] Cultural Auto-Correction: Excessive breakfast repetition for "${normalized}" (${breakfastCounts[normalized]} times). Replacing Day ${i + 1} breakfast.`);
       // Replace this repeat with a fallback
       const fallbackName = getBestFallback('breakfast', false);
-      mealPlan[i].breakfast = `Fresh ${fallbackName}`;
+      mealPlan[i].breakfast = fallbackName;
       const fallbackMeal = FALLBACK_MEALS.find(m => m.name === fallbackName);
       if (fallbackMeal) {
         mealPlan[i].primaryIngredientsUsed = Array.from(new Set([...mealPlan[i].primaryIngredientsUsed, ...fallbackMeal.ingredients]));
       }
       // Reset the repeat count or update it to prevent ban
-      const coreAltName = fallbackName.replace(/leftover|remaining|fresh|the|some|of|warmed up|warmed/gi, '').trim().toLowerCase();
+      const coreAltName = fallbackName.replace(/\b(leftover|remaining|fresh|the|some|of|warmed up|warmed)\b/gi, '').trim().toLowerCase();
       breakfastCounts[coreAltName] = (breakfastCounts[coreAltName] || 0) + 1;
       breakfastCounts[normalized]--;
     }

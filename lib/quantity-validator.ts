@@ -187,7 +187,10 @@ export function validateShoppingQuantities(
     const itemLower = entry.item.toLowerCase();
     
     // Find matching rule
-    const rule = CONSUMPTION_RULES.find(r => r.keywords.some(k => itemLower.includes(k)));
+    const rule = CONSUMPTION_RULES.find(r => r.keywords.some(k => {
+      if (k === 'fish' && itemLower.includes('crayfish')) return false;
+      return itemLower.includes(k);
+    }));
     
     // If we have a rule, we must calculate frequency
     if (rule) {

@@ -38,9 +38,9 @@ export function enforceMealVariety(mealPlan: MealPlanDay[], availableIngredients
   const getCoreMealName = (mealName: string): string => {
     // Strip descriptive words to get the base meal identity
     return mealName
-      .replace(/leftover|remaining|from previous( night| day)?|the|some|of|warmed up|warmed|fresh|with|and/gi, '')
-      .replace(/fried fish|chicken|beef|meat|fish|goat meat/gi, '') // Strip common proteins as they don't change the base meal identity
-      .replace(/stew|sauce/gi, '')
+      .replace(/\b(leftover|remaining|from previous( night| day)?|the|some|of|warmed up|warmed|fresh|with|and)\b/gi, '')
+      .replace(/\b(fried fish|chicken|beef|meat|fish|goat meat)\b/gi, '') // Strip common proteins as they don't change the base meal identity
+      .replace(/\b(stew|sauce)\b/gi, '')
       .trim()
       .toLowerCase();
   };
@@ -106,7 +106,7 @@ export function enforceMealVariety(mealPlan: MealPlanDay[], availableIngredients
 
         if (bestAlternative) {
           // Perform Replacement
-          day[slot.key] = `Fresh ${bestAlternative.name}`;
+          day[slot.key] = bestAlternative.name;
           
           // Inject new ingredients into the day's primaryIngredientsUsed so the shopping list validator catches them
           bestAlternative.ingredients.forEach(ing => {

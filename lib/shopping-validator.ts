@@ -28,7 +28,7 @@ export const SUBSTITUTIONS: Record<string, string[]> = {
 };
 
 // Common staples that don't need strict validation as they are assumed available in most homes or cheap
-export const IGNORED_STAPLES = ['water', 'salt', 'maggi', 'seasoning', 'oil', 'spice', 'curry', 'thyme', 'garlic', 'ginger', 'knorr', 'bouillon', 'cube'];
+export const IGNORED_STAPLES = ['water', 'salt', 'maggi', 'seasoning', 'spice', 'curry', 'thyme', 'garlic', 'ginger', 'knorr', 'bouillon', 'cube'];
 
 export function pruneShoppingList(
   availableIngredientsStr: string,

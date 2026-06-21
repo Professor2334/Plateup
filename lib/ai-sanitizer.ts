@@ -40,6 +40,7 @@ export function normalizeTerminology(mealText: string): string {
 }
 
 import { SUBSTITUTIONS, IGNORED_STAPLES } from './shopping-validator';
+import { getFallbackQuantity } from './fallback-quantities';
 
 export function validateIngredients(
   pantryStr: string,
@@ -95,7 +96,7 @@ export function validateIngredients(
 
       if (!isValid) {
         console.warn(`[AI Sanitizer] Auto-Correction: Ingredient "${ingredient}" is missing from pantry and shopping list! Automatically adding it.`);
-        shoppingList.push({ item: ingredient, quantity: 'As needed' });
+        shoppingList.push({ item: ingredient, quantity: getFallbackQuantity(ingredient) });
         allowedItems.push(ingNorm);
       }
     }

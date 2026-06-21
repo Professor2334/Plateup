@@ -169,6 +169,21 @@ export async function generateMealPlan(formData: FormData) {
       validateShoppingQuantities(mealPlan.shoppingList, mealPlan.mealPlan, householdMultiplier);
       reporter.logPass('Quantity Validation');
 
+      // E7: Strict Shopping List Validation
+      const hasUnmeasurableQuantities = mealPlan.shoppingList.some(item => 
+        item.quantity.toLowerCase().includes('as needed')
+      );
+      if (hasUnmeasurableQuantities) {
+        reporter.logFail('Shopping List Validation', 'Shopping list contains "As needed" quantities.', 'Rejecting plan.');
+        reporter.printFinal('REJECTED');
+        if (attempts < maxAttempts) {
+          continue;
+        } else {
+          throw new Error('Failed to generate a meal plan with measurable shopping list quantities.');
+        }
+      }
+      reporter.logPass('Strict Shopping List Validation');
+
       // 6. Pantry Utilization Validation (Soft/Informational)
       const pantryResult = calculatePantryScore(ingredients, mealPlan.mealPlan, mealPlan.shoppingList);
       
