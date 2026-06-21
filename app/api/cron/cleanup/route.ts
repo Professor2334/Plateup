@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   // Verify cron secret for security
@@ -9,6 +10,9 @@ export async function GET(request: Request) {
   }
 
   try {
+    // Dynamically import db to avoid top-level initialization during build
+    const { default: db } = await import('@/lib/db');
+
     // Calculate the date 20 days ago (as requested by user modification)
     const twentyDaysAgo = new Date();
     twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20);

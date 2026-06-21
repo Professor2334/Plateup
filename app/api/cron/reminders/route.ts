@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
 import { sendWelcomeReminderEmail, sendWeeklyPlanningReminderEmail, sendReEngagementEmail } from '@/lib/resend';
 
 // Vercel Cron Jobs will call this endpoint.
 export const maxDuration = 60; // 60 seconds allowed for Hobby, scale appropriately for pro
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+  // Dynamically import db to avoid top-level initialization during build
+  const { default: db } = await import('@/lib/db');
+
   // 1. Authorization Check
   const authHeader = request.headers.get('authorization');
   if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
