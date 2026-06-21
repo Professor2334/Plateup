@@ -753,9 +753,9 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           </button>
 
           <div className="flex items-center justify-between gap-1 px-3">
-            <button onClick={() => { setIsMobileNavOpen(false); handleTabChange('support'); }} className={`text-[0.75rem] font-medium transition-all hover:text-[var(--color-primary)] hover:opacity-100 ${activeTab === 'support' ? 'text-[var(--color-primary)] opacity-100' : 'text-[var(--color-on-surface-variant)] opacity-50'}`}>Contact</button>
-            <button onClick={() => { setIsMobileNavOpen(false); handleTabChange('terms'); }} className={`text-[0.75rem] font-medium transition-all hover:text-[var(--color-primary)] hover:opacity-100 ${activeTab === 'terms' ? 'text-[var(--color-primary)] opacity-100' : 'text-[var(--color-on-surface-variant)] opacity-50'}`}>Terms</button>
-            <button onClick={() => { setIsMobileNavOpen(false); handleTabChange('privacy'); }} className={`text-[0.75rem] font-medium transition-all hover:text-[var(--color-primary)] hover:opacity-100 ${activeTab === 'privacy' ? 'text-[var(--color-primary)] opacity-100' : 'text-[var(--color-on-surface-variant)] opacity-50'}`}>Privacy</button>
+            <button onClick={() => { setIsMobileNavOpen(false); handleTabChange('support'); }} className={`text-[0.75rem] font-medium transition-all hover:text-[var(--color-on-surface)] hover:opacity-100 ${activeTab === 'support' ? 'text-[var(--color-primary)] opacity-100' : 'text-[var(--color-on-surface-variant)] opacity-50'}`}>Contact</button>
+            <button onClick={() => { setIsMobileNavOpen(false); handleTabChange('terms'); }} className={`text-[0.75rem] font-medium transition-all hover:text-[var(--color-on-surface)] hover:opacity-100 ${activeTab === 'terms' ? 'text-[var(--color-primary)] opacity-100' : 'text-[var(--color-on-surface-variant)] opacity-50'}`}>Terms</button>
+            <button onClick={() => { setIsMobileNavOpen(false); handleTabChange('privacy'); }} className={`text-[0.75rem] font-medium transition-all hover:text-[var(--color-on-surface)] hover:opacity-100 ${activeTab === 'privacy' ? 'text-[var(--color-primary)] opacity-100' : 'text-[var(--color-on-surface-variant)] opacity-50'}`}>Privacy</button>
           </div>
         </div>
       </div>
@@ -792,9 +792,9 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
           </button>
 
           <div className="flex items-center justify-between gap-1 px-3">
-            <button onClick={() => handleTabChange('support')} className={`text-[0.75rem] font-medium transition-all hover:text-[var(--color-primary)] hover:opacity-100 ${activeTab === 'support' ? 'text-[var(--color-primary)] opacity-100' : 'text-[var(--color-on-surface-variant)] opacity-50'}`}>Contact</button>
-            <button onClick={() => handleTabChange('terms')} className={`text-[0.75rem] font-medium transition-all hover:text-[var(--color-primary)] hover:opacity-100 ${activeTab === 'terms' ? 'text-[var(--color-primary)] opacity-100' : 'text-[var(--color-on-surface-variant)] opacity-50'}`}>Terms</button>
-            <button onClick={() => handleTabChange('privacy')} className={`text-[0.75rem] font-medium transition-all hover:text-[var(--color-primary)] hover:opacity-100 ${activeTab === 'privacy' ? 'text-[var(--color-primary)] opacity-100' : 'text-[var(--color-on-surface-variant)] opacity-50'}`}>Privacy</button>
+            <button onClick={() => handleTabChange('support')} className={`text-[0.75rem] font-medium transition-all hover:text-[var(--color-on-surface)] hover:opacity-100 ${activeTab === 'support' ? 'text-[var(--color-primary)] opacity-100' : 'text-[var(--color-on-surface-variant)] opacity-50'}`}>Contact</button>
+            <button onClick={() => handleTabChange('terms')} className={`text-[0.75rem] font-medium transition-all hover:text-[var(--color-on-surface)] hover:opacity-100 ${activeTab === 'terms' ? 'text-[var(--color-primary)] opacity-100' : 'text-[var(--color-on-surface-variant)] opacity-50'}`}>Terms</button>
+            <button onClick={() => handleTabChange('privacy')} className={`text-[0.75rem] font-medium transition-all hover:text-[var(--color-on-surface)] hover:opacity-100 ${activeTab === 'privacy' ? 'text-[var(--color-primary)] opacity-100' : 'text-[var(--color-on-surface-variant)] opacity-50'}`}>Privacy</button>
           </div>
         </div>
       </aside>
