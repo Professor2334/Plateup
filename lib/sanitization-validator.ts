@@ -27,40 +27,51 @@ export function validateAndSanitizeOutput(mealPlan: MealPlanDay[]): void {
     for (const mealType of meals) {
       let mealText = day[mealType] as string;
       
-      // 1. Check for Forbidden Phrases
+      // 1. Remove all parenthetical notes and brackets
+      mealText = mealText.replace(/\s*\([^)]*\)/g, '').trim();
+      mealText = mealText.replace(/\s*\[[^\]]*\]/g, '').trim();
+
+      // 2. Remove clauses after hyphens or commas if they contain reasoning keywords
+      const leakKeywords = ['use', 'using', 'because', 'instead', 'omitted', 'leftover', 'remaining', 'budget', 'pantry', 'note', 'omitting'];
+      
+      const parts = mealText.split(/[,|\-]/);
+      if (parts.length > 1) {
+        const hasReasoning = leakKeywords.some(keyword => new RegExp(`\\b${keyword}\\b`, 'i').test(mealText));
+        if (hasReasoning) {
+            mealText = parts[0].trim();
+        }
+      }
+
+      // 3. Remove inline reasoning that doesn't use commas/hyphens
+      const inlineRegex = new RegExp(`\\s+(?:${leakKeywords.join('|')})\\b.*$`, 'i');
+      mealText = mealText.replace(inlineRegex, '').trim();
+
+      // 4. Remove standalone adjectives like "leftover" or "remaining"
+      mealText = mealText.replace(/\b(?:leftover|remaining|pantry)\b/gi, '').replace(/\s+/g, ' ').trim();
+
+      // 5. Clean up dangling conjunctions (e.g. "Yam with" -> "Yam")
+      mealText = mealText.replace(/\s+(with|and|or)\s*$/i, '').trim();
+
+      // 6. Strip Artificial Prefixes (e.g. "Day 1:", "Breakfast:")
+      mealText = normalizeMealName(mealText);
+
+      // 7. Final strict validation: ONLY throw if it STILL looks like a raw reasoning block 
+      // (This acts as a final safety net for totally botched generations)
       const lowerMealText = mealText.toLowerCase();
       for (const phrase of FORBIDDEN_PHRASES) {
-        // If phrase is just letters/spaces, use word boundaries to avoid matching inside other words (e.g. 'house' matching 'use')
         if (/^[a-z\s]+$/.test(phrase)) {
             const regex = new RegExp(`\\b${phrase}\\b`, 'i');
             if (regex.test(mealText)) {
-                throw new Error(`Meal "${mealText}" contains forbidden reasoning phrase: "${phrase}".`);
+                throw new Error(`Meal "${mealText}" STILL contains forbidden reasoning phrase: "${phrase}" after sanitization.`);
             }
         } else {
             if (lowerMealText.includes(phrase)) {
-              throw new Error(`Meal "${mealText}" contains forbidden reasoning phrase: "${phrase}".`);
+              throw new Error(`Meal "${mealText}" STILL contains forbidden reasoning phrase: "${phrase}" after sanitization.`);
             }
         }
       }
 
-      // 2. Clean Parenthetical Notes
-      // We strip out parentheses that the AI injects (like "(eggs not in pantry)")
-      // We want to allow "(Leftover)" if the leftover validator injected it, but it actually injects " (Leftover)"
-      // Let's preserve "(Leftover)" and remove anything else inside parentheses.
-      
-      // Matches any parenthesis block that is NOT literally "(Leftover)"
-      // Note: Leftover validator might not be run yet, or might be run after this. 
-      // If we run this first, we can strip all parentheses because Leftover Validator appends " (Leftover)" AFTER.
-      // Let's just strip all parentheses to ensure clean UI.
-      mealText = mealText.replace(/\s*\([^)]*\)/g, (match) => {
-        if (match.toLowerCase().includes('leftover')) {
-          return match; // Keep it if it somehow already has a leftover tag
-        }
-        return '';
-      }).trim();
 
-      // 3. Strip Artificial Prefixes
-      mealText = normalizeMealName(mealText);
 
       // Assign the sanitized text back
       day[mealType] = mealText;

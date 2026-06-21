@@ -108,8 +108,8 @@ const CONSUMPTION_RULES: ConsumptionRule[] = [
     portionSize: 0.1, // 100g per person per meal
     conversion: (totalKg) => {
       const kg = Math.ceil(totalKg * 10) / 10;
-      if (kg <= 0.5) return `₦500 worth`;
-      if (kg <= 1) return `₦1,000 worth (small bowl)`;
+      if (kg <= 0.5) return `Small basket/bowl`;
+      if (kg <= 1) return `Medium basket/bowl`;
       return `${Math.ceil(kg)}kg`;
     }
   },
@@ -118,8 +118,8 @@ const CONSUMPTION_RULES: ConsumptionRule[] = [
     portionSize: 0.05, // 50g per person per meal
     conversion: (totalKg) => {
       const kg = Math.ceil(totalKg * 10) / 10;
-      if (kg <= 0.5) return `₦500 worth`;
-      return `₦1,000 worth (small bowl)`;
+      if (kg <= 0.5) return `Small bunch`;
+      return `Medium bowl/bunch`;
     }
   },
   {
@@ -127,9 +127,9 @@ const CONSUMPTION_RULES: ConsumptionRule[] = [
     portionSize: 0.015, // 15g per person per meal (very spicy)
     conversion: (totalKg) => {
       const kg = Math.ceil(totalKg * 100) / 100; // Round to 2 decimals
-      if (kg <= 0.2) return `₦200 worth`;
-      if (kg <= 0.5) return `₦500 worth`;
-      return `₦1,000 worth (small bowl)`;
+      if (kg <= 0.2) return `Small bunch`;
+      if (kg <= 0.5) return `Medium bunch`;
+      return `Large bunch/bowl`;
     }
   },
   {
@@ -171,8 +171,8 @@ const CONSUMPTION_RULES: ConsumptionRule[] = [
     keywords: ['pap', 'ogi', 'akamu'],
     portionSize: 1, // 1 wrap per person per meal
     conversion: (totalWraps) => {
-      if (totalWraps <= 4) return `₦200 worth (wet wraps)`;
-      if (totalWraps <= 10) return `₦500 worth (wet wraps)`;
+      if (totalWraps <= 4) return `${Math.ceil(totalWraps)} wraps`;
+      if (totalWraps <= 10) return `${Math.ceil(totalWraps)} wraps`;
       return `1 small paint rubber (wet)`;
     }
   }

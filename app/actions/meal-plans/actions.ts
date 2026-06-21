@@ -16,9 +16,10 @@ import { validateAndSanitizeOutput } from '@/lib/sanitization-validator';
 import { validateCulturalCorrectness } from '@/lib/cultural-validator';
 import { validateShoppingQuantities } from '@/lib/quantity-validator';
 import { calculatePantryScore } from '@/lib/pantry-scorer';
-import { BASE_PORTION_COST, REDUCTION_PER_ITEM, FLOOR_PORTION_COST } from '@/lib/constants';
+
 import { fuzzyDeduplicateShoppingList, calculateSafeEstimatedCost, filterTrivialShoppingItems } from '@/lib/meal-pipeline';
 import { validateIngredients } from '@/lib/ai-sanitizer';
+import { validateMealPlanInputs } from '@/lib/input-validator';
 
 export async function generateMealPlan(formData: FormData) {
   const session = await auth();
@@ -57,21 +58,16 @@ export async function generateMealPlan(formData: FormData) {
   };
 
   const householdMultiplier = getHouseholdMultiplier(householdSize);
-  const totalWeeklyPortions = 21 * householdMultiplier; // 3 meals * 7 days * people
-  
-  // Dynamic Budget Reality Check based on available pantry items
   const pantryItemsList = ingredients
     .split(',')
     .map(i => i.trim())
     .filter(i => i.length > 0);
 
-  const dynamicPortionCost = Math.max(FLOOR_PORTION_COST, BASE_PORTION_COST - (pantryItemsList.length * REDUCTION_PER_ITEM));
-  const minimumRealisticBudget = totalWeeklyPortions * dynamicPortionCost;
-
-  if (budget < minimumRealisticBudget) {
-    return { 
-      success: false, 
-      error: `₦${budget.toLocaleString()} is insufficient. Your household size (${householdSize}) with your current pantry size requires a minimum budget of ₦${minimumRealisticBudget.toLocaleString()} for a 7-day meal plan.` 
+  const validation = validateMealPlanInputs(budget, householdSize, pantryItemsList.length);
+  if (validation.status === 'UNREALISTIC') {
+    return {
+      success: false,
+      error: validation.message
     };
   }
 
@@ -312,14 +308,20 @@ export async function generateMealPlan(formData: FormData) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       if (attempts >= maxAttempts) {
         console.error(`Generation failed after ${maxAttempts} attempts. Last error: ${errorMessage}`);
-        return { success: false, error: "We couldn't generate your meal plan right now. Please try again in a moment." };
+        const finalError = validation.status === 'LIMITED' 
+          ? "Please adjust your pantry or budget and try again."
+          : "We couldn't generate your meal plan right now. Please try again in a moment.";
+        return { success: false, error: finalError };
       }
       console.error(`Generation failed (Attempt ${attempts}), retrying...`, errorMessage);
     }
   }
 
   if (!finalMealPlan) {
-    return { success: false, error: "We couldn't generate your meal plan right now. Please try again in a moment." };
+    const finalError = validation.status === 'LIMITED' 
+      ? "Please adjust your pantry or budget and try again."
+      : "We couldn't generate your meal plan right now. Please try again in a moment.";
+    return { success: false, error: finalError };
   }
 
   // Save to database as unsaved history

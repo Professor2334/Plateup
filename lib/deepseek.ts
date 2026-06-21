@@ -143,7 +143,25 @@ CRITICAL RULES FOR ALL GENERATIONS:
 4. ABSOLUTE SHOPPING LIST CONSISTENCY: Every single ingredient explicitly referenced in a generated meal MUST be available through either: 1) The user's pantry, OR 2) The generated shopping list. If a meal mentions "Egusi Soup with Stockfish", and Stockfish is not in the pantry, it MUST appear in the shopping list. Otherwise, change the meal to use an available protein. The final meal plan must be fully executable using ONLY the Pantry + Shopping List.
 5. MEAL REALISM: Do not suggest meals that Nigerians do not eat (e.g., Garri + Palm Oil + Salt). Ensure combinations are practical and culturally accurate.
 6. MEAL VARIETY: Ensure reasonable weekly variety. No exact meal should dominate the week. Rotate among Rice, Beans, Yam, Garri, Plantain, Pap, and local soups. Do not repeat the exact same meal more than 3 times in the entire week.
-7. QUANTITY SCALING: You must scale your shopping list quantities strictly for a household size of ${householdSize}. Do NOT suggest bulk/family-size items (e.g., "3kg tomatoes", "2.5L palm oil", "1 crate of eggs") for a household of 1. Suggest small, affordable market measurements (e.g., "1 small paint rubber", "1 sachet", "₦200 worth", "2 pieces").
+7. INTELLIGENT QUANTITY SCALING (CRITICAL):
+   You MUST NEVER generate arbitrary ingredient quantities or use fixed "₦ worth" estimates (e.g., NO "₦500 worth", "₦200"). 
+   Instead, you must dynamically calculate every single shopping list quantity by executing the following internal logic before generating the shopping list:
+   - Analyze the entire generated 7-day meal plan.
+   - Count EXACTLY how many distinct meals utilize each required ingredient.
+   - Scale the final quantity based on:
+     1. Household size (${householdSize}).
+     2. Number of meals using the ingredient.
+     3. Typical Nigerian cooking patterns.
+   - Use measurable, concrete units ONLY. Prioritize familiar Nigerian household measurements over generic grams whenever possible. Allowed units: Derica, Mudu, Paint Rubber, Cups, Pieces, Sachets, Bottles, Tins, Tubers, Bunches, Kilograms, Litres.
+   MANDATORY QUANTITY EXAMPLES:
+   - Rice/Beans/Garri: "1 Derica", "2 Mudu", "Half Paint Rubber", "4 Cups". Scale up if eaten 3+ times.
+   - Yam: "1 Medium Tuber", "2 Large Tubers".
+   - Spaghetti: "1 Pack", "3 Packs" (assume 1 pack feeds 2-3 people per meal).
+   - Tomatoes/Pepper/Onions: "Small basket", "Medium bunch", "15 pieces", "Half Paint Rubber". Scale heavily with the number of stews/sauces.
+   - Crayfish: "1 cup" (if occasional), "3 cups" (if used across multiple soups).
+   - Eggs: "6 pieces" (if eaten 3 times by household of 1), "Half crate" (if family).
+   - Palm Oil/Vegetable Oil: "1 bottle", "75cl", "Half Litre".
+   The final quantities must logically and realistically last the entire planned week for the specific household size without excessive surplus or arbitrary padding.
 8. NO REASONING OR ANALYSIS IN OUTPUT: You are generating a final product for the user. DO NOT include internal thoughts, questions, reasoning, explanations, or validation notes in ANY field (especially meal names or descriptions).
    - FORBIDDEN examples: "Jollof Rice (use leftover tomatoes? yes)", "Beans (maximizes budget)", "Egusi [fresh meal]".
    - CORRECT examples: "Jollof Rice", "Beans", "Egusi Soup".
@@ -152,7 +170,6 @@ CRITICAL RULES FOR ALL GENERATIONS:
 10. NIGERIAN TERMINOLOGY RULES (CRITICAL):
     - If Garri is paired with ANY soup (e.g., Okra, Egusi, Vegetable, Ogbono), you MUST output it as "Eba with [Soup Name]". NEVER output "Garri with Okra Soup" or "Garri with Soup".
     - Use "Garri" ONLY when it is consumed directly without hot water (e.g., "Soaked Garri with Groundnut", "Garri and Sugar").
-11. REALISTIC PORTION MATH: When scaling quantities for the shopping list, be exact and realistic. For example, for a household of 1, eating eggs 3 times in a week means they need 3 to 6 eggs (1-2 per meal). Write quantities clearly (e.g., "6 pieces" or "half crate"). Do not suggest over-buying perishable proteins for a household of 1.
 11. PANTRY-FIRST STRATEGY: Prioritize existing pantry ingredients before introducing new ones. The more ingredients the user has in their pantry, the more aggressively you MUST reuse them across the week.
 12. PANTRY SCALING EXPECTATIONS: 
     - Minimal Pantry: Produce a larger shopping list, higher estimated spend, and lower savings.

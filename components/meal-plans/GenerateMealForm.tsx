@@ -4,10 +4,12 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { generateMealPlan } from '@/app/actions/meal-plans/actions';
+import { validateMealPlanInputs } from '@/lib/input-validator';
 import type { MealPlanResponse } from '@/lib/deepseek';
 import { X, Sparkles } from 'lucide-react';
 
 interface GenerateMealFormProps {
+  householdSize: string;
   onPlanGenerated: (plan: MealPlanResponse, formData: FormData, id: string) => void;
   onLoadingChange: (isLoading: boolean) => void;
   budgetFriendly?: boolean;
@@ -16,8 +18,9 @@ interface GenerateMealFormProps {
   isRegenerating?: boolean;
 }
 
-export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFriendly, initialBudget, initialIngredients, isRegenerating = false }: GenerateMealFormProps) {
+export function GenerateMealForm({ householdSize, onPlanGenerated, onLoadingChange, budgetFriendly, initialBudget, initialIngredients, isRegenerating = false }: GenerateMealFormProps) {
   const [serverError, setServerError] = useState('');
+  const [warningMessage, setWarningMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [ingredients, setIngredients] = useState<string[]>(initialIngredients || []);
   const [inputValue, setInputValue] = useState('');
@@ -62,8 +65,8 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFrien
     setIngredientsTouched(true);
 
     const formData = new FormData(e.currentTarget);
-    const budget = formData.get('budget') as string;
-    const isBudgetEmpty = !budget || budget.trim() === '';
+    const budgetRaw = formData.get('budget') as string;
+    const isBudgetEmpty = !budgetRaw || budgetRaw.trim() === '';
     const isIngredientsEmpty = ingredientsRef.current.length === 0;
 
     if (isBudgetEmpty && isIngredientsEmpty) {
@@ -87,6 +90,19 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFrien
     setBudgetError('');
     setIngredientError('');
     setServerError('');
+    setWarningMessage('');
+
+    const budget = parseFloat(budgetRaw);
+    const validation = validateMealPlanInputs(budget, householdSize, ingredientsRef.current.length);
+
+    if (validation.status === 'UNREALISTIC') {
+      setServerError(validation.message || 'Inputs are too restricted to generate a plan.');
+      return;
+    }
+
+    if (validation.status === 'LIMITED') {
+      setWarningMessage(validation.message || 'Inputs are limited.');
+    }
 
     setLoading(true);
     onLoadingChange(true);
@@ -146,6 +162,13 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFrien
         <p className="text-sm text-[var(--color-on-surface-variant)] opacity-[0.73] mt-1 leading-relaxed">Set your budget and ingredients to get started.</p>
       </div>
 
+      {warningMessage && (
+        <div className="mb-5 p-3 rounded-xl bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm font-medium flex items-start gap-2 animate-in fade-in duration-200 shadow-sm">
+          <Sparkles className="w-4 h-4 mt-0.5 flex-shrink-0 text-yellow-600" />
+          <p>{warningMessage}</p>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <div className="space-y-1.5">
           <label htmlFor="budget" className="text-[0.8125rem] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Weekly Budget</label>
@@ -159,6 +182,7 @@ export function GenerateMealForm({ onPlanGenerated, onLoadingChange, budgetFrien
               placeholder="15000"
               required
               disabled={isFormDisabled}
+              defaultValue={initialBudget}
               onFocus={() => {
                 if (!budgetTouched) setBudgetTouched(true);
               }}

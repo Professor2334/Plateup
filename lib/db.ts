@@ -14,8 +14,8 @@ const prismaClientSingleton = () => {
   const pool = new Pool({
     connectionString: connectionString || 'postgres://dummy:dummy@localhost:5432/dummy',
     max: 10,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 60000,
+    connectionTimeoutMillis: 20000,
     allowExitOnIdle: true, // Crucial for serverless environments to prevent timeouts
   })
 
