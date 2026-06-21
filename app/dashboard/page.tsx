@@ -29,6 +29,8 @@ export default async function DashboardPage() {
         emailVerified: true,
         householdSize: true,
         primaryGoal: true,
+        receiveWeeklyReminders: true,
+        receiveProductUpdates: true,
         // password intentionally excluded
       },
     }),
@@ -49,7 +51,9 @@ export default async function DashboardPage() {
           email: user.email || '',
           emailVerified: user.emailVerified !== null,
           householdSize: user.householdSize || '',
-          primaryGoal: user.primaryGoal || ''
+          primaryGoal: user.primaryGoal || '',
+          receiveWeeklyReminders: user.receiveWeeklyReminders ?? true,
+          receiveProductUpdates: user.receiveProductUpdates ?? true,
         }}
       />
     </Suspense>

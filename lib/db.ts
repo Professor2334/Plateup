@@ -9,7 +9,18 @@ const prismaClientSingleton = () => {
     throw new Error('DATABASE_URL environment variable is not set.')
   }
 
-  const pool = new Pool({ connectionString })
+  const pool = new Pool({
+    connectionString,
+    max: 10, // Avoid holding too many connections in serverless environments
+    idleTimeoutMillis: 10000, // Close idle connections after 10 seconds to avoid stale Neon sockets
+    connectionTimeoutMillis: 5000, // Do not let connection attempts hang indefinitely
+  })
+
+  // Prevent unexpected pool connection errors from crashing the Node process
+  pool.on('error', (err) => {
+    console.error('[Pg Pool Error]: Unexpected error on idle client', err)
+  })
+
   const adapter = new PrismaPg(pool)
 
   return new PrismaClient({ adapter })

@@ -1,10 +1,17 @@
 import { useState } from 'react';
 
-export function useSettings(initialHousehold: string, initialGoal: string) {
+export function useSettings(
+  initialHousehold: string, 
+  initialGoal: string, 
+  initialWeeklyReminders: boolean = true, 
+  initialProductUpdates: boolean = true
+) {
   // Preferences State
   const [prefSaving, setPrefSaving] = useState(false);
   const [prefHousehold, setPrefHousehold] = useState(initialHousehold || '1');
   const [prefGoal, setPrefGoal] = useState(initialGoal || 'save-money');
+  const [weeklyReminders, setWeeklyReminders] = useState(initialWeeklyReminders);
+  const [productUpdates, setProductUpdates] = useState(initialProductUpdates);
 
   // Password State
   const [passSaving, setPassSaving] = useState(false);
@@ -20,6 +27,8 @@ export function useSettings(initialHousehold: string, initialGoal: string) {
     prefSaving, setPrefSaving,
     prefHousehold, setPrefHousehold,
     prefGoal, setPrefGoal,
+    weeklyReminders, setWeeklyReminders,
+    productUpdates, setProductUpdates,
     passSaving, setPassSaving,
     passError, setPassError,
     passSuccess, setPassSuccess,

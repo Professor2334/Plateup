@@ -55,7 +55,7 @@ export async function registerUser(formData: FormData) {
     });
 
     // Send email immediately, but don't block the user from proceeding
-    await sendVerificationEmail(email, token);
+    await sendVerificationEmail(email, token, name);
 
     // Return the plain password so the client can auto-sign-in without re-entry
     return { success: true, email, password };
@@ -135,7 +135,7 @@ export async function resendVerificationEmailAction(email: string) {
       },
     });
 
-    await sendVerificationEmail(email, token);
+    await sendVerificationEmail(email, token, user.name);
 
     return { success: true };
   } catch (error) {

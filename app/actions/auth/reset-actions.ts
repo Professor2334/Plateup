@@ -52,7 +52,7 @@ export async function requestPasswordReset(formData: FormData) {
       });
 
       // 4. Send email
-      await sendPasswordResetEmail(email, token);
+      await sendPasswordResetEmail(email, token, user.name);
     }
 
     // Always return success

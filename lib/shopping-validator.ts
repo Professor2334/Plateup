@@ -104,9 +104,10 @@ export function pruneUnusedShoppingItems(
   shoppingList: ShoppingListEntry[],
   mealPlan: MealPlanDay[]
 ): void {
-  // Combine all meal text into one large string for easy searching
+  // Combine all meal text and primary ingredients used into one large string for easy searching.
+  // This ensures normalized ingredients (e.g. 'garri' used to make 'Eba') aren't accidentally pruned.
   const allMealsText = mealPlan
-    .map(day => `${day.breakfast} ${day.lunch} ${day.dinner}`)
+    .map(day => `${day.breakfast} ${day.lunch} ${day.dinner} ${(day.primaryIngredientsUsed || []).join(' ')}`)
     .join(' ')
     .toLowerCase();
 

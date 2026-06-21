@@ -16,12 +16,17 @@ model User {
   onboardingCompleted Boolean    @default(false)
   householdSize       String?
   primaryGoal         String?
+  lastLoginAt         DateTime?
+  lastPlanGeneratedAt DateTime?
+  receiveWeeklyReminders Boolean @default(true)
+  receiveProductUpdates Boolean  @default(true)
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
   mealPlans           MealPlan[]
   verificationTokens  VerificationToken[]
   accounts            Account[]
   sessions            Session[]
+  emailLogs           EmailLog[]
 }
 
 model Account {
@@ -92,4 +97,16 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 
   @@unique([email, token])
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "welcome_reminder", "weekly_reminder", "re_engagement"
+  status    String   // "sent", "failed"
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([type, createdAt])
 }

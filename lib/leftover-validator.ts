@@ -62,9 +62,9 @@ export function validateAndSanitizeLeftovers(mealPlan: MealPlanDay[]): void {
           day[meal.key] = `Fresh ${getCleanFreshName(meal.name)}`;
           timeline.push({ name: day[meal.key].toLowerCase(), dayIndex });
         } else {
-          // Freshness check: Is the leftover more than 2 days old?
+          // Freshness check: Is the leftover more than 1 day old?
           const ageInDays = dayIndex - sourceMealObj.dayIndex;
-          if (ageInDays > 2) {
+          if (ageInDays > 1) {
              // Too old to be a realistic leftover! Sanitize.
              day[meal.key] = `Fresh ${getCleanFreshName(meal.name)}`;
              timeline.push({ name: day[meal.key].toLowerCase(), dayIndex });

@@ -2,9 +2,9 @@ import { MealPlanDay } from './quantity-validator';
 
 // A predefined list of budget-friendly, common Nigerian meals to use as fallback substitutes.
 // We categorize them so we can replace a breakfast with a breakfast, etc.
-type MealAlternative = { name: string; ingredients: string[]; type: 'breakfast' | 'main' };
+export type MealAlternative = { name: string; ingredients: string[]; type: 'breakfast' | 'main' };
 
-const FALLBACK_MEALS: MealAlternative[] = [
+export const FALLBACK_MEALS: MealAlternative[] = [
   { name: 'Oats and Milk', ingredients: ['oats', 'milk', 'sugar'], type: 'breakfast' },
   { name: 'Pap and Akara', ingredients: ['beans', 'oil', 'pap'], type: 'breakfast' },
   { name: 'Bread and Fried Eggs', ingredients: ['bread', 'eggs', 'oil'], type: 'breakfast' },

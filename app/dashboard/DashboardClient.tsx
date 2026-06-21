@@ -38,6 +38,8 @@ interface DashboardClientProps {
     emailVerified: boolean;
     householdSize: string;
     primaryGoal: string;
+    receiveWeeklyReminders?: boolean;
+    receiveProductUpdates?: boolean;
   };
 }
 
@@ -129,13 +131,20 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     prefSaving, setPrefSaving,
     prefHousehold, setPrefHousehold,
     prefGoal, setPrefGoal,
+    weeklyReminders, setWeeklyReminders,
+    productUpdates, setProductUpdates,
     passSaving, setPassSaving,
     passError, setPassError,
     passSuccess, setPassSuccess,
     isLogoutModalOpen, setIsLogoutModalOpen,
     isLoggingOut, setIsLoggingOut,
     isEditProfileModalOpen, setIsEditProfileModalOpen
-  } = useSettings(userData?.householdSize || '1', userData?.primaryGoal || 'save-money');
+  } = useSettings(
+    userData?.householdSize || '1', 
+    userData?.primaryGoal || 'save-money',
+    userData?.receiveWeeklyReminders ?? true,
+    userData?.receiveProductUpdates ?? true
+  );
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -447,7 +456,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                 onSubmit={async (e) => {
                   e.preventDefault();
                   setPrefSaving(true);
-                  const res = await updatePreferences(prefHousehold, prefGoal);
+                  const res = await updatePreferences(prefHousehold, prefGoal, weeklyReminders, productUpdates);
                   setPrefSaving(false);
                   if (res.success) {
                     toast.success('Preferences updated successfully!');
@@ -501,6 +510,33 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                     <option value="reduce-waste">Reduce Food Waste</option>
                     <option value="eat-healthier">Eat Healthier</option>
                   </select>
+                </div>
+
+                <div className="flex flex-col sm:flex-row justify-between gap-4 pb-4 border-b border-[var(--color-outline-variant)]/20">
+                  <div className="flex-1">
+                    <label className="text-[0.875rem] font-bold text-[var(--color-on-surface)] mb-1 block">Email Preferences</label>
+                    <p className="text-[0.8125rem] text-[var(--color-on-surface-variant)] mb-3 sm:mb-0">Manage the emails you receive from us.</p>
+                  </div>
+                  <div className="w-full sm:w-48 flex flex-col gap-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={weeklyReminders}
+                        onChange={(e) => setWeeklyReminders(e.target.checked)}
+                        className="w-4 h-4 text-[var(--color-primary)] rounded border-gray-300 focus:ring-[var(--color-primary)]"
+                      />
+                      <span className="text-[0.875rem] text-[var(--color-on-surface)]">Weekly Reminders</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={productUpdates}
+                        onChange={(e) => setProductUpdates(e.target.checked)}
+                        className="w-4 h-4 text-[var(--color-primary)] rounded border-gray-300 focus:ring-[var(--color-primary)]"
+                      />
+                      <span className="text-[0.875rem] text-[var(--color-on-surface)]">Product Updates</span>
+                    </label>
+                  </div>
                 </div>
                 
                 <div className="pt-2 flex justify-end">

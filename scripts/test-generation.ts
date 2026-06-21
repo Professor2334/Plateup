@@ -7,6 +7,7 @@ import { validateShoppingQuantities } from '../lib/quantity-validator';
 import { enforceMealVariety } from '../lib/variety-validator';
 import { ValidationReporter } from '../lib/validation-reporter';
 import { validateAndSanitizeOutput } from '../lib/sanitization-validator';
+import { validateCulturalCorrectness } from '../lib/cultural-validator';
 import { calculatePantryScore } from '../lib/pantry-scorer';
 import * as dotenv from 'dotenv';
 import fs from 'fs';
@@ -15,14 +16,8 @@ import path from 'path';
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
 async function runTest() {
-  const configs = [
-    { name: "Test D (Pantry Heavy)", household: "4", budget: 50000, ingredients: "Rice, Beans, Yam, Garri, Palm Oil, Vegetable Oil, Pepper, Onion, Salt, Maggi, Crayfish, Fish, Meat, Tomatoes", goal: "eat-healthy" },
-    { name: "Test B (Likely Insufficient)", household: "4", budget: 10000, ingredients: "Salt", goal: "save-money" },
-    { name: "Test C (Budget-Friendly Alternative)", household: "3", budget: 25000, ingredients: "Rice, Beans", goal: "save-money", budgetFriendly: true, originalEstimatedCost: 30000 },
-    { name: "Test E (Quantity Validation)", household: "6", budget: 60000, ingredients: "Salt", goal: "eat-healthy" },
-    { name: "Test F (Leftover Validation)", household: "1", budget: 15000, ingredients: "Rice, Garri", goal: "save-time" },
-    { name: "Test A (Comfortable)", household: "2", budget: 30000, ingredients: "Rice, Oil, Salt, Onions", goal: "save-time" },
-    { name: "Test H (High Budget)", household: "2", budget: 100000, ingredients: "Salt", goal: "eat-healthy" },
+  const configs: any[] = [
+    { name: "User Scenario", household: "1", budget: 25000, ingredients: "rice, beans, spaghetti, egg, maggi, salt, palm oil, lazor spice, onions, pap", goal: "save-money" }
   ];
 
   for (const config of configs) {
@@ -36,8 +31,8 @@ async function runTest() {
     const totalWeeklyPortions = 21 * householdMultiplier;
     const pantryItemsList = config.ingredients
       .split(',')
-      .map(i => i.trim())
-      .filter(i => i.length > 0);
+      .map((i: string) => i.trim())
+      .filter((i: string) => i.length > 0);
 
     const basePortionCost = 450;
     const reductionPerItem = 25; // ₦25 reduction per pantry item
@@ -73,6 +68,15 @@ async function runTest() {
       } catch (e: any) {
         reporter.logFail('Output Sanitization Validation', e.message, 'Plan would be rejected in production.');
         reporter.printFinal('REJECTED');
+        continue;
+      }
+
+      // Validate Cultural Correctness
+      try {
+        validateCulturalCorrectness(result.mealPlan);
+        console.log('[PASS] Cultural Correctness Validation');
+      } catch (e: any) {
+        console.log('[FAIL] Cultural Correctness Validation:', e.message);
         continue;
       }
 

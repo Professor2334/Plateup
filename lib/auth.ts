@@ -16,13 +16,17 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
   callbacks: {
     ...authConfig.callbacks,
     async signIn({ user, account, profile }) {
-      // Automatically verify email for Google sign-ins if not already verified
-      if (account?.provider === "google" && user.email) {
+      if (user.email) {
         const existingUser = await db.user.findUnique({ where: { email: user.email } });
-        if (existingUser && !existingUser.emailVerified) {
+        if (existingUser) {
+          const updateData: Record<string, unknown> = { lastLoginAt: new Date() };
+          // Automatically verify email for Google sign-ins if not already verified
+          if (account?.provider === "google" && !existingUser.emailVerified) {
+            updateData.emailVerified = new Date();
+          }
           await db.user.update({
             where: { email: user.email },
-            data: { emailVerified: new Date() }
+            data: updateData
           });
         }
       }

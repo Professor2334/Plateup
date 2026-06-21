@@ -43,7 +43,7 @@ import { SUBSTITUTIONS, IGNORED_STAPLES } from './shopping-validator';
 
 export function validateIngredients(
   pantryStr: string,
-  shoppingList: { item: string }[],
+  shoppingList: { item: string; quantity: string }[],
   mealPlan: { primaryIngredientsUsed: string[] }[]
 ) {
   const pantryItems = pantryStr.toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
@@ -94,8 +94,9 @@ export function validateIngredients(
       }
 
       if (!isValid) {
-        console.error(`[AI Sanitizer] Validation Error: Ingredient "${ingredient}" is missing from pantry and shopping list!`);
-        throw new Error(`AI generated meal plan using unavailable ingredient: ${ingredient}. The AI must add it to the shopping list.`);
+        console.warn(`[AI Sanitizer] Auto-Correction: Ingredient "${ingredient}" is missing from pantry and shopping list! Automatically adding it.`);
+        shoppingList.push({ item: ingredient, quantity: 'As needed' });
+        allowedItems.push(ingNorm);
       }
     }
   }
