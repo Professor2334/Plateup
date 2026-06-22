@@ -21,6 +21,9 @@ export async function GET(request: Request) {
   let emailsSent = 0;
   let errors = 0;
 
+  console.log('[CRON REMINDERS] Execution started at', now.toISOString());
+  console.log('[CRON REMINDERS] Auth check passed');
+
   try {
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
@@ -43,8 +46,11 @@ export async function GET(request: Request) {
           }
         }
       },
+      },
       take: 50 // Process in batches
     });
+
+    console.log(`[CRON REMINDERS] Found ${welcomeCandidates.length} candidates for Welcome Reminder`);
 
     for (const user of welcomeCandidates) {
       if (!user.email) continue;
@@ -56,6 +62,7 @@ export async function GET(request: Request) {
           status: res.success ? 'sent' : 'failed'
         }
       });
+      console.log(`[CRON REMINDERS] Welcome email to ${user.email}: ${res.success ? 'Success' : 'Failed'}`);
       if (res.success) emailsSent++;
       else errors++;
     }
@@ -88,8 +95,11 @@ export async function GET(request: Request) {
             }
           }
         },
+        },
         take: 50
       });
+
+      console.log(`[CRON REMINDERS] Found ${weeklyCandidates.length} candidates for Weekly Reminder (isMonday=true)`);
 
       for (const user of weeklyCandidates) {
         if (!user.email) continue;
@@ -101,9 +111,12 @@ export async function GET(request: Request) {
             status: res.success ? 'sent' : 'failed'
           }
         });
+        console.log(`[CRON REMINDERS] Weekly email to ${user.email}: ${res.success ? 'Success' : 'Failed'}`);
         if (res.success) emailsSent++;
         else errors++;
       }
+    } else {
+      console.log('[CRON REMINDERS] Skipping Weekly Reminder: Today is not Monday.');
     }
 
     // ── C. Re-engagement Email ──────────────────────────────────────────
@@ -139,6 +152,8 @@ export async function GET(request: Request) {
       take: 50
     });
 
+    console.log(`[CRON REMINDERS] Found ${reEngagementCandidates.length} candidates for Re-engagement Reminder`);
+
     for (const user of reEngagementCandidates) {
       if (!user.email) continue;
       const res = await sendReEngagementEmail(user.email, user.name);
@@ -149,14 +164,16 @@ export async function GET(request: Request) {
           status: res.success ? 'sent' : 'failed'
         }
       });
+      console.log(`[CRON REMINDERS] Re-engagement email to ${user.email}: ${res.success ? 'Success' : 'Failed'}`);
       if (res.success) emailsSent++;
       else errors++;
     }
 
+    console.log(`[CRON REMINDERS] Execution completed. Sent: ${emailsSent}, Errors: ${errors}`);
     return NextResponse.json({ success: true, emailsSent, errors });
     
   } catch (error) {
-    console.error('Cron job failed:', error);
-    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
+    console.error('[CRON REMINDERS] CRITICAL FAILURE:', error);
+    return NextResponse.json({ success: false, error: 'Internal server error', details: String(error) }, { status: 500 });
   }
 }

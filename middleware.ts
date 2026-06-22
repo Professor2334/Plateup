@@ -14,8 +14,10 @@ export default auth((req: any) => {
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname)
   const isAuthRoute = authRoutes.includes(nextUrl.pathname)
   const isApiAuthRoute = nextUrl.pathname.startsWith('/api/auth')
+  const isApiCronRoute = nextUrl.pathname.startsWith('/api/cron')
+  const isTestRoute = nextUrl.pathname.startsWith('/api/test-reminder')
 
-  if (isApiAuthRoute) return NextResponse.next()
+  if (isApiAuthRoute || isApiCronRoute || isTestRoute) return NextResponse.next()
 
   // Redirect logged-in users away from auth pages
   if (isAuthRoute) {
