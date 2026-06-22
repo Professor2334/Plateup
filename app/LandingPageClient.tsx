@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { PlateUpLogo } from "@/components/shared/PlateUpLogo";
 import { Menu, X, ArrowRight, CheckCircle2, XCircle, ChevronDown, Check, Zap, Sparkles, Receipt, ListTodo, History, MessageCircle, Wallet, Carrot, ShoppingBag, ChevronRight, Coffee, Utensils, Calendar, ShoppingCart, Loader2 } from "lucide-react";
+import { PopularMealsMarquee } from "@/components/landing/PopularMealsMarquee";
 
 const SHOWCASE_DAYS = [
   { day: "Monday", meals: { b: "Boiled Yam & Egg Sauce", l: "Efo Riro", d: "Yam Porridge" }, ingredients: "Yam, Eggs, Spinach, Palm Oil", shopping: ["Tomatoes & Peppers", "Onions", "Crayfish"] },
@@ -559,6 +560,8 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        <PopularMealsMarquee />
 
         {/* ── SECTION 6: BEFORE VS AFTER ── */}
         <section className="py-12 md:py-24 px-6 bg-[var(--color-surface-container-low)] relative">
