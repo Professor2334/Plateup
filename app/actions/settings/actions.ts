@@ -5,7 +5,7 @@ import { auth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcryptjs';
 
-export async function updatePreferences(householdSize: string, primaryGoal: string, receiveWeeklyReminders?: boolean, receiveProductUpdates?: boolean) {
+export async function updatePreferences(householdSize: string, primaryGoal: string[], receiveWeeklyReminders?: boolean, receiveProductUpdates?: boolean, mealFrequency?: string) {
   const session = await auth();
   if (!session?.user?.id) {
     return { success: false, error: 'Unauthorized' };
@@ -18,7 +18,8 @@ export async function updatePreferences(householdSize: string, primaryGoal: stri
         householdSize,
         primaryGoal,
         ...(receiveWeeklyReminders !== undefined && { receiveWeeklyReminders }),
-        ...(receiveProductUpdates !== undefined && { receiveProductUpdates })
+        ...(receiveProductUpdates !== undefined && { receiveProductUpdates }),
+        ...(mealFrequency !== undefined && { mealFrequency }),
       }
     });
 

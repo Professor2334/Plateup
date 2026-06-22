@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { completeOnboarding } from '@/app/actions/onboarding/actions';
 import { useRouter } from 'next/navigation';
-import { Check, ArrowRight, ArrowLeft, User, Users, Banknote, Clock, Leaf, HeartPulse, Loader2, Sparkles, PartyPopper } from 'lucide-react';
+import { Check, ArrowRight, ArrowLeft, User, Users, Banknote, Clock, Leaf, HeartPulse, Loader2, Sparkles, PartyPopper, Utensils } from 'lucide-react';
 import Lottie from 'lottie-react';
 import confettiAnimation from '@/public/confetti.json';
 import { PlateUpLogo } from '@/components/shared/PlateUpLogo';
@@ -17,18 +17,38 @@ const householdSizes = [
   { value: '5+', label: '5+ People', icon: Users, description: 'Large family meals' },
 ];
 
-const primaryGoals = [
+const mealPlanningGoals = [
   { value: 'save-money', label: 'Save Money', icon: Banknote, description: 'Reduce grocery bills' },
+  { value: 'eat-healthy', label: 'Eat Healthy', icon: HeartPulse, description: 'Balanced nutrition' },
+  { value: 'reduce-food-waste', label: 'Reduce Food Waste', icon: Leaf, description: 'Use all ingredients' },
   { value: 'save-time', label: 'Save Time', icon: Clock, description: 'Spend less time cooking' },
-  { value: 'reduce-waste', label: 'Reduce Waste', icon: Leaf, description: 'Use all ingredients' },
-  { value: 'eat-healthier', label: 'Eat Healthier', icon: HeartPulse, description: 'Balanced nutrition' },
+];
+
+const MAX_GOALS = 2;
+
+const TOTAL_STEPS = 3;
+
+const mealFrequencyOptions = [
+  {
+    value: '2_meals',
+    label: '2 Meals Daily',
+    sublabel: 'Breakfast & Dinner',
+    description: 'Skip lunch, keep it simple',
+  },
+  {
+    value: '3_meals',
+    label: '3 Meals Daily',
+    sublabel: 'Breakfast, Lunch & Dinner',
+    description: 'Full day of planned meals',
+  },
 ];
 
 export function OnboardingForm() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [householdSize, setHouseholdSize] = useState('');
-  const [primaryGoal, setPrimaryGoal] = useState('');
+  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const [mealFrequency, setMealFrequency] = useState('3_meals');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
@@ -48,14 +68,38 @@ export function OnboardingForm() {
     if (householdSize) changeStep(2);
   };
 
+  const handleNextStep2 = () => {
+    if (selectedGoals.length > 0) changeStep(3);
+  };
+
+  const toggleGoal = (value: string) => {
+    setSelectedGoals(prev => {
+      if (prev.includes(value)) {
+        // Deselect
+        return prev.filter(g => g !== value);
+      }
+      // Only add if under the limit
+      if (prev.length < MAX_GOALS) {
+        return [...prev, value];
+      }
+      return prev;
+    });
+  };
+
+  const isGoalDisabled = (value: string) => {
+    return selectedGoals.length >= MAX_GOALS && !selectedGoals.includes(value);
+  };
+
   const handleComplete = async () => {
-    if (!householdSize || !primaryGoal) return;
+    if (!householdSize || selectedGoals.length === 0) return;
     setLoading(true);
     setError('');
 
     const formData = new FormData();
     formData.append('householdSize', householdSize);
-    formData.append('primaryGoal', primaryGoal);
+    // Serialize the goals array as JSON since FormData can't carry arrays natively
+    formData.append('primaryGoals', JSON.stringify(selectedGoals));
+    formData.append('mealFrequency', mealFrequency);
 
     const result = await completeOnboarding(formData);
 
@@ -63,9 +107,8 @@ export function OnboardingForm() {
       setError(result.error || 'Failed to complete onboarding');
       setLoading(false);
     } else {
-      // Show lightweight success screen instead of immediate redirect
-      // The loading state will be reset automatically after the transition animation finishes
-      changeStep(3);
+      // Show success screen (step 4)
+      changeStep(4);
     }
   };
 
@@ -75,6 +118,7 @@ export function OnboardingForm() {
     router.refresh();
   };
 
+
   return (
     <div className="w-full">
       
@@ -82,10 +126,10 @@ export function OnboardingForm() {
       <div className="w-full max-w-lg mx-auto mb-8 md:mb-10">
         {/* Logo Row */}
         <div className="flex flex-row items-center gap-3 mb-8 md:mb-10">
-          {step === 2 && (
+          {(step === 2 || step === 3) && (
             <button
               type="button"
-              onClick={() => changeStep(1)}
+              onClick={() => changeStep(step - 1)}
               disabled={loading}
               className="md:hidden p-2 rounded-full bg-[var(--color-surface-container-lowest)] shadow-sm border border-[color-mix(in_srgb,var(--color-outline-variant)_30%,transparent)] text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-low)] transition-all focus:outline-none"
               aria-label="Go back"
@@ -97,7 +141,7 @@ export function OnboardingForm() {
         </div>
 
         {/* Progress Bar Header */}
-        {step < 3 && (
+        {step <= TOTAL_STEPS && (
           <div className="w-full">
             {/* Title Row */}
             <div className="mb-2">
@@ -109,7 +153,7 @@ export function OnboardingForm() {
             {/* Step indicator Row */}
             <div className="mb-4">
               <span className="block text-[0.8125rem] font-bold text-[var(--color-on-surface-variant)] tracking-widest uppercase">
-                Step {step} of 2
+                Step {step} of {TOTAL_STEPS}
               </span>
             </div>
 
@@ -117,7 +161,7 @@ export function OnboardingForm() {
             <div className="w-full h-1.5 bg-[var(--color-surface-container-highest)] rounded-full overflow-hidden">
               <div 
                 className="h-full bg-[var(--color-primary)] transition-all duration-500 ease-in-out"
-                style={{ width: `${(step / 2) * 100}%` }}
+                style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
               />
             </div>
           </div>
@@ -185,41 +229,53 @@ export function OnboardingForm() {
           </div>
         )}
 
-        {/* STEP 2 */}
+        {/* STEP 2 — Multi-select Meal Planning Goals */}
         {step === 2 && (
-          <div className="space-y-8 md:space-y-6 max-w-lg mx-auto">
-            <div className="text-center md:text-left mb-2 md:mb-0">
-              <h2 className="text-[clamp(1.5rem,3vw+0.5rem,1.75rem)] font-bold text-[var(--color-on-surface-variant)] mb-3 md:mb-1 tracking-tight text-balance">What is your primary goal?</h2>
-              <p className="text-[1rem] text-[var(--color-on-surface-variant)] opacity-70">We'll optimize your meal plans to help you achieve this objective.</p>
+          <div className="space-y-6 max-w-lg mx-auto">
+            <div className="text-center md:text-left">
+              <h2 className="text-[clamp(1.5rem,3vw+0.5rem,1.75rem)] font-bold text-[var(--color-on-surface-variant)] mb-2 tracking-tight text-balance">
+                Meal Planning Goals
+              </h2>
+              <p className="text-[1rem] text-[var(--color-on-surface-variant)] opacity-70">
+                Select up to 2 goals that matter most to you.
+              </p>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {primaryGoals.map((goal) => {
-                const isSelected = primaryGoal === goal.value;
+              {mealPlanningGoals.map((goal) => {
+                const isSelected = selectedGoals.includes(goal.value);
+                const isDisabled = isGoalDisabled(goal.value);
                 const Icon = goal.icon;
                 return (
                   <button
                     key={goal.value}
-                    onClick={() => setPrimaryGoal(goal.value)}
-                    className={`group relative p-4 md:p-5 text-left rounded-2xl transition-all duration-300 flex flex-row md:flex-col items-center md:items-start gap-4 focus:outline-none cursor-pointer hover:-translate-y-1
-                      ${isSelected 
-                        ? 'border-0 md:border-2 border-[var(--color-primary)] bg-[var(--color-primary)]/10 shadow-[0_8px_24px_rgba(17,94,59,0.15)] md:shadow-[0_8px_20px_0_rgba(17,94,59,0.15)] scale-[1.01]' 
-                        : 'border-0 md:border-2 border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-inverse-on-surface)] dark:bg-[var(--color-surface)] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] md:shadow-none md:hover:border-[color-mix(in_srgb,var(--color-outline-variant)_80%,transparent)] hover:bg-[var(--color-surface-container-low)] md:hover:shadow-sm'
+                    onClick={() => !isDisabled && toggleGoal(goal.value)}
+                    disabled={isDisabled}
+                    aria-pressed={isSelected}
+                    aria-label={`${goal.label}: ${goal.description}${isDisabled ? ' (limit reached)' : ''}`}
+                    className={`group relative p-4 md:p-5 text-left rounded-2xl transition-all duration-300 flex flex-row md:flex-col items-center md:items-start gap-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]
+                      ${isDisabled
+                        ? 'opacity-40 cursor-not-allowed border-0 md:border-2 border-[color-mix(in_srgb,var(--color-outline-variant)_30%,transparent)] bg-[var(--color-inverse-on-surface)] dark:bg-[var(--color-surface)]'
+                        : isSelected 
+                          ? 'border-0 md:border-2 border-[var(--color-primary)] bg-[var(--color-primary)]/10 shadow-[0_8px_24px_rgba(17,94,59,0.15)] md:shadow-[0_8px_20px_0_rgba(17,94,59,0.15)] scale-[1.01] cursor-pointer hover:-translate-y-1' 
+                          : 'border-0 md:border-2 border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-inverse-on-surface)] dark:bg-[var(--color-surface)] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] md:shadow-none md:hover:border-[color-mix(in_srgb,var(--color-outline-variant)_80%,transparent)] hover:bg-[var(--color-surface-container-low)] md:hover:shadow-sm cursor-pointer hover:-translate-y-1'
                       }
                     `}
                   >
-                    {/* Top Right Checkmark Badge */}
+                    {/* Top Right Check Badge */}
                     <div className={`absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${isSelected ? 'bg-[var(--color-primary)] text-white scale-100 opacity-100 shadow-sm' : 'bg-transparent text-transparent scale-50 opacity-0'}`}>
                       <Check className="w-4 h-4" strokeWidth={3} />
                     </div>
 
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)] transition-transform duration-300 group-hover:scale-105">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 ${isSelected ? 'bg-[var(--color-primary)]/15 text-[var(--color-primary)]' : 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'} ${!isDisabled ? 'group-hover:scale-105' : ''}`}>
                         <Icon className="w-6 h-6" />
                       </div>
                     </div>
                     <div>
-                      <h3 className={`font-bold text-[1.0625rem] mb-1 transition-colors duration-300 ${isSelected ? 'text-[var(--color-primary)]' : 'text-[var(--color-on-surface)]'}`}>{goal.label}</h3>
+                      <h3 className={`font-bold text-[1.0625rem] mb-1 transition-colors duration-300 ${isSelected ? 'text-[var(--color-primary)]' : 'text-[var(--color-on-surface)]'}`}>
+                        {goal.label}
+                      </h3>
                       <p className="text-[0.875rem] text-[var(--color-on-surface-variant)] font-medium">{goal.description}</p>
                     </div>
                   </button>
@@ -227,15 +283,22 @@ export function OnboardingForm() {
               })}
             </div>
 
+            {/* Limit-reached helper text */}
+            <div className={`transition-all duration-300 overflow-hidden ${selectedGoals.length >= MAX_GOALS ? 'max-h-10 opacity-100' : 'max-h-0 opacity-0'}`}>
+              <p className="text-[0.8125rem] font-medium text-[var(--color-on-surface-variant)] text-center bg-[var(--color-surface-container-low)] rounded-lg py-2 px-4">
+                You can select up to 2 goals.
+              </p>
+            </div>
+
             {error && <p className="text-[var(--color-error)] text-sm text-center font-medium bg-[var(--color-error)]/10 p-3 rounded-lg">{error}</p>}
 
             <div className="pt-2 flex flex-col gap-4">
               <Button 
-                onClick={handleComplete} 
-                disabled={!primaryGoal || loading}
+                onClick={handleNextStep2} 
+                disabled={selectedGoals.length === 0 || loading}
                 className="w-full min-h-[56px] text-[1rem] font-semibold rounded-xl"
               >
-                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Complete Setup'}
+                Continue <ArrowRight className="hidden md:block w-5 h-5 ml-2" />
               </Button>
               
               <button 
@@ -249,8 +312,88 @@ export function OnboardingForm() {
           </div>
         )}
 
-        {/* STEP 3 - SUCCESS */}
+        {/* STEP 3 — Meal Frequency */}
         {step === 3 && (
+          <div className="space-y-8 md:space-y-6 max-w-lg mx-auto">
+            <div className="text-center md:text-left mb-2 md:mb-0">
+              <h2 className="text-[clamp(1.5rem,3vw+0.5rem,1.75rem)] font-bold text-[var(--color-on-surface-variant)] mb-3 md:mb-1 tracking-tight text-balance">
+                Meal Frequency
+              </h2>
+              <p className="text-[1rem] text-[var(--color-on-surface-variant)] opacity-70">
+                Choose how many meals you typically eat each day.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              {mealFrequencyOptions.map((option) => {
+                const isSelected = mealFrequency === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setMealFrequency(option.value)}
+                    aria-pressed={isSelected}
+                    className={`group relative p-4 md:p-5 text-left rounded-2xl transition-all duration-300 flex flex-row items-center gap-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] cursor-pointer hover:-translate-y-1
+                      ${
+                        isSelected
+                          ? 'border-0 md:border-2 border-[var(--color-primary)] bg-[var(--color-primary)]/10 shadow-[0_8px_24px_rgba(17,94,59,0.15)] scale-[1.01]'
+                          : 'border-0 md:border-2 border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-inverse-on-surface)] dark:bg-[var(--color-surface)] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] md:shadow-none md:hover:border-[color-mix(in_srgb,var(--color-outline-variant)_80%,transparent)] hover:bg-[var(--color-surface-container-low)] md:hover:shadow-sm'
+                      }
+                    `}
+                  >
+                    {/* Radio indicator */}
+                    <div className={`absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${
+                      isSelected ? 'bg-[var(--color-primary)] text-white scale-100 opacity-100 shadow-sm' : 'bg-transparent text-transparent scale-50 opacity-0'
+                    }`}>
+                      <Check className="w-4 h-4" strokeWidth={3} />
+                    </div>
+
+                    <div className="flex-shrink-0">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 ${
+                        isSelected ? 'bg-[var(--color-primary)]/15 text-[var(--color-primary)]' : 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
+                      } group-hover:scale-105`}>
+                        <Utensils className="w-6 h-6" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className={`font-bold text-[1.0625rem] mb-0.5 transition-colors duration-300 ${
+                        isSelected ? 'text-[var(--color-primary)]' : 'text-[var(--color-on-surface)]'
+                      }`}>
+                        {option.label}
+                      </h3>
+                      <p className="text-[0.8125rem] font-semibold text-[var(--color-on-surface-variant)]">{option.sublabel}</p>
+                      <p className="text-[0.8125rem] text-[var(--color-on-surface-variant)] font-medium opacity-70">{option.description}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {error && <p className="text-[var(--color-error)] text-sm text-center font-medium bg-[var(--color-error)]/10 p-3 rounded-lg">{error}</p>}
+
+            <div className="pt-2 flex flex-col gap-4">
+              <Button
+                onClick={handleComplete}
+                disabled={loading}
+                className="w-full min-h-[56px] text-[1rem] font-semibold rounded-xl"
+              >
+                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Complete Setup'}
+              </Button>
+
+              <button
+                onClick={() => changeStep(2)}
+                disabled={loading}
+                className="hidden md:inline-flex items-center justify-center gap-1.5 text-[0.875rem] font-medium text-[var(--color-on-surface-variant)] opacity-70 hover:opacity-100 hover:text-[var(--color-on-surface)] transition-all mx-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] rounded-md px-2 py-1"
+              >
+                <ArrowLeft className="w-4 h-4" /> Back
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4 - SUCCESS */}
+        {step === 4 && (
           <div className="flex flex-col items-center justify-center py-2 w-full max-w-[560px] mx-auto">
             <div className="w-full text-center">
               
@@ -286,21 +429,38 @@ export function OnboardingForm() {
               </div>
 
               {/* Compact Summary Section */}
-              <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto w-full">
-                <div className="flex-1 w-full p-4 rounded-xl border-0 md:border md:border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-inverse-on-surface)] dark:bg-[var(--color-surface)] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] md:shadow-sm flex flex-col items-center justify-center text-center">
-                  <span className="text-[0.8125rem] font-medium text-[var(--color-on-surface-variant)] mb-1 flex items-center gap-1.5">
-                    🏠 Household Size
+              <div className="mt-6 flex flex-col gap-3 justify-center items-center max-w-sm mx-auto w-full">
+                {/* Household Size */}
+                <div className="w-full p-4 rounded-xl border-0 md:border md:border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-inverse-on-surface)] dark:bg-[var(--color-surface)] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] md:shadow-sm flex flex-col items-center justify-center text-center">
+                  <span className="text-[0.8125rem] font-medium text-[var(--color-on-surface-variant)] mb-1">
+                    Household Size
                   </span>
                   <span className="text-[1rem] font-semibold text-[var(--color-on-surface)]">
                     {householdSizes.find(s => s.value === householdSize)?.label}
                   </span>
                 </div>
-                <div className="flex-1 w-full p-4 rounded-xl border-0 md:border md:border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-inverse-on-surface)] dark:bg-[var(--color-surface)] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] md:shadow-sm flex flex-col items-center justify-center text-center">
-                  <span className="text-[0.8125rem] font-medium text-[var(--color-on-surface-variant)] mb-1 flex items-center gap-1.5">
-                    🎯 Primary Goal
+
+                {/* Meal Planning Goals */}
+                <div className="w-full p-4 rounded-xl border-0 md:border md:border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-inverse-on-surface)] dark:bg-[var(--color-surface)] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] md:shadow-sm flex flex-col items-center justify-center text-center">
+                  <span className="text-[0.8125rem] font-medium text-[var(--color-on-surface-variant)] mb-1">
+                    Meal Planning Goals
+                  </span>
+                  <div className="flex flex-col items-center">
+                    {selectedGoals.map(v => (
+                      <span key={v} className="text-[1rem] font-semibold text-[var(--color-on-surface)]">
+                        • {mealPlanningGoals.find(g => g.value === v)?.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Meal Frequency */}
+                <div className="w-full p-4 rounded-xl border-0 md:border md:border-[color-mix(in_srgb,var(--color-outline-variant)_50%,transparent)] bg-[var(--color-inverse-on-surface)] dark:bg-[var(--color-surface)] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] md:shadow-sm flex flex-col items-center justify-center text-center">
+                  <span className="text-[0.8125rem] font-medium text-[var(--color-on-surface-variant)] mb-1">
+                    Meal Frequency
                   </span>
                   <span className="text-[1rem] font-semibold text-[var(--color-on-surface)]">
-                    {primaryGoals.find(g => g.value === primaryGoal)?.label}
+                    {mealFrequencyOptions.find(f => f.value === mealFrequency)?.label} ({mealFrequencyOptions.find(f => f.value === mealFrequency)?.sublabel})
                   </span>
                 </div>
               </div>

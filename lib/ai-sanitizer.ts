@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export function sanitizeMealPlanResponse<T extends { mealPlan: any[] }>(
-  validationResult: any
+  validationResult: any,
+  mealFrequency: string = '3_meals'
 ): T {
   if (!validationResult.success) {
     console.error('[AI Sanitizer] Zod Validation Failed:', JSON.stringify(validationResult.error.issues, null, 2));
@@ -21,22 +22,59 @@ export function sanitizeMealPlanResponse<T extends { mealPlan: any[] }>(
     throw new Error('AI response contained fewer than 7 days');
   }
 
+  // Enforce Meal Frequency Counts
+  for (const day of validatedData.mealPlan) {
+    const isLunchEmpty = !day.lunch || day.lunch.trim() === '' || day.lunch.trim().toLowerCase() === 'skip' || day.lunch.trim().toLowerCase() === 'none';
+    
+    if (mealFrequency === '2_meals' && !isLunchEmpty) {
+      console.error(`[AI Sanitizer] Validation Failed: Expected 2 meals, but found non-empty lunch: ${day.lunch}`);
+      throw new Error('AI response generated lunch when 2 meals were requested');
+    }
+    
+    if (mealFrequency === '3_meals' && isLunchEmpty) {
+      console.error(`[AI Sanitizer] Validation Failed: Expected 3 meals, but found empty lunch on day ${day.day}`);
+      throw new Error('AI response missed lunch when 3 meals were requested');
+    }
+  }
+
   return validatedData;
 }
 
 export function normalizeTerminology(mealText: string): string {
   if (!mealText) return mealText;
   
+  // 1. Chain-of-Thought Leakage Auto-Clean (Strip brackets/parentheses content)
+  let cleanedText = mealText;
+  if (cleanedText.includes('(') || cleanedText.includes('[')) {
+    cleanedText = cleanedText.replace(/\s*[([].*?[)\]]\s*/g, ' ').trim();
+  }
+
+  // 2. Strict Instructional Keyword Rejection
+  // We removed 'leftover' from the crash list because 'Leftover Beans' is a natural phrase.
+  // Instead, we will silently strip 'leftover' from the output to keep the UI clean.
+  cleanedText = cleanedText.replace(/\bleftovers?\b/gi, '').trim();
+  // Capitalize the first letter if we just stripped the first word
+  if (cleanedText.length > 0) {
+    cleanedText = cleanedText.charAt(0).toUpperCase() + cleanedText.slice(1);
+  }
+
+  const leakageRegex = /\b(use|instead|consider|maybe)\b/i;
+  if (leakageRegex.test(cleanedText)) {
+    console.error(`[AI Sanitizer] Validation Failed: Chain-of-thought leakage detected in meal name: "${mealText}"`);
+    throw new Error('AI response contained instructional reasoning in meal names');
+  }
+
+  // 3. Nigerian Terminology Normalization
   const soupKeywords = ['soup', 'egusi', 'okra', 'ogbono', 'vegetable', 'oha', 'bitterleaf', 'ewedu', 'gbegiri'];
-  const lowerText = mealText.toLowerCase();
+  const finalLower = cleanedText.toLowerCase();
   
-  if (lowerText.includes('garri') && !lowerText.includes('soaked') && !lowerText.includes('drinking')) {
-    if (soupKeywords.some(k => lowerText.includes(k))) {
-      return mealText.replace(/garri/gi, 'Eba');
+  if (finalLower.includes('garri') && !finalLower.includes('soaked') && !finalLower.includes('drinking')) {
+    if (soupKeywords.some(k => finalLower.includes(k))) {
+      return cleanedText.replace(/garri/gi, 'Eba');
     }
   }
   
-  return mealText;
+  return cleanedText;
 }
 
 import { SUBSTITUTIONS, IGNORED_STAPLES } from './shopping-validator';
@@ -99,6 +137,39 @@ export function validateIngredients(
         shoppingList.push({ item: ingredient, quantity: getFallbackQuantity(ingredient) });
         allowedItems.push(ingNorm);
       }
+    }
+  }
+
+  // 4. Fallback text scanning for missing explicit ingredients
+  // The AI sometimes mentions an ingredient in the meal name but forgets to add it to primaryIngredientsUsed
+  const allMealsText = (mealPlan as any[])
+    .map(day => `${day.breakfast || ''} ${day.lunch || ''} ${day.dinner || ''}`)
+    .join(' ')
+    .toLowerCase();
+
+  const criticalIngredients = ['crayfish', 'stockfish', 'egg', 'chicken', 'beef', 'plantain', 'fish', 'sardine', 'turkey', 'yam', 'beans'];
+  
+  for (const expIng of criticalIngredients) {
+    if (allMealsText.includes(expIng)) {
+       const expNorm = normalize(expIng);
+       // check if it's satisfied by pantry or shopping list
+       let isCovered = allowedItems.some(allowed => expNorm.includes(allowed) || allowed.includes(expNorm));
+       
+       if (!isCovered) {
+         // Also check substitutions - if the user has a substitute, it's technically covered
+         if (SUBSTITUTIONS[expIng]) {
+           isCovered = SUBSTITUTIONS[expIng].some(sub => {
+             const subNorm = normalize(sub);
+             return allowedItems.some(allowed => subNorm.includes(allowed) || allowed.includes(subNorm));
+           });
+         }
+       }
+       
+       if (!isCovered) {
+         console.warn(`[AI Sanitizer] Auto-Correction: Critical ingredient "${expIng}" found in meal text but missing from lists! Adding it.`);
+         shoppingList.push({ item: expIng, quantity: getFallbackQuantity(expIng) });
+         allowedItems.push(expNorm);
+       }
     }
   }
 }

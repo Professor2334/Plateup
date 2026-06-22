@@ -189,6 +189,16 @@ export function MealHistoryTab({
                         const compactDate = planDate.toLocaleDateString('en-US', { weekday: 'short' });
                         const time = planDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
+                        let totalMeals = 21;
+                        if (plan.generatedPlan && Array.isArray(plan.generatedPlan)) {
+                          totalMeals = plan.generatedPlan.reduce((acc: number, day: any) => {
+                            const hasBreakfast = day.breakfast && day.breakfast.trim() !== '';
+                            const hasLunch = day.lunch && day.lunch.trim() !== '' && day.lunch.trim().toLowerCase() !== 'skip' && day.lunch.trim().toLowerCase() !== 'none';
+                            const hasDinner = day.dinner && day.dinner.trim() !== '';
+                            return acc + (hasBreakfast ? 1 : 0) + (hasLunch ? 1 : 0) + (hasDinner ? 1 : 0);
+                          }, 0);
+                        }
+
                         return (
                           <div
                             key={plan.id}
@@ -254,9 +264,9 @@ export function MealHistoryTab({
                                 {compactDate}, {time}
                               </div>
 
-                              {/* Compact 7 Days • 21 Meals */}
+                              {/* Compact 7 Days • {totalMeals} Meals */}
                               <div className="text-[0.7rem] font-medium text-[var(--color-secondary)]">
-                                7 Days&nbsp;•&nbsp;21 Meals
+                                7 Days&nbsp;•&nbsp;{totalMeals} Meals
                               </div>
                             </div>
                           </div>

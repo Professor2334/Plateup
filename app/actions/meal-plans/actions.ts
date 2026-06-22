@@ -45,12 +45,16 @@ export async function generateMealPlan(formData: FormData) {
 
   const userPrefs = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { householdSize: true, primaryGoal: true }
+    select: { householdSize: true, primaryGoal: true, mealFrequency: true }
   });
 
   const dbHouseholdSize = userPrefs?.householdSize;
   const householdSize = dbHouseholdSize || '3-4';
-  const primaryGoal = userPrefs?.primaryGoal || 'save-money';
+  // primaryGoal is stored as a String[] in the DB; fall back to ['save-money'] for users who have no goals yet
+  const primaryGoals: string[] = (userPrefs?.primaryGoal && userPrefs.primaryGoal.length > 0)
+    ? userPrefs.primaryGoal
+    : ['save-money'];
+  const mealFrequency = userPrefs?.mealFrequency || '3_meals';
   const getHouseholdMultiplier = (size: string) => {
     if (size.includes('-')) return parseInt(size.split('-')[0], 10);
     if (size.includes('+')) return parseInt(size.replace('+', ''), 10);
@@ -84,7 +88,7 @@ export async function generateMealPlan(formData: FormData) {
     const reporter = new ValidationReporter();
     try {
       attempts++;
-      const mealPlan = await deepSeekGenerate(budget, ingredients, householdSize, primaryGoal, budgetFriendly, originalEstimatedCost);
+      const mealPlan = await deepSeekGenerate(budget, ingredients, householdSize, primaryGoals, budgetFriendly, originalEstimatedCost, mealFrequency);
 
       // --- LIGHTWEIGHT BACKEND VALIDATION LAYER ---
 
@@ -128,13 +132,15 @@ export async function generateMealPlan(formData: FormData) {
       enforceMealVariety(mealPlan.mealPlan, ingredients);
       
       const uniqueMeals = new Set<string>();
+      const isTwoMealMode = mealFrequency === '2_meals';
       mealPlan.mealPlan.forEach((day: { breakfast: string, lunch: string, dinner: string }) => {
         uniqueMeals.add(day.breakfast.toLowerCase().trim());
-        uniqueMeals.add(day.lunch.toLowerCase().trim());
+        if (!isTwoMealMode && day.lunch) uniqueMeals.add(day.lunch.toLowerCase().trim());
         uniqueMeals.add(day.dinner.toLowerCase().trim());
       });
-      const varietyScore = Math.round((uniqueMeals.size / 21) * 100);
-      reporter.logPass('Meal Variety Score', `Meal Variety Score: ${varietyScore}% (${uniqueMeals.size} unique meals out of 21 slots)`);
+      const totalMealSlots = isTwoMealMode ? 14 : 21;
+      const varietyScore = Math.round((uniqueMeals.size / totalMealSlots) * 100);
+      reporter.logPass('Meal Variety Score', `Meal Variety Score: ${varietyScore}% (${uniqueMeals.size} unique meals out of ${totalMealSlots} slots)`);
 
       // 5. Shopping List Generation & Sanitization
       let finalShoppingList = mealPlan.shoppingList || [];
@@ -238,18 +244,20 @@ export async function generateMealPlan(formData: FormData) {
       }
       
       // Goal Priority Overrides for Budget Intelligence
-      const goalLower = primaryGoal.toLowerCase();
-      if (goalLower.includes('save-money')) {
+      const goalsLower = primaryGoals.map(g => g.toLowerCase());
+      const hasGoal = (slug: string) => goalsLower.some(g => g.includes(slug));
+
+      if (hasGoal('save-money')) {
         // Under-utilizing is a SUCCESS for save-money. Do not fail on under-utilization.
         targetMinUtilization = 0;
-      } else if (goalLower.includes('eat-healthier') || goalLower.includes('feed-a-large-family')) {
+      } else if (hasGoal('eat-healthy') || hasGoal('feed-a-large-family')) {
         // These goals require substantial food volume/quality. We raise the minimum expectation.
         targetMinUtilization = Math.min(100, targetMinUtilization + 10);
       }
       
       // Ensure it doesn't go below 30% to prevent completely empty shopping lists on large budgets unless pantry is truly exhaustive
       // Exception: save-money goal allows 0% floor
-      if (!goalLower.includes('save-money')) {
+      if (!hasGoal('save-money')) {
         targetMinUtilization = Math.max(30, targetMinUtilization);
       }
 

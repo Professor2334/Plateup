@@ -12,7 +12,7 @@ async function runScenario(name: string, budget: number, ingredients: string, ho
   console.log(`======================================================`);
   
   try {
-    const mealPlan = await deepSeekGenerate(budget, ingredients, householdSize, 'save-money', budgetFriendly, originalCost);
+    const mealPlan = await deepSeekGenerate(budget, ingredients, householdSize, ['save-money'], budgetFriendly, originalCost);
     
     // Simulate Lightweight Validation Layer
     let finalShoppingList = mealPlan.shoppingList || [];

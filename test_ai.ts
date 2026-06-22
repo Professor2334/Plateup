@@ -20,7 +20,7 @@ async function runTests() {
           budget,
           '', // no available ingredients
           '1', // household size
-          'save-money',
+          ['save-money'],
           budgetFriendly,
           undefined
         );

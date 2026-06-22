@@ -8,7 +8,7 @@ export default function TestTypographyPage() {
     email: 'test@example.com',
     emailVerified: true,
     householdSize: '2',
-    primaryGoal: 'Save Money',
+    primaryGoal: ['save-money'],
   };
 
   return (

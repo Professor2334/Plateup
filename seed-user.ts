@@ -12,7 +12,7 @@ async function seed() {
       emailVerified: new Date(),
       onboardingCompleted: true,
       householdSize: '2',
-      primaryGoal: 'save-money'
+      primaryGoal: ['save-money']
     },
     create: {
       name: 'Audit Tester',
@@ -21,7 +21,7 @@ async function seed() {
       emailVerified: new Date(),
       onboardingCompleted: true,
       householdSize: '2',
-      primaryGoal: 'save-money'
+      primaryGoal: ['save-money']
     }
   });
 

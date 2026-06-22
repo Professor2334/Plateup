@@ -41,6 +41,8 @@ export async function registerUser(formData: FormData) {
         name,
         email,
         password: hashedPassword,
+        // primaryGoal has no DB default — must be seeded as empty array at creation
+        primaryGoal: [],
       },
     });
 

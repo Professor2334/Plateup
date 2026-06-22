@@ -63,53 +63,66 @@ function loadPromptFiles(): string {
 
 const COMBINED_SYSTEM_MESSAGE = loadPromptFiles();
 
-function getGoalSpecificRules(goal: string): string {
-  const normalizedGoal = goal.toLowerCase();
-  
-  if (normalizedGoal.includes('save-time')) {
-    return `PRIMARY GOAL RULES - SAVE TIME:
+const SINGLE_GOAL_RULES: Record<string, string> = {
+  'save-time': `PRIMARY GOAL RULES - SAVE TIME:
 1. MINIMIZE COOKING FREQUENCY: Prioritize meals that require less active cooking time.
 2. BATCH COOKING: Favor meals that can be cooked in large batches (e.g., Soups, Stews).
 3. STRATEGIC LEFTOVERS: Increase the use of leftover meals. Cook once, eat twice.
 4. REDUCE INGREDIENT VARIETY: Use similar base ingredients across meals to reduce prep time.
-5. QUICK BREAKFASTS: Prefer extremely fast breakfasts (e.g., Bread and Tea, Pap and Akara (bought), Garri).`;
-  }
+5. QUICK BREAKFASTS: Prefer extremely fast breakfasts (e.g., Bread and Tea, Pap and Akara (bought), Garri).`,
 
-  if (normalizedGoal.includes('reduce-food-waste')) {
-    return `PRIMARY GOAL RULES - REDUCE FOOD WASTE:
+  'reduce-food-waste': `PRIMARY GOAL RULES - REDUCE FOOD WASTE:
 1. CONSUME PANTRY FIRST: Prioritize using what the user already has.
 2. PERISHABLES FIRST: Use fresh vegetables and perishable proteins early in the week.
 3. REUSE VEGETABLES: If vegetables are bought, they MUST be used in multiple meals so they don't spoil.
 4. NO SINGLE-USE INGREDIENTS: Every purchased ingredient must appear in at least one or more meals. Do not recommend an ingredient for just one small meal component.
-5. MINIMIZE ORPHAN INGREDIENTS: Keep the shopping list highly cohesive and tightly matched to the meals.`;
-  }
+5. MINIMIZE ORPHAN INGREDIENTS: Keep the shopping list highly cohesive and tightly matched to the meals.`,
 
-  if (normalizedGoal.includes('eat-healthier')) {
-    return `PRIMARY GOAL RULES - EAT HEALTHIER:
+  'eat-healthy': `PRIMARY GOAL RULES - EAT HEALTHY:
 1. INCREASE VEGETABLES: Ensure vegetables are included in as many meals as possible.
 2. ADD FRUITS: Include fruit recommendations (e.g., Bananas, Oranges, Watermelon) if budget allows.
 3. IMPROVE PROTEIN: Prioritize quality proteins (Beans, Fish, Chicken) over purely carb-heavy meals.
 4. NUTRITIOUS BREAKFAST: Avoid purely empty carbs for breakfast; add proteins like eggs or beans.
 5. DIVERSITY: Prefer balanced, diverse meals over the absolute cheapest options. Avoid excessive carbohydrate repetition.
-6. FRESHNESS FIRST: Limit leftovers to a maximum of 1 or 2 per week. Prioritize freshly cooked, nutrient-rich meals over reusing leftovers.`;
-  }
+6. FRESHNESS FIRST: Limit leftovers to a maximum of 1 or 2 per week. Prioritize freshly cooked, nutrient-rich meals over reusing leftovers.`,
 
-  // Default to save-money
-  return `PRIMARY GOAL RULES - SAVE MONEY:
+  'save-money': `PRIMARY GOAL RULES - SAVE MONEY:
 1. MAXIMIZE PANTRY: Rely heavily on existing ingredients.
 2. MINIMIZE SHOPPING: Do not spend money just because budget exists. Remaining budget is considered a success.
 3. REUSE INGREDIENTS: Use purchased ingredients across multiple meals.
 4. AFFORDABLE STAPLES: Prefer cheap Nigerian staples (Garri, Beans, Rice).
-5. REDUCE EXPENSIVE PROTEINS: Strictly avoid premium proteins unless the user already owns them. Use Eggs, Sardines, or Crayfish instead.`;
+5. REDUCE EXPENSIVE PROTEINS: Strictly avoid premium proteins unless the user already owns them. Use Eggs, Sardines, or Crayfish instead.`,
+};
+
+function getGoalSpecificRules(goals: string[]): string {
+  const activeGoals = goals.filter(g => SINGLE_GOAL_RULES[g]);
+
+  // Fallback: if no recognisable goal, default to save-money
+  if (activeGoals.length === 0) {
+    return SINGLE_GOAL_RULES['save-money'];
+  }
+
+  const ruleBlocks = activeGoals.map(g => SINGLE_GOAL_RULES[g]);
+
+  if (activeGoals.length === 1) {
+    return ruleBlocks[0];
+  }
+
+  // Two goals selected — combine with a balancing note
+  return `COMBINED GOAL RULES (Balance all goals equally):
+${ruleBlocks.join('\n\n')}
+
+BALANCING INSTRUCTION: You MUST balance BOTH goal sets above simultaneously. Where rules conflict, find the best middle ground (e.g., if saving money conflicts with eating healthy, choose affordable nutritious options like Beans, Eggs, and seasonal vegetables).`;
 }
 
 export async function generateMealPlan(
   budget: number,
   ingredients: string,
   householdSize: string,
-  primaryGoal: string,
+  primaryGoals: string[],
   budgetFriendly: boolean = false,
-  originalEstimatedCost?: number
+  originalEstimatedCost?: number,
+  mealFrequency: string = '3_meals'
 ): Promise<MealPlanResponse> {
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) {
@@ -123,18 +136,36 @@ export async function generateMealPlan(
     return parseInt(size, 10) || 1;
   };
   const householdMultiplier = getHouseholdMultiplier(householdSize);
-  const totalWeeklyPortions = 21 * householdMultiplier; // 3 meals * 7 days * people
+  const isTwoMealMode = mealFrequency === '2_meals';
+  // 2-meal mode: 14 slots (2 meals × 7 days × people); 3-meal mode: 21 slots
+  const mealsPerDay = isTwoMealMode ? 2 : 3;
+  const totalWeeklyPortions = (mealsPerDay * 7) * householdMultiplier;
   const budgetPerPortion = budget / totalWeeklyPortions;
   const isBudgetTight = budgetPerPortion < 800; // Under 800 NGN per meal per person is tight
 
+  const mealFrequencyInstruction = isTwoMealMode
+    ? `MEAL FREQUENCY MODE: 2 MEALS PER DAY (BREAKFAST & DINNER ONLY)
+CRITICAL: The user eats only 2 meals per day. You MUST omit Lunch from the plan entirely.
+- Generate ONLY Breakfast and Dinner for each of the 7 days.
+- Set the "lunch" field to an empty string ("") for every single day. Do NOT include any food in the lunch field.
+- Recalculate ALL shopping quantities based on 14 meal slots (2 meals × 7 days) instead of 21.
+- Recalculate budget allocation based on 14 meal slots. Cost per slot = NGN ${Math.round(budgetPerPortion)}.
+- Recalculate ingredient quantities proportionally — every quantity should reflect 2-meal-per-day consumption.
+- Shopping list sizes should be noticeably smaller than a 3-meal-per-day plan.
+- Do NOT suggest or generate Lunch in any field or in any ingredient justification.`
+    : `MEAL FREQUENCY MODE: 3 MEALS PER DAY (BREAKFAST, LUNCH & DINNER)
+Generate Breakfast, Lunch, and Dinner for each of the 7 days as normal.`;
+
   let prompt = `Generate a 7-day budget-aware Nigerian meal plan.
 Household Size: ${householdSize}
-Goal: ${primaryGoal}
+Goals: ${primaryGoals.join(', ')}
 Budget: NGN ${budget}
 Available Ingredients: ${ingredients}
 (CRITICAL INSTRUCTION: You MUST incorporate these specific available ingredients into your meals. Do not suggest buying new proteins like Chicken or Beef if the user already has proteins like Stockfish or Eggs.)
 
-${getGoalSpecificRules(primaryGoal)}
+${mealFrequencyInstruction}
+
+${getGoalSpecificRules(primaryGoals)}
 
 CRITICAL RULES FOR ALL GENERATIONS:
 1. Day 1 (Monday) is the first day. You CANNOT have leftovers on Monday. NEVER use words like "leftover", "remaining", or "from previous" on Day 1.
@@ -295,7 +326,7 @@ DO NOT include a \`budgetStrategy\` field in your JSON.`;
     }
 
     const validationResult = DeepSeekResponseSchema.safeParse(parsed);
-    const validatedData = sanitizeMealPlanResponse<z.infer<typeof DeepSeekResponseSchema>>(validationResult);
+    const validatedData = sanitizeMealPlanResponse<z.infer<typeof DeepSeekResponseSchema>>(validationResult, mealFrequency);
 
     const legacyMealPlan: MealPlanResponse["mealPlan"] = [];
 

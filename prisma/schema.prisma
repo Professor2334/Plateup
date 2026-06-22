@@ -15,11 +15,12 @@ model User {
   image               String?
   onboardingCompleted Boolean    @default(false)
   householdSize       String?
-  primaryGoal         String?
+  primaryGoal         String[]   @default([])
   lastLoginAt         DateTime?
   lastPlanGeneratedAt DateTime?
   receiveWeeklyReminders Boolean @default(true)
   receiveProductUpdates Boolean  @default(true)
+  mealFrequency         String   @default("3_meals")
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
   mealPlans           MealPlan[]

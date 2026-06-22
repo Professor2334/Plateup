@@ -244,6 +244,16 @@ export function SavedPlansTab({
                 .map((i: string) => i.trim())
                 .filter((i: string) => i.length > 0);
 
+              let totalMeals = 21;
+              if (plan.generatedPlan && Array.isArray(plan.generatedPlan)) {
+                totalMeals = plan.generatedPlan.reduce((acc: number, day: any) => {
+                  const hasBreakfast = day.breakfast && day.breakfast.trim() !== '';
+                  const hasLunch = day.lunch && day.lunch.trim() !== '' && day.lunch.trim().toLowerCase() !== 'skip' && day.lunch.trim().toLowerCase() !== 'none';
+                  const hasDinner = day.dinner && day.dinner.trim() !== '';
+                  return acc + (hasBreakfast ? 1 : 0) + (hasLunch ? 1 : 0) + (hasDinner ? 1 : 0);
+                }, 0);
+              }
+
               return (
                 <div
                   key={plan.id}
@@ -295,7 +305,7 @@ export function SavedPlansTab({
                       <div className="inline-flex items-center gap-1.5 bg-[#f9fafb] border border-[var(--color-outline-variant)]/20 rounded-lg px-2.5 py-1.5">
                         <Utensils className="w-3 h-3 text-[var(--color-secondary)]" />
                         <span className="text-[0.6875rem] font-bold text-[var(--color-secondary)]">
-                          21 Meals
+                          {totalMeals} Meals
                         </span>
                       </div>
                       {ingredientList.length > 0 && (

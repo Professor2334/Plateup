@@ -60,6 +60,14 @@ export function MealPlanResults({
     .map(i => i.trim())
     .filter(i => i.length > 0);
 
+  const totalMeals = plan.mealPlan.reduce((acc, day) => {
+    const hasBreakfast = day.breakfast && day.breakfast.trim() !== '';
+    const hasLunch = day.lunch && day.lunch.trim() !== '' && day.lunch.trim().toLowerCase() !== 'skip' && day.lunch.trim().toLowerCase() !== 'none';
+    const hasDinner = day.dinner && day.dinner.trim() !== '';
+    return acc + (hasBreakfast ? 1 : 0) + (hasLunch ? 1 : 0) + (hasDinner ? 1 : 0);
+  }, 0);
+  const totalDays = plan.mealPlan.length;
+
   return (
     <div className="w-full space-y-8 animate-in fade-in duration-500 relative">
       {isRegenerating && (
@@ -165,7 +173,7 @@ export function MealPlanResults({
                 <CalendarDays className="w-4 h-4" />
                 <span className="text-xs font-semibold uppercase tracking-wider">Weekly Menu</span>
               </div>
-              <p className="text-[clamp(1.125rem,2vw,1.25rem)] font-bold text-[var(--color-on-surface)]">7 Days (21 Meals)</p>
+              <p className="text-[clamp(1.125rem,2vw,1.25rem)] font-bold text-[var(--color-on-surface)]">{totalDays} Days ({totalMeals} Meals)</p>
             </div>
           </div>
 

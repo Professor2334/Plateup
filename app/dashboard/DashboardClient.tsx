@@ -37,9 +37,10 @@ interface DashboardClientProps {
     email: string;
     emailVerified: boolean;
     householdSize: string;
-    primaryGoal: string;
+    primaryGoal: string[];
     receiveWeeklyReminders?: boolean;
     receiveProductUpdates?: boolean;
+    mealFrequency?: string;
   };
 }
 
@@ -133,6 +134,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     prefGoal, setPrefGoal,
     weeklyReminders, setWeeklyReminders,
     productUpdates, setProductUpdates,
+    prefMealFrequency, setPrefMealFrequency,
     passSaving, setPassSaving,
     passError, setPassError,
     passSuccess, setPassSuccess,
@@ -141,9 +143,10 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
     isEditProfileModalOpen, setIsEditProfileModalOpen
   } = useSettings(
     userData?.householdSize || '1', 
-    userData?.primaryGoal || 'save-money',
+    userData?.primaryGoal?.length > 0 ? userData.primaryGoal : ['save-money'],
     userData?.receiveWeeklyReminders ?? true,
-    userData?.receiveProductUpdates ?? true
+    userData?.receiveProductUpdates ?? true,
+    userData?.mealFrequency || '3_meals'
   );
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -459,7 +462,7 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                 onSubmit={async (e) => {
                   e.preventDefault();
                   setPrefSaving(true);
-                  const res = await updatePreferences(prefHousehold, prefGoal, weeklyReminders, productUpdates);
+                  const res = await updatePreferences(prefHousehold, prefGoal, weeklyReminders, productUpdates, prefMealFrequency);
                   setPrefSaving(false);
                   if (res.success) {
                     toast.success('Preferences updated successfully!');
@@ -498,21 +501,89 @@ export function DashboardClient({ initialHistory, userName, userData }: Dashboar
                   </select>
                 </div>
 
-                <div className="flex flex-col sm:flex-row justify-between gap-4 pb-4 border-b border-[var(--color-outline-variant)]/20">
-                  <div className="flex-1">
-                    <label className="text-[0.875rem] font-bold text-[var(--color-on-surface)] mb-1 block">Primary Goal</label>
-                    <p className="text-[0.8125rem] text-[var(--color-on-surface-variant)] mb-3 sm:mb-0">What is your main focus for meal planning?</p>
+                <div className="flex flex-col gap-4 pb-4 border-b border-[var(--color-outline-variant)]/20">
+                  <div>
+                    <label className="text-[0.875rem] font-bold text-[var(--color-on-surface)] mb-1 block">Meal Planning Goals</label>
+                    <p className="text-[0.8125rem] text-[var(--color-on-surface-variant)]">Select up to 2 goals.</p>
                   </div>
-                  <select 
-                    value={prefGoal}
-                    onChange={e => setPrefGoal(e.target.value)}
-                    className="w-full sm:w-48 text-[0.875rem] font-medium text-[var(--color-on-surface)] bg-[#f9fafb] border border-[var(--color-outline-variant)]/30 rounded-lg px-3 py-2 focus:outline-none focus:bg-white focus:border-[var(--color-primary)] transition-colors h-10"
-                  >
-                    <option value="save-money">Save Money</option>
-                    <option value="save-time">Save Time</option>
-                    <option value="reduce-waste">Reduce Food Waste</option>
-                    <option value="eat-healthier">Eat Healthier</option>
-                  </select>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {[
+                      { value: 'save-money', label: 'Save Money' },
+                      { value: 'eat-healthy', label: 'Eat Healthy' },
+                      { value: 'reduce-food-waste', label: 'Reduce Food Waste' },
+                      { value: 'save-time', label: 'Save Time' },
+                    ].map((goal) => {
+                      const isChecked = (prefGoal as string[]).includes(goal.value);
+                      const isDisabled = !isChecked && (prefGoal as string[]).length >= 2;
+                      return (
+                        <label
+                          key={goal.value}
+                          className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-all cursor-pointer ${
+                            isChecked
+                              ? 'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)]'
+                              : isDisabled
+                              ? 'border-[var(--color-outline-variant)]/20 bg-[#f9fafb] opacity-40 cursor-not-allowed'
+                              : 'border-[var(--color-outline-variant)]/30 bg-[#f9fafb] hover:border-[var(--color-outline-variant)]/60'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            disabled={isDisabled}
+                            onChange={() => {
+                              const current = prefGoal as string[];
+                              if (isChecked) {
+                                setPrefGoal(current.filter((g: string) => g !== goal.value));
+                              } else if (current.length < 2) {
+                                setPrefGoal([...current, goal.value]);
+                              }
+                            }}
+                            className="w-4 h-4 text-[var(--color-primary)] rounded border-gray-300 focus:ring-[var(--color-primary)]"
+                          />
+                          <span className="text-[0.875rem] font-medium">{goal.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Meal Frequency */}
+                <div className="flex flex-col gap-4 pb-4 border-b border-[var(--color-outline-variant)]/20">
+                  <div>
+                    <label className="text-[0.875rem] font-bold text-[var(--color-on-surface)] mb-1 block">Meal Frequency</label>
+                    <p className="text-[0.8125rem] text-[var(--color-on-surface-variant)]">Choose how many meals you typically eat each day.</p>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {[
+                      { value: '2_meals', label: '2 Meals Daily', sublabel: 'Breakfast & Dinner' },
+                      { value: '3_meals', label: '3 Meals Daily', sublabel: 'Breakfast, Lunch & Dinner' },
+                    ].map((option) => {
+                      const isChecked = prefMealFrequency === option.value;
+                      return (
+                        <label
+                          key={option.value}
+                          className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-all cursor-pointer ${
+                            isChecked
+                              ? 'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)]'
+                              : 'border-[var(--color-outline-variant)]/30 bg-[#f9fafb] hover:border-[var(--color-outline-variant)]/60'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="mealFrequency"
+                            value={option.value}
+                            checked={isChecked}
+                            onChange={() => setPrefMealFrequency(option.value)}
+                            className="w-4 h-4 text-[var(--color-primary)] border-gray-300 focus:ring-[var(--color-primary)]"
+                          />
+                          <span className="text-[0.875rem] font-medium">
+                            {option.label}
+                            <span className="text-[0.8125rem] font-normal text-[var(--color-on-surface-variant)] ml-1.5">({option.sublabel})</span>
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-between gap-4 pb-4 border-b border-[var(--color-outline-variant)]/20">
