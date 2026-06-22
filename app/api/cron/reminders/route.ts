@@ -46,7 +46,6 @@ export async function GET(request: Request) {
           }
         }
       },
-      },
       take: 50 // Process in batches
     });
 
@@ -94,7 +93,6 @@ export async function GET(request: Request) {
               ]
             }
           }
-        },
         },
         take: 50
       });
