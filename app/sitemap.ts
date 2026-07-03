@@ -6,29 +6,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://plateup.com.ng';
   const now = new Date();
 
+  // Only public, indexable pages go in the sitemap.
+  // Auth, dashboard, API, and private routes must never appear here.
   const sitemap: MetadataRoute.Sitemap = [
     {
       url: APP_URL,
       lastModified: now,
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 1.0,
-    },
-    {
-      url: `${APP_URL}/auth/login`,
-      lastModified: now,
-      changeFrequency: 'yearly',
-      priority: 0.6,
-    },
-    {
-      url: `${APP_URL}/auth/register`,
-      lastModified: now,
-      changeFrequency: 'yearly',
-      priority: 0.7,
     },
   ];
 
-  // Auto-discover top-level pages
-  const excludeDirs = ['api', 'auth', 'dashboard', 'fonts', 'test-typography'];
+  // Auto-discover top-level pages.
+  // This list is the canonical exclusion set — any directory here is NEVER added to the sitemap.
+  const excludeDirs = ['api', 'auth', 'dashboard', 'fonts', 'test-typography', 'admin'];
   const basePriority = 0.8;
 
   try {
@@ -49,6 +40,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
         const pagePath = path.join(appDir, dirName, 'page.tsx');
         if (fs.existsSync(pagePath)) {
+          const routeUrl = `${APP_URL}/${dirName}`;
+
+          // Skip if already present (prevents duplicates)
+          if (sitemap.some(entry => entry.url === routeUrl)) continue;
+
           // Dynamic priority based on route type
           let priority = basePriority;
           if (['privacy', 'terms', 'contact'].includes(dirName)) {
@@ -56,7 +52,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
           }
 
           sitemap.push({
-            url: `${APP_URL}/${dirName}`,
+            url: routeUrl,
             lastModified: now,
             changeFrequency: 'weekly',
             priority,

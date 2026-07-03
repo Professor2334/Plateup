@@ -6,23 +6,27 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
-        // Allow all major search engine crawlers
         userAgent: '*',
         allow: [
           '/',
           '/privacy',
           '/terms',
           '/contact',
-          '/auth/login',
-          '/auth/register',
+          '/nigerian-meal-planner',
+          '/budget-meal-planner-nigeria',
+          '/meal-planning-for-students',
+          '/weekly-food-budget-guide',
+          '/how-to-plan-meals-on-a-budget',
+          '/blog',
         ],
+        // Block all private, authenticated, and non-indexable paths
         disallow: [
-          '/dashboard',
+          '/auth/',
+          '/dashboard/',
           '/api/',
-          '/auth/verify-email',
-          '/auth/forgot-password',
-          '/auth/reset-password',
-          '/test-typography',
+          '/admin/',
+          '/test-typography/',
+          '/fonts/',
         ],
       },
     ],
