@@ -61,23 +61,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       }
     }
 
-    // Force include /blog if it wasn't caught (e.g. if it doesn't exist yet)
-    if (!sitemap.some(route => route.url === `${APP_URL}/blog`)) {
-      sitemap.push({
-        url: `${APP_URL}/blog`,
-        lastModified: now,
-        changeFrequency: 'weekly',
-        priority: 0.8,
-      });
-    }
-
   } catch (error) {
     console.error('Failed to auto-discover sitemap routes:', error);
     // Hardcoded fallback
     const fallbackRoutes = [
       'privacy', 'terms', 'contact', 'nigerian-meal-planner',
       'meal-planning-for-students', 'weekly-food-budget-guide',
-      'how-to-plan-meals-on-a-budget', 'budget-meal-planner-nigeria', 'blog'
+      'how-to-plan-meals-on-a-budget', 'budget-meal-planner-nigeria'
     ];
     
     fallbackRoutes.forEach(route => {

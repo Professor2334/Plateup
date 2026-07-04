@@ -17,7 +17,6 @@ export default function robots(): MetadataRoute.Robots {
           '/meal-planning-for-students',
           '/weekly-food-budget-guide',
           '/how-to-plan-meals-on-a-budget',
-          '/blog',
         ],
         // Block all private, authenticated, and non-indexable paths
         disallow: [
